@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.course.dao.CourseClassificationDao">
+    <select id="selectCourseClassificationPage" resultType="com.sqx.modules.course.entity.CourseClassification">
+        select * from course_classification where 1=1 and is_delete=0
+        <if test ='null != classificationName'>
+            and classification_name  LIKE CONCAT('%', #{classificationName}, '%')
+        </if>
+        order by sort
+    </select>
+
+    <select id="selectCourseClassificationList" resultType="com.sqx.modules.course.entity.CourseClassification">
+        select * from course_classification where 1=1 and is_delete=0
+        <if test ='null != classificationName'>
+            and classification_name  LIKE CONCAT('%', #{classificationName}, '%')
+        </if>
+        order by sort
+    </select>
+
+    <update id="updateDelete">
+        update course_classification set is_delete=1 where classification_id=#{id}
+    </update>
+    <select id="queryClassification" resultType="com.sqx.modules.course.response.ClassificationResponse">
+         select   classification_id ,classification_name from course_classification where is_delete=0;
+    </select>
+</mapper>

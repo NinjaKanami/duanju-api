@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.invite.dao.InviteMoneyDao">
+
+    <select id="selectInviteMoneyByUserId" resultType="com.sqx.modules.invite.entity.InviteMoney">
+        select * from invite_money where user_id=#{userId}
+    </select>
+
+    <update id="updateInviteMoneySum">
+        update invite_money set money=money+#{money},money_sum=money_sum+#{money} where user_id=#{userId}
+    </update>
+
+    <update id="updateInviteMoneySumSub">
+        update invite_money set money=money-#{money},money_sum=money_sum-#{money} where user_id=#{userId}
+    </update>
+
+    <update id="updateInviteMoneyCashOut">
+        update invite_money set
+        <if test="type==1">
+            cash_out=cash_out-#{money},money=money+#{money}
+        </if>
+        <if test="type==2">
+            cash_out=cash_out+#{money},money=money-#{money}
+        </if>
+        where user_id=#{userId}
+    </update>
+
+    <update id="updateInviteMoneySub">
+        update invite_money set money=money-#{money} where user_id=#{userId}
+    </update>
+
+</mapper>

@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.orders.dao.OrdersDao">
+
+    <select id="selectMaxCode" resultType="String">
+        select max(orders_no) code from orders where orders_no like #{newData}
+    </select>
+
+
+    <insert id="insertOrders" useGeneratedKeys="true"  keyProperty="ordersId" parameterType="com.sqx.modules.orders.entity.Orders">
+        INSERT INTO orders
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="null != ordersId and '' != ordersId">
+                orders_id,
+            </if>
+            <if test="null != ordersNo and '' != ordersNo">
+                orders_no,
+            </if>
+            <if test="null != tradeNo and '' != tradeNo">
+                trade_no,
+            </if>
+            <if test="null != userId and '' != userId">
+                user_id,
+            </if>
+            <if test="null != courseId and '' != courseId">
+                course_id,
+            </if>
+            <if test="null != payMoney and '' != payMoney">
+                pay_money,
+            </if>
+            <if test="null != payWay and '' != payWay">
+                pay_way,
+            </if>
+            <if test="null != status">
+                status,
+            </if>
+            <if test="null != createTime and '' != createTime">
+                create_time,
+            </if>
+            <if test="null != refundContent and '' != refundContent">
+                refund_content,
+            </if>
+            <if test="null != ordersType and '' != ordersType">
+                orders_type,
+            </if>
+            <if test="null != courseDetailsId ">
+                course_details_id,
+            </if>
+            <if test="null != vipNameType">
+                vip_name_type
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="null != ordersId and '' != ordersId">
+                #{ordersId},
+            </if>
+            <if test="null != ordersNo and '' != ordersNo">
+                #{ordersNo},
+            </if>
+            <if test="null != tradeNo and '' != tradeNo">
+                #{tradeNo},
+            </if>
+            <if test="null != userId and '' != userId">
+                #{userId},
+            </if>
+            <if test="null != courseId and '' != courseId">
+                #{courseId},
+            </if>
+            <if test="null != payMoney and '' != payMoney">
+                #{payMoney},
+            </if>
+            <if test="null != payWay and '' != payWay">
+                #{payWay},
+            </if>
+            <if test="null != status">
+                #{status},
+            </if>
+            <if test="null != createTime and '' != createTime">
+                #{createTime},
+            </if>
+            <if test="null != refundContent and '' != refundContent">
+                #{refundContent},
+            </if>
+            <if test="null != ordersType and '' != ordersType">
+                #{ordersType},
+            </if>
+            <if test="null != courseDetailsId ">
+                #{courseDetailsId},
+            </if>
+            <if test="null != vipNameType">
+                #{vipNameType}
+            </if>
+        </trim>
+    </insert>
+
+    <select id="selectOrdersByOrdersNo" resultType="com.sqx.modules.orders.entity.Orders">
+        select o.*,c.title as title,s.username as sysUserName,s.qd_code as qdCode,
+        u.user_name as userName,
+        u1.user_name as memberUserName,u1.agency_index as agencyIndex,
+        u2.user_name as channelUserName
+        from orders o
+        left join tb_user u on u.user_id=o.user_id
+        left join tb_user u1 on u1.user_id=o.member_user_id
+        left join tb_user u2 on u2.user_id=o.channel_user_id
+        left join course c on c.course_id=o.course_id
+        left join sys_user s on s.user_id=o.sys_user_id
+        where 1=1
+        <if test="userName!=null and userName!=''">
+            and u.user_name LIKE CONCAT('%', #{userName}, '%')
+        </if>
+        <if test="qdCode!=null and qdCode!=''">
+            and s.qd_code = #{qdCode}
+        </if>
+        <if test="sysUserName!=null and sysUserName!=''">
+            and s.username LIKE CONCAT('%', #{sysUserName}, '%')
+        </if>
+        <if test="ordersNo!=null and ordersNo!=''">
+            and o.orders_no LIKE CONCAT('%', #{ordersNo}, '%')
+        </if>
+        <if test="status!=null and status!=-1">
+            and o.status=#{status}
+        </if>
+        <if test="userId!=null">
+            and o.user_id=#{userId}
+        </if>
+        <if test="ordersType!=null">
+            and o.orders_type=#{ordersType}
+        </if>
+        <if test="courseId!=null">
+            and o.course_id=#{courseId}
+        </if>
+        <if test="sysUserId!=null">
+            and o.sys_user_id=#{sysUserId}
+        </if>
+        <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+            and date_format(o.create_time,'%Y-%m-%d') BETWEEN #{startTime} and #{endTime}
+        </if>
+        <if test="startTime!=null and startTime!='' and  (endTime==null or endTime=='')">
+            and date_format(o.create_time,'%Y-%m-%d') &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null and endTime!='' and  (startTime==null or startTime=='')">
+            and date_format(o.create_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        order by o.create_time desc
+    </select>
+
+    <delete id="deleteOrders" parameterType="String">
+        DELETE FROM orders WHERE orders_id IN
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+
+
+    <select id="statisticsIncomeMoney" resultType="Double">
+        select sum(pay_money) from orders where  status=1
+        <if test="ordersType!=null">
+            and orders_type=#{ordersType}
+        </if>
+        <if test="flag!=null and flag==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+
+    <select id="statisticsPingMoney" resultType="Double">
+        select sum(ping_money) from orders where  status=1
+        <if test="ordersType!=null">
+            and orders_type=#{ordersType}
+        </if>
+        <if test="flag!=null and flag==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="selectOrdersByCourseIdAndUserId" resultType="com.sqx.modules.orders.entity.Orders">
+        select * from orders where user_id=#{userId} and course_id=#{courseId} and status=1 order by create_time desc limit 1
+    </select>
+
+    <select id="selectOrdersMoneyList" resultType="com.sqx.modules.orders.entity.Orders">
+        select o.*,u.user_name as userName,
+        u1.user_name as memberUserName,u1.agency_index as agencyIndex,
+        u2.user_name as channelUserName
+        from orders o
+        left join tb_user u on u.user_id=o.user_id
+        left join tb_user u1 on u1.user_id=o.member_user_id
+        left join tb_user u2 on u2.user_id=o.channel_user_id
+        where o.status=1
+        <if test="ordersType!=null and ordersType!=6">
+            and orders_type=#{ordersType}
+        </if>
+        <if test="ordersType!=null and ordersType==6">
+            and ping_money>0
+        </if>
+        <if test="flag!=null and flag==1">
+            and date_format(o.create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(o.create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(o.create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="selectOrdersCount" resultType="Integer">
+        select count(*) from orders where 1=1
+        <if test="sysUserId!=null">
+            and sys_user_id=#{sysUserId}
+        </if>
+        <if test="status!=null">
+            and status=#{status}
+        </if>
+        <if test="ordersType!=null">
+            and orders_type=#{ordersType}
+        </if>
+        <if test="flag!=null and flag==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="selectOrdersMoney" resultType="Double">
+        select ifnull(sum(pay_money),0.00) from orders  where 1=1
+        <if test="sysUserId!=null">
+            and sys_user_id=#{sysUserId}
+        </if>
+        <if test="status!=null">
+            and status=#{status}
+        </if>
+        <if test="courseId!=null">
+            and course_id=#{courseId}
+        </if>
+        <if test="ordersType!=null">
+            and orders_type=#{ordersType}
+        </if>
+        <if test="flag!=null and flag==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="selectFenXiaoMoney" resultType="Double">
+        select
+        <if test="type==1">
+            ifnull(sum(one_money),0.00)
+        </if>
+        <if test="type==2">
+            ifnull(sum(two_money),0.00)
+        </if>
+        <if test="type==3">
+            ifnull(sum(qd_money),0.00)
+        </if>
+        <if test="type==4">
+            ifnull(sum(one_money),0.00)+ifnull(sum(two_money),0.00)+ifnull(sum(qd_money),0.00)
+        </if>
+        from orders
+        where status=1
+        <if test="sysUserId!=null">
+            and sys_user_id=#{sysUserId}
+        </if>
+        <if test="flag!=null and flag==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="selectOrdersPingMoneyByMonth" resultType="Double">
+        select ifnull(sum(ping_money),0.00) from orders where orders_type in (1,2) and status=1
+        and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+    </select>
+
+    <select id="selectOrdersAgencyMoneyByTime" resultType="Double">
+        select ifnull(sum(pay_money),0.00)
+        from orders
+        where orders_type =2 and status=1
+        and user_id in (select user_id from tb_user where qd_code=#{qdCode})
+        and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+    </select>
+
+    <select id="selectCountOrdersAgencyMoneyByTime" resultType="Integer">
+        select count(*)
+        from orders
+        where orders_type =2 and status=1
+          and user_id in (select user_id from tb_user where qd_code=#{qdCode})
+          and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+    </select>
+
+    <select id="selectOrdersAgencyMoneyByTimes" resultType="Double">
+        select ifnull(sum(pay_money),0.00)
+        from orders
+        where orders_type =2 and status=1
+          and user_id in (select user_id from tb_user where qd_code=#{qdCode})
+          and date_format(create_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+          and date_format(create_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+    </select>
+
+    <select id="selectCountOrdersAgencyMoneyByTimes" resultType="Integer">
+        select count(*)
+        from orders
+        where orders_type =2 and status=1
+          and user_id in (select user_id from tb_user where qd_code=#{qdCode})
+          and date_format(create_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+          and date_format(create_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+    </select>
+
+    <select id="selectOrdersCountStatisticsByYear" resultType="Integer">
+        select count(*) from orders
+        where 1=1
+        <if test="status!=null and status!=0">
+            and status=#{status}
+        </if>
+        <if test="flag!=null and flag==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+
+</mapper>

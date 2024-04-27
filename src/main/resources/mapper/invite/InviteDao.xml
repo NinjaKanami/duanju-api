@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.invite.dao.InviteDao">
+
+
+    <select id="selectInviteList" resultType="com.sqx.modules.invite.entity.Invite">
+      select * from invite
+      where user_id=#{userId}
+      <if test="state!=null">
+          and state=#{state}
+      </if>
+    </select>
+
+
+    <select id="selectInviteUser" resultType="Map">
+        select u.user_id as userId,u.user_name as userName,u.avatar as avatar,i.create_time as createTime,ifnull(i.money,0.00) as money,i.user_type as userType
+        from invite i
+        left join tb_user u on u.user_id=i.invitee_user_id
+        where i.user_id=#{userId}
+        <if test="state!=null">
+            and i.state=#{state}
+        </if>
+        <if test="userType!=null">
+            and i.user_type=#{userType}
+        </if>
+        and u.user_id is not null
+    </select>
+
+    <select id="sumInviteMoney" resultType="Double">
+        select sum(money) from invite where state=1
+        <if test="flag!=null and flag==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+
+    <select id="selectInviteCount" resultType="Integer">
+        select count(*) from invite
+        where user_id=#{userId}
+        <if test="state!=null">
+            and state=#{state}
+        </if>
+    </select>
+
+    <select id="selectInviteSum" resultType="Double">
+        select sum(money) from invite
+        where user_id=#{userId}
+        <if test="state!=null">
+            and state=#{state}
+        </if>
+    </select>
+
+
+
+    <select id="selectInviteByUser" resultType="com.sqx.modules.invite.entity.Invite">
+        select * from invite where user_id=#{userId} and invitee_user_id=#{inviteeUserId}
+        <if test="userType!=null and userType==1">
+            and (user_type=1 or user_type is null)
+        </if>
+        <if test="userType!=null and userType==2">
+            and user_type=2
+        </if>
+    </select>
+
+
+    <select id="selectInviteByUserIdCount" resultType="Integer">
+        select count(*) from invite where user_id=#{userId} and date_format(create_time,'%Y-%m-%d') between #{startTime} and #{endTime}
+    </select>
+
+    <select id="selectInviteByUserIdCountNotTime" resultType="Integer">
+        select count(*) from invite where user_id=#{userId}
+    </select>
+
+    <select id="selectInviteByUserIdSum"  resultType="Double">
+        select sum(money) from invite where user_id=#{userId} and date_format(create_time,'%Y-%m-%d') between #{startTime} and #{endTime}
+    </select>
+
+
+    <select id="inviteAnalysis" resultType="Map">
+      select  b.*,u.nick_name as nickName from (
+        SELECT
+            sum(i.money) as money,
+            count(*) as `count`,
+            i.user_id as userId
+        FROM
+            invite i where
+        <if test="flag!=null and flag==1">
+             date_format(i.create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+           date_format(i.create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+           date_format(i.create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+        GROUP BY i.user_id
+        ) b
+        left join tb_user u on u.user_id=b.userId
+    </select>
+
+</mapper>

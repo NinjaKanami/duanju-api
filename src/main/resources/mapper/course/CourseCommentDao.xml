@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.course.dao.CourseCommentDao">
+    <update id="updateCourseComment">
+        <if test='1 == type'>
+            update course_comment set goods_num=goods_num+1 where course_comment_id=#{courseCommentId}
+        </if>
+        <if test='0 == type'>
+            update course_comment set goods_num=goods_num-1 where course_comment_id=#{courseCommentId}
+        </if>
+    </update>
+
+    <!--
+      查询该短剧的所有评论
+      返回结果 用户名称  用户图像  评论时间 评论内容  点赞数量
+    -->
+    <select id="selectCourseComment" resultType="com.sqx.modules.course.entity.CourseComment">
+       select c.course_comment_id,c.content,c.create_time,c.goods_num,
+              u.user_name as userName,u.avatar,c.user_id,
+              (select count(*) from comment_good g where g.course_comment_id=c.course_comment_id and user_id=#{userId}) as isGood
+       from  course_comment c ,tb_user u  where u.user_id=c.user_id
+       and  c.course_id =#{courseId}
+       order by c.create_time desc
+    </select>
+    <!--
+      删除评论点赞的关联关系
+    -->
+    <delete id="deleteCommentGood">
+      delete  from comment_good  where  course_comment_id=#{courseCommentId}
+    </delete>
+
+    <select id="selectCourseCommentByUserId" resultType="Map">
+        select cc.course_comment_id as courseCommentId,cc.goods_num as goodsNum,cc.content,cc.create_time,c.title,c.title_img as titleImg from course_comment cc
+        left join course c on c.course_id=cc.course_id
+        where cc.user_id=#{userId}
+        order by create_time desc
+    </select>
+
+
+</mapper>

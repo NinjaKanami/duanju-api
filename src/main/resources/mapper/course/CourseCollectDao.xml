@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.course.dao.CourseCollectDao">
+
+
+
+    <select id="selectCourseByCollect" resultType="com.sqx.modules.course.entity.Course">
+        SELECT
+            MAX( u.update_time ) AS produceEndTime,
+            c.*,
+            (
+                SELECT
+                    d.course_details_name
+                FROM
+                    course_collect cc
+                        LEFT JOIN course_details d ON cc.course_details_id = d.course_details_id
+                WHERE
+                    d.course_id = u.course_id
+                  AND cc.classify = 3 and cc.user_id=#{userId}
+                ORDER BY
+                    cc.update_time DESC
+                                    LIMIT 1
+            ) AS courseDetailsName,
+	(
+	SELECT
+		d.course_details_id
+	FROM
+		course_collect cc
+		LEFT JOIN course_details d ON cc.course_details_id = d.course_details_id
+	WHERE
+		d.course_id = u.course_id
+		AND cc.classify = 3 and cc.user_id=#{userId}
+	ORDER BY
+		cc.update_time DESC
+		LIMIT 1
+	) AS courseDetailsId,
+	( SELECT count(*) FROM course_details d WHERE d.course_id = c.course_id ) AS courseDetailsCount
+        FROM
+            course_collect u
+            LEFT JOIN course c ON u.course_id = c.course_id
+        WHERE
+            u.user_id = #{userId}
+          AND c.course_id IS NOT NULL
+          AND u.classify = #{classify}
+        GROUP BY
+            u.course_id
+        ORDER BY
+            produceEndTime DESC
+    </select>
+
+</mapper>

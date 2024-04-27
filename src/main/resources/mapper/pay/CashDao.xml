@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.pay.dao.CashOutDao">
+
+    <select id="selectCashOutLimit3" resultType="com.sqx.modules.pay.entity.CashOut">
+        select * from cash_out where state=1 order by out_at desc limit 3
+    </select>
+
+    <select id="selectCashOutSum" resultType="Double">
+        select sum(money) from cash_out where state in (0,1) and user_id=#{userId} and date_format(create_at,'%Y-%m')=date_format(#{time},'%Y-%m')
+    </select>
+
+    <select id="sumMoney" resultType="Double">
+        select sum(money) from cash_out where state =1
+        <if test="flag!=null and flag==1">
+            and date_format(create_at,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            and date_format(create_at,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            and date_format(create_at,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="countMoney" resultType="Integer">
+        select count(*) from cash_out where
+        <if test="flag!=null and flag==1">
+            date_format(create_at,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            date_format(create_at,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            date_format(create_at,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="stayMoney" resultType="Integer">
+        select count(*) from cash_out where
+        <if test="flag!=null and flag==1">
+            date_format(create_at,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="flag!=null and flag==2">
+            date_format(create_at,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="flag!=null and flag==3">
+            date_format(create_at,'%Y')=date_format(#{time},'%Y')
+        </if>
+        and state=0
+    </select>
+
+    <select id="selectMayMoney" resultType="Double">
+     select money from user_money  where  user_id=#{userId}
+    </select>
+
+    <select id="selectCashOutPage" resultType="com.sqx.modules.pay.entity.CashOut">
+        SELECT c.*,
+        ifnull(u.user_name,"用户不存在") as userName,
+        s.username as sysUserName
+        FROM cash_out c
+        left join tb_user u on c.user_id = u.user_id
+        left join sys_user s on s.user_id= c.sys_user_id
+        <where>
+            <if test="cashOut.userName!=null and cashOut.userName!=''">
+                and u.user_name like concat("%",#{cashOut.userName},"%")
+            </if>
+            <if test="cashOut.state!=null">
+                and c.state = #{cashOut.state}
+            </if>
+            <if test="cashOut.userId!=null">
+                and c.user_id = #{cashOut.userId}
+            </if>
+            <if test="cashOut.sysUserId!=null">
+                and c.sys_user_id = #{cashOut.sysUserId}
+            </if>
+            <if test="cashOut.sysUserName!=null and cashOut.sysUserName!=''">
+                and s.username = #{cashOut.sysUserName}
+            </if>
+            <if test="cashOut.userType!=null">
+                and c.user_type = #{cashOut.userType}
+            </if>
+            <if test="cashOut.status!=null and cashOut.status!=-2">
+                and c.state = #{cashOut.status}
+            </if>
+            <if test="cashOut.zhifubao!=null and cashOut.zhifubao!=''">
+                and c.zhifubao like concat("%",#{cashOut.zhifubao},"%")
+            </if>
+            <if test="cashOut.zhifubaoName!=null and cashOut.zhifubaoName!=''">
+                and c.zhifubao_name like concat("%",#{cashOut.zhifubaoName},"%")
+            </if>
+            <if test="cashOut.startTime!=null and cashOut.startTime!='' and (cashOut.endTime!=null and cashOut.endTime!='')">
+                and date_format(c.create_at,'%Y-%m-%d') BETWEEN #{cashOut.startTime} and #{cashOut.endTime}
+            </if>
+            <if test="cashOut.startTime!=null and cashOut.startTime!='' and  (cashOut.endTime==null or cashOut.endTime=='')">
+                and date_format(c.create_at,'%Y-%m-%d') &gt;= #{cashOut.startTime}
+            </if>
+            <if test="cashOut.endTime!=null and cashOut.endTime!='' and  (cashOut.startTime==null or cashOut.startTime=='')">
+                and date_format(c.create_at,'%Y-%m-%d') &lt;= #{cashOut.endTime}
+            </if>
+
+        </where>
+
+        order by c.create_at desc
+    </select>
+
+    <select id="selectCashOutList" resultType="com.sqx.modules.pay.entity.CashOut">
+        SELECT c.*,
+        ifnull(u.user_name,"用户不存在") as userName,
+        s.username as sysUserName
+        FROM cash_out c
+        left join tb_user u on c.user_id = u.user_id
+        left join sys_user s on s.user_id= c.sys_user_id
+        <where>
+            <if test="cashOut.userName!=null and cashOut.userName!=''">
+                and u.user_name like concat("%",#{cashOut.userName},"%")
+            </if>
+            <if test="cashOut.state!=null">
+                and c.state = #{cashOut.state}
+            </if>
+            <if test="cashOut.userId!=null">
+                and c.user_id = #{cashOut.userId}
+            </if>
+            <if test="cashOut.sysUserId!=null">
+                and c.sys_user_id = #{cashOut.sysUserId}
+            </if>
+            <if test="cashOut.userType!=null">
+                and c.user_type = #{cashOut.userType}
+            </if>
+            <if test="cashOut.status!=null and cashOut.status!=-2">
+                and c.state = #{cashOut.status}
+            </if>
+            <if test="cashOut.zhifubao!=null and cashOut.zhifubao!=''">
+                and c.zhifubao like concat("%",#{cashOut.zhifubao},"%")
+            </if>
+            <if test="cashOut.zhifubaoName!=null and cashOut.zhifubaoName!=''">
+                and c.zhifubao_name like concat("%",#{cashOut.zhifubaoName},"%")
+            </if>
+            <if test="cashOut.startTime!=null and cashOut.startTime!='' and (cashOut.endTime!=null and cashOut.endTime!='')">
+                and date_format(c.create_at,'%Y-%m-%d') BETWEEN #{cashOut.startTime} and #{cashOut.endTime}
+            </if>
+            <if test="cashOut.startTime!=null and cashOut.startTime!='' and  (cashOut.endTime==null or cashOut.endTime=='')">
+                and date_format(c.create_at,'%Y-%m-%d') &gt;= #{cashOut.startTime}
+            </if>
+            <if test="cashOut.endTime!=null and cashOut.endTime!='' and  (cashOut.startTime==null or cashOut.startTime=='')">
+                and date_format(c.create_at,'%Y-%m-%d') &lt;= #{cashOut.endTime}
+            </if>
+
+        </where>
+
+        order by c.create_at desc
+    </select>
+
+
+    <update id="updateMayMoney">
+     update user_money  set
+        <if test="type==1">
+            money=money+#{money}
+        </if>
+        <if test="type==2">
+            money=money-#{money}
+        </if>
+        where user_id=#{userId}
+    </update>
+
+
+</mapper>

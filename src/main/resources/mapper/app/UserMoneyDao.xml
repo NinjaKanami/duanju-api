@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.app.dao.UserMoneyDao">
+
+    <update id="updateMayMoney">
+        update user_money  set
+        <if test="type==1">
+            money=money+#{money}
+        </if>
+        <if test="type==2">
+            money=money-#{money}
+        </if>
+        where user_id=#{userId}
+    </update>
+
+    <update id="updateSysMoney">
+        update user_money  set
+        <if test="type==1">
+            money=money+#{money}
+        </if>
+        <if test="type==2">
+            money=money-#{money}
+        </if>
+        where sys_user_id=#{sysUserId}
+    </update>
+
+
+
+</mapper>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.integral.dao.UserIntegralDetailsDao">
+
+    <select id="selectUserIntegralDetailsByUserId"  resultType="com.sqx.modules.integral.entity.UserIntegralDetails">
+        select * from user_integral_details where user_id=#{userId} and
+        str_to_date(create_time,'%Y-%m-%d')=str_to_date( #{time},'%Y-%m-%d')
+        and classify=1
+    </select>
+
+</mapper>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.app.dao.UserMoneyDetailsDao">
+    <select id="monthIncome" resultType="Double">
+        select sum(money)  from user_money_details where user_id=#{userId} and classify=4 and type=2 and state=2 and   date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+    </select>
+
+    <select id="selectSumMoneyByClassifyAndUserId" resultType="Double">
+        select ifnull(sum(money),0.00) from user_money_details
+        where classify=#{classify} and user_id=#{userId}
+        and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+    </select>
+
+    <select id="selectCountByClassifyAndUserId" resultType="Integer">
+        select count(*) from user_money_details
+        where classify=#{classify} and user_id=#{userId}
+          and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+    </select>
+
+    <select id="selectSumMoneyByClassifyAndUserIdTime" resultType="Map">
+        select date_format(create_time,'%Y-%m-%d') as dateTime,CONCAT('', ifnull( sum( money ), 0.00 )) as money from user_money_details
+        where classify=#{classify} and user_id=#{userId}
+          and date_format(create_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+          and date_format(create_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+        group by date_format( create_time, '%Y-%m-%d' )
+        order by date_format( create_time, '%Y-%m-%d' )
+    </select>
+
+    <select id="selectSumMoneyByClassifyAndUserIdTimes" resultType="Double">
+        select ifnull(sum(money),0.00) from user_money_details
+        where classify=#{classify} and user_id=#{userId}
+          and date_format(create_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+          and date_format(create_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+    </select>
+
+    <select id="selectCountByClassifyAndUserIdTime" resultType="Integer">
+        select count(*) from user_money_details
+        where classify=#{classify} and user_id=#{userId}
+          and date_format(create_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+          and date_format(create_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+    </select>
+
+    <select id="selectMoneyDetailsByTime" resultType="com.sqx.modules.app.entity.UserMoneyDetails">
+        select m.* ,u.user_name as userName,bu.user_name as byUserName from user_money_details m
+        left join tb_user u on u.user_id=m.user_id
+        left join tb_user bu on bu.user_id=m.by_user_id
+        where m.classify=#{classify} and m.user_id=#{userId}
+          and date_format(m.create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+    </select>
+
+    <select id="selectSumMoneyByUserIdAndTime" resultType="Double">
+        select ifnull(sum(money),0.00) from user_money_details
+        where classify in (10,20,21,22,30,31,40) and user_id=#{userId}
+        <if test="type!=null and type==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="type!=null and type==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+    </select>
+
+    <select id="selectSumMoneyByTime" resultType="Double">
+        select ifnull(sum(money),0.00) from user_money_details
+        where classify in (10,20,21,22,30,31,40)
+        <if test="type==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+    <select id="selectEarningsMoneyDetailsByTime" resultType="com.sqx.modules.app.entity.UserMoneyDetails">
+        select m.* ,u.user_name as userName from user_money_details m
+        left join tb_user u on u.user_id=m.user_id
+        where 1=1
+        <if test="classify!=null and classify!=50">
+            and m.classify=#{classify}
+        </if>
+        <if test="classify!=null and classify==50">
+            and m.classify in (40,31,22)
+        </if>
+        <if test="type==1">
+            and date_format(m.create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(m.create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(m.create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+    </select>
+
+
+    <select id="selectEarningsMoneyDetailsByTimeAndUserId" resultType="com.sqx.modules.app.entity.UserMoneyDetails">
+        select m.* ,u.user_name as userName,
+               bu.user_name as byUserName,u.agency_index as agencyIndex,u.is_channel as isChannel,
+               u.is_recommend as isRecommend,u.inviter_code as inviterCode
+        from user_money_details m
+        left join tb_user u on u.user_id=m.user_id
+        left join tb_user bu on bu.user_id=m.by_user_id
+        where 1=1
+        <if test="classify!=null and classify!=60">
+            and m.classify=#{classify}
+        </if>
+        <if test="classify!=null and classify==60">
+            and m.classify in (31,30)
+        </if>
+        <if test="classify==null">
+            and m.classify in (10,20,21,22,30,31,40)
+        </if>
+        <if test="userId!=null">
+            and u.user_id=#{userId}
+        </if>
+        <if test="type==1">
+            and date_format(m.create_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(m.create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(m.create_time,'%Y')=date_format(#{time},'%Y')
+        </if>
+        <if test="startTime!=null">
+            and date_format(m.create_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+        </if>
+        <if test="endTime!=null">
+            and date_format(m.create_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+        </if>
+    </select>
+
+</mapper>

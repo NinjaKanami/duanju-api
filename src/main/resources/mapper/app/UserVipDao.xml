@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.app.dao.UserVipDao">
+
+    <update id="updateUserVipByEndTime">
+        update user_vip set is_vip=1 where is_vip=2 and date_format(end_time,'%Y-%m-%d %H:%i:%S')&lt;=date_format(now(),'%Y-%m-%d %H:%i:%S')
+    </update>
+
+
+</mapper>

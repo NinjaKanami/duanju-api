@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.search.dao.AppSearchDao">
+
+    <select id="selectAppSearchNum"  resultType="String">
+      select   search_name AS searchName  from search group by search_name  order by count(search_name) desc limit 5
+
+    </select>
+
+    <delete id="deleteAppSearch">
+           delete  from search  where user_id=#{userId}
+    </delete>
+</mapper>

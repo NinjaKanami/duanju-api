@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.sdk.dao.SdkInfoDao">
+
+    <select id="getSdkPage" resultType="com.sqx.modules.sdk.entity.SdkInfo">
+        SELECT s.*,
+        u.`user_name` AS nickName,
+        su.username as sysUserName
+        FROM sdk_info s
+        LEFT JOIN tb_user u ON s.user_id = u.user_id
+        left join sys_user su on su.user_id=s.sys_user_id
+        where 1=1
+        <if test="sdkInfo.nickName!=null and sdkInfo.nickName!=''">
+            and u.user_name like concat("%",#{sdkInfo.nickName},"%")
+        </if>
+        <if test="sdkInfo.sdkContent!=null and sdkInfo.sdkContent!=''">
+            and s.sdk_content like concat("%",#{sdkInfo.sdkContent},"%")
+        </if>
+         <if test="sdkInfo.sdkRemarks!=null and sdkInfo.sdkRemarks!=''">
+            and s.sdk_remarks like concat("%",#{sdkInfo.sdkRemarks},"%")
+        </if>
+        <if test="sdkInfo.typeId!=null">
+            and s.type_id = #{sdkInfo.typeId}
+        </if>
+        <if test="sdkInfo.userId!=null">
+            and s.user_id = #{sdkInfo.userId}
+        </if>
+        <if test="sdkInfo.sysUserId!=null">
+            and s.sys_user_id = #{sdkInfo.sysUserId}
+        </if>
+        <if test="sdkInfo.sysUserName!=null and sdkInfo.sysUserName!=''">
+            and su.username like concat("%",#{sdkInfo.sysUserName},"%")
+        </if>
+        <if test="sdkInfo.status!=null">
+            and s.status = #{sdkInfo.status}
+        </if>
+        <if test="sdkInfo.startTime!=null and sdkInfo.startTime!=''">
+            and date_format(s.create_time,'%Y-%m-%d') >= date_format(#{sdkInfo.startTime},'%Y-%m-%d')
+        </if>
+        <if test="sdkInfo.endTime!=null and sdkInfo.endTime!=''">
+            and date_format(s.create_time,'%Y-%m-%d') &lt;= date_format(#{sdkInfo.endTime},'%Y-%m-%d')
+        </if>
+        order by s.create_time desc
+    </select>
+
+    <select id="getSdkList" resultType="com.sqx.modules.sdk.entity.SdkInfo">
+        SELECT s.*,
+        u.`user_name` AS nickName
+        FROM sdk_info s
+        LEFT JOIN tb_user u ON s.user_id = u.user_id
+        where 1=1
+        <if test="sdkInfo.nickName!=null and sdkInfo.nickName!=''">
+            and u.user_name like concat("%",#{sdkInfo.nickName},"%")
+        </if>
+        <if test="sdkInfo.sdkContent!=null and sdkInfo.sdkContent!=''">
+            and s.sdk_content like concat("%",#{sdkInfo.sdkContent},"%")
+        </if>
+        <if test="sdkInfo.sdkRemarks!=null and sdkInfo.sdkRemarks!=''">
+            and s.sdk_remarks like concat("%",#{sdkInfo.sdkRemarks},"%")
+        </if>
+        <if test="sdkInfo.typeId!=null">
+            and s.type_id = #{sdkInfo.typeId}
+        </if>
+        <if test="sdkInfo.userId!=null">
+            and s.user_id = #{sdkInfo.userId}
+        </if>
+        <if test="sdkInfo.status!=null">
+            and s.status = #{sdkInfo.status}
+        </if>
+        <if test="sdkInfo.startTime!=null and sdkInfo.startTime!=''">
+            and date_format(s.create_time,'%Y-%m-%d') >= date_format(#{sdkInfo.startTime},'%Y-%m-%d')
+        </if>
+        <if test="sdkInfo.endTime!=null and sdkInfo.endTime!=''">
+            and date_format(s.create_time,'%Y-%m-%d') &lt;= date_format(#{sdkInfo.endTime},'%Y-%m-%d')
+        </if>
+        order by s.create_time desc
+    </select>
+
+
+</mapper>

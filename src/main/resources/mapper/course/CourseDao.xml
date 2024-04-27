@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.course.dao.CourseDao">
+    <update id="updateDelete">
+        update course
+        set is_delete=1
+        where course_id = #{id}
+    </update>
+
+    <select id="selectCourseByCourseId" resultType="Map">
+        SELECT
+        c.classify_id as classifyId,
+        c.course_id as courseId,
+        c.course_label as courseLabel,
+        c.create_time createTime,
+        c.details,
+        c.img,
+        c.banner_img as bannerImg,
+        c.status,
+        c.is_delete as isDelete,
+        c.msg_type msgType,
+        c.msg_url as msgUrl,
+        c.pay_num as payNum,
+        c.price,
+        c.over,
+        c.title,
+        c.is_price as isPrice,
+        c.title_img as titleImg,
+        c.update_time as updateTime,
+        cc.classification_name as classificationName,
+        c.course_type as courseType,
+        c.banner_id as bannerId,
+        b.name as bannerName,
+        c.view_counts as viewCounts,
+        c.dy_img_id as dyImgId,
+        c.dy_course_id as dyCourseId,
+        c.wx_course_id as wxCourseId,
+        c.wx_show as wxShow,
+        c.dy_show as dyShow,
+        (select count(*) from course_details d where d.course_id=c.course_id ) as courseDetailsCount,
+        (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
+        (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
+        <if test="userId!=null">
+            (
+            SELECT
+            cc.course_details_id
+            FROM
+            course_collect cc
+            WHERE
+            cc.course_id = c.course_id
+            AND cc.classify = 3
+            and cc.user_id = #{userId}
+            ORDER BY
+            cc.update_time desc
+            LIMIT 1
+            ) AS courseDetailsId,
+        </if>
+        <if test="userId==null">
+            null AS courseDetailsName,
+            null AS courseDetailsId,
+        </if>
+        (select count(*) from course_details cd where c.course_id=cd.course_id and cd.good=1 ) as isRecommend
+        FROM
+        course AS c
+        LEFT JOIN course_classification AS cc ON c.classify_id = cc.classification_id
+        left join banner as b on b.id=c.banner_id
+        WHERE
+        1 = 1
+        AND c.is_delete = 0
+        and c.course_id=#{courseId}
+    </select>
+
+
+    <select id="selectCourse" resultType="Map">
+        SELECT
+        c.classify_id as classifyId,
+        c.course_id as courseId,
+        c.course_label as courseLabel,
+        c.create_time createTime,
+        c.details,
+        c.img,
+        c.banner_img as bannerImg,
+        c.status,
+        c.is_delete as isDelete,
+        c.msg_type msgType,
+        c.msg_url as msgUrl,
+        c.pay_num as payNum,
+        c.price,
+        c.over,
+        c.title,
+        c.is_price as isPrice,
+        c.title_img as titleImg,
+        c.update_time as updateTime,
+        cc.classification_name as classificationName,
+        c.course_type as courseType,
+        c.banner_id as bannerId,
+        b.name as bannerName,
+        c.view_counts as viewCounts,
+        c.dy_img_id as dyImgId,
+        c.dy_course_id as dyCourseId,
+        c.wx_course_id as wxCourseId,
+        c.wx_show as wxShow,
+        c.dy_show as dyShow,
+        (select count(*) from course_details d where d.course_id=c.course_id ) as courseDetailsCount,
+        (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
+        (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
+        (select count(*) from course_details cd where c.course_id=cd.course_id and cd.good=1 ) as isRecommend
+        FROM
+        course AS c
+        LEFT JOIN course_classification AS cc ON c.classify_id = cc.classification_id
+        left join banner as b on b.id=c.banner_id
+        WHERE
+        1 = 1
+        AND c.is_delete = 0
+        <if test='null != wxShow and wxShow==1'>
+            and c.wx_show = #{wxShow}
+        </if>
+        <if test='null != wxShow and wxShow==2'>
+            and (c.wx_show = #{wxShow} or c.wx_show is null)
+        </if>
+        <if test='null != dyShow and dyShow==1'>
+            and c.dy_show = #{dyShow}
+        </if>
+        <if test='null != dyShow and dyShow==2'>
+            and (c.dy_show = #{dyShow} or c.dy_show is null)
+        </if>
+        <if test='null != title'>
+            and c.title = #{title}
+        </if>
+        <if test='null!= classifyId and classifyId!=0'>
+            and c.classify_id = #{classifyId}
+        </if>
+        <if test='null!= bannerId and bannerId!=0'>
+            and c.banner_id = #{bannerId}
+        </if>
+        <if test="classifyId==0">
+            and c.is_recommend=1
+        </if>
+        <if test="over!=null">
+            and c.over=#{over}
+        </if>
+        <if test="isRecommend!=null and isRecommend!=-1">
+            and c.course_id in (select course_id from course_details where good=1)
+        </if>
+        <if test="status!=null and status!=0">
+            and c.status=#{status}
+        </if>
+        <if test="isPrice!=null">
+            and c.is_price=#{isPrice}
+        </if>
+        <if test="wxCourse!=null">
+            and c.wx_course_id is not null
+        </if>
+        <if test="dyCourse!=null">
+            and c.dy_status=4
+        </if>
+        <if test="sort==null">
+            order by c.create_time desc
+        </if>
+        <if test="sort!=null and sort==1">
+            order by goodNum desc
+        </if>
+        <if test="sort!=null and sort==2">
+            and is_recommend=1 order by rand()
+        </if>
+    </select>
+
+    <select id="selectCourseAdmin" resultType="Map">
+        SELECT
+        c.classify_id as classifyId,
+        c.course_id as courseId,
+        c.course_label as courseLabel,
+        c.course_label_ids as courseLabelIds,
+        c.create_time createTime,
+        c.details,
+        c.img,
+        c.banner_img as bannerImg,
+        c.status,
+        c.is_delete as isDelete,
+        c.msg_type msgType,
+        c.msg_url as msgUrl,
+        c.pay_num as payNum,
+        c.price,
+        c.over,
+        c.title,
+        c.is_price as isPrice,
+        c.title_img as titleImg,
+        c.update_time as updateTime,
+        cc.classification_name as classificationName,
+        c.course_type as courseType,
+        c.banner_id as bannerId,
+        b.name as bannerName,
+        c.view_counts as viewCounts,
+        c.dy_img_id as dyImgId,
+        c.dy_course_id as dyCourseId,
+        c.dy_status as dyStatus,
+        c.dy_status_content as dyStatusContent,
+        c.dy_version as dyVersion,
+        c.license_num as licenseNum,
+        c.registration_num as registrationNum,
+        c.ordinary_record_num as ordinaryRecordNum,
+        c.key_record_num as keyRecordNum,
+        c.wx_course_id as wxCourseId,
+        c.wx_show as wxShow,
+        c.dy_show as dyShow,
+        (select count(*) from course_details where dy_url_status in (1,3) or dy_url_status=null) as dyUrlStatus,
+        (select sum(o.pay_money) from orders o where o.course_id=c.course_id and o.status=1) as payMoney,
+        (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
+        c.is_recommend as isRecommend
+        FROM
+        course AS c
+        LEFT JOIN course_classification AS cc ON c.classify_id = cc.classification_id
+        left join banner as b on b.id=c.banner_id
+        WHERE
+        1 = 1
+        AND c.is_delete = 0
+        <if test='null != wxShow and wxShow==1'>
+            and c.wx_show = #{wxShow}
+        </if>
+        <if test='null != wxShow and wxShow==2'>
+            and (c.wx_show = #{wxShow} or c.wx_show is null)
+        </if>
+        <if test='null != dyShow and dyShow==1'>
+            and c.dy_show = #{dyShow}
+        </if>
+        <if test='null != dyShow and dyShow==2'>
+            and (c.dy_show = #{dyShow} or c.dy_show is null)
+        </if>
+        <if test='null != title'>
+            and c.title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test='null!= classifyId and classifyId!=0'>
+            and c.classify_id = #{classifyId}
+        </if>
+        <if test='null!= bannerId and bannerId!=0'>
+            and c.banner_id = #{bannerId}
+        </if>
+        <if test="classifyId==0">
+            and c.is_recommend=1
+        </if>
+        <if test="over!=null and over==1">
+            and c.over=1
+        </if>
+        <if test="over!=null and over==2">
+            and c.over is null
+        </if>
+        <if test="isRecommend!=null and isRecommend!=-1">
+            and c.course_id in (select course_id from course_details where good=1)
+        </if>
+        <if test="status!=null and status!=0">
+            and c.status=#{status}
+        </if>
+        <if test="isPrice!=null">
+            and c.is_price=#{isPrice}
+        </if>
+        <if test="wxCourse!=null">
+            and c.wx_course_id is not null
+        </if>
+        <if test="dyCourse!=null">
+            and c.dy_status=4
+        </if>
+        <if test="sort==null">
+            order by c.create_time desc
+        </if>
+        <if test="sort!=null and sort==1">
+            order by goodNum desc
+        </if>
+        <if test="sort!=null and sort==2">
+            order by weekGoodNum desc
+        </if>
+    </select>
+
+    <select id="selectCourseTitle" resultType="Map">
+        SELECT
+        c.classify_id as classifyId,
+        c.course_id as courseId,
+        c.course_label as courseLabel,
+        c.create_time createTime,
+        c.details,
+        c.img,
+        c.banner_img as bannerImg,
+        c.is_delete as isDelete,
+        c.msg_type msgType,
+        c.msg_url as msgUrl,
+        c.pay_num as payNum,
+        c.price,
+        c.status,
+        c.title,
+        c.title_img as titleImg,
+        c.update_time as updateTime
+        FROM
+        course c
+        WHERE
+        c.is_delete = 0 and c.status=1
+        <if test='null != title'>
+            and c.title LIKE #{title}
+        </if>
+        order by create_time desc
+    </select>
+
+</mapper>

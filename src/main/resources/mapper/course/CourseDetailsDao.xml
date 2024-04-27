@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.course.dao.CourseDetailsDao">
+
+    <!--查找指定短剧的目录  按照顺序数字升序-->
+    <select id="findByCourseId" resultType="com.sqx.modules.course.entity.CourseDetails">
+        select c.*,
+               (select count(*) from course_collect cc where cc.user_id=#{userId} and cc.course_details_id=c.course_details_id and cc.classify=2) as isGood
+        from course_details c where c.course_id=#{id}  order by c.course_details_id asc
+    </select>
+
+    <select id="selectCoursePageByCourseId" resultType="com.sqx.modules.course.entity.CourseDetails">
+        select * from course_details where course_id=#{id}
+        <if test="good!=null and good==1">
+            and good=#{good}
+        </if>
+        <if test="good!=null and good==2">
+            and (good=#{good} or good is null)
+        </if>
+        order by course_details_id asc
+    </select>
+
+    <select id="findByCourseIdNotUrl" resultType="com.sqx.modules.course.entity.CourseDetails">
+        select c.course_details_id as courseDetailsId,c.course_id as courseId,c.wx_course_details_id as wxCourseDetailsId,
+               c.course_details_name as courseDetailsName,c.create_time as createTime,
+               c.dy_episode_id as dyEpisodeId,
+               (select count(*) from course_collect cc where cc.user_id=#{userId} and cc.course_details_id=c.course_details_id and cc.classify=2) as isGood,
+               c.title_img as titleImg,c.content,c.good_num as goodNum,c.price,if(is_price!=1,c.video_url,'') as videoUrl
+        from course_details c
+        where c.course_id=#{id}  order by c.course_details_id asc
+    </select>
+
+    <select id="findByUserCourseId" resultType="com.sqx.modules.course.entity.CourseDetails">
+        select c.course_details_id as courseDetailsId,c.course_id as courseId,c.wx_course_details_id as wxCourseDetailsId,
+               c.course_details_name as courseDetailsName,c.create_time as createTime,
+               c.dy_episode_id as dyEpisodeId,
+               (select count(*) from course_collect cc where cc.user_id=#{userId} and cc.course_details_id=c.course_details_id and cc.classify=1) as isCollect,
+               (select count(*) from course_collect cc where cc.user_id=#{userId} and cc.course_details_id=c.course_details_id and cc.classify=2) as isGood,
+               (select course_details_sec from course_collect cc where cc.user_id=#{userId} and cc.course_details_id=c.course_details_id and cc.classify=3) as courseDetailsSec,
+               c.title_img as titleImg,c.content,c.good_num as goodNum,c.price,c.video_url AS videoUrl
+        FROM
+            course_user u
+                LEFT JOIN course_details c ON c.course_details_id = u.course_details_id
+        where c.course_id=#{id} and u.user_id=#{userId} and u.classify=2  order by c.course_details_id asc
+    </select>
+
+
+    <delete id="deleteCourseDetails" parameterType="String">
+        DELETE FROM course_details WHERE course_details_id IN
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+
+
+    <select id="selectCourseDetailsList" resultType="com.sqx.modules.course.entity.CourseDetails">
+        select cd.*,
+               MD5( `course_details_id` ) AS `uid`
+        from course_details cd
+        where cd.good=1 order by SUBSTR(uid, #{randomNum}, 6)
+    </select>
+
+</mapper>

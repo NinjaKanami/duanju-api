@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.message.dao.MessageInfoDao">
+
+
+    <update id="updateSendState">
+        update message_info s set s.is_see=2 where s.user_id=#{userId} and s.state=#{state} and s.is_see=0
+    </update>
+
+
+</mapper>

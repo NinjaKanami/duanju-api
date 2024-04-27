@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.app.dao.UserDao">
+
+
+    <select id="selectUserPage" resultType="com.sqx.modules.app.entity.UserEntity">
+        select u.*,v.is_vip as member,v.end_time as endTime,v.vip_type as vipType,
+        s.username as sysUserName
+        from tb_user u
+        left join user_vip v on v.user_id=u.user_id
+        left join sys_user s on s.qd_code=u.qd_code
+        where s.sys_user_id is null
+        <if test="vipType!=null">
+            and v.vip_type = #{vipType}
+        </if>
+        <if test="search!=null and search!=''">
+            and (u.user_id=#{search} or u.phone = #{search} or u.user_name =#{search} )
+        </if>
+        <if test="sysUserName!=null and sysUserName!=''">
+            and s.username like concat('%',#{sysUserName},'%')
+        </if>
+        <if test="userName!=null and userName!=''">
+            and u.user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="sex!=null and sex!=0">
+            and u.sex=#{sex}
+        </if>
+        <if test="platform!=null and platform!=''">
+            and u.platform=#{platform}
+        </if>
+        <if test="sysPhone!=null and sysPhone!=''">
+            and u.sys_phone=#{sysPhone}
+        </if>
+        <if test="status!=null and status!=0">
+            and u.status=#{status}
+        </if>
+        <if test="member!=null and member!=-1 and member!=1">
+            and v.is_vip=#{member}
+        </if>
+        <if test="member!=null and member==1">
+            and (v.is_vip=1 or v.is_vip is null)
+        </if>
+        <if test="inviterCode!=null and inviterCode!=''">
+            and u.inviter_code like concat("%",#{inviterCode},"%")
+        </if>
+        <if test="invitationCode!=null and invitationCode!=''">
+            and u.invitation_code like concat("%",#{invitationCode},"%")
+        </if>
+        <if test="qdCode!=null and qdCode!=''">
+            and u.qd_code =#{qdCode}
+        </if>
+        <if test="isRecommend!=null and isRecommend!=''">
+            <if test="isRecommend==1">
+                and u.is_recommend =1
+            </if>
+            <if test="isRecommend==2">
+                and (u.is_recommend =2 or u.is_recommend is null)
+            </if>
+        </if>
+        <if test="isChannel!=null and isChannel!=''">
+            <if test="isChannel==1">
+                and u.is_channel =1
+            </if>
+            <if test="isChannel==2">
+                and (u.is_channel =2 or u.is_channel is null)
+            </if>
+        </if>
+        <if test="agencyIndex!=null and agencyIndex!=''">
+            <if test="agencyIndex==1 or agencyIndex==2">
+                and u.agency_index =#{agencyIndex}
+            </if>
+            <if test="agencyIndex==3">
+                and (u.agency_index =3 or u.agency_index is null)
+            </if>
+        </if>
+        <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+            and date_format(u.create_time,'%Y-%m-%d') BETWEEN #{startTime} and #{endTime}
+        </if>
+        <if test="startTime!=null and startTime!='' and  (endTime==null or endTime=='')">
+            and date_format(u.create_time,'%Y-%m-%d') &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null and endTime!='' and  (startTime==null or startTime=='')">
+            and date_format(u.create_time,'%Y-%m-%d') &lt;= #{endTime}
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="userListExcel" resultType="com.sqx.modules.app.entity.UserEntity">
+        select * from tb_user u
+        <where>
+            <if test="userEntity.phone!=null and userEntity.phone!=''">
+                and u.phone like concat("%",#{userEntity.phone},"%")
+            </if>
+            <if test="userEntity.userName!=null and userEntity.userName!=''">
+                and u.user_name like concat("%",#{userEntity.userName},"%")
+            </if>
+            <if test="userEntity.invitationCode!=null and userEntity.invitationCode!=''">
+                and u.invitation_code like concat("%",#{userEntity.invitationCode},"%")
+            </if>
+            <if test="userEntity.inviterCode!=null and userEntity.inviterCode!=''">
+                and u.inviter_code like concat("%",#{userEntity.inviterCode},"%")
+            </if>
+            <if test="userEntity.platform!=null and userEntity.platform!=''">
+                and u.platform = #{userEntity.platform}
+            </if>
+            <if test="userEntity.qdCode!=null and userEntity.qdCode!=''">
+                and u.qd_code =#{userEntity.qdCode}
+            </if>
+            <if test="userEntity.isRecommend!=null and userEntity.isRecommend!=''">
+                and u.is_recommend =#{userEntity.isRecommend}
+            </if>
+            <if test="userEntity.isChannel!=null and userEntity.isChannel!=''">
+                and u.is_channel =#{userEntity.isChannel}
+            </if>
+            <if test="userEntity.agencyIndex!=null and userEntity.agencyIndex!=''">
+                and u.agency_index =#{userEntity.agencyIndex}
+            </if>
+            <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                and date_format(u.create_time,'%Y-%m-%d') BETWEEN #{startTime} and #{endTime}
+            </if>
+            <if test="startTime!=null and startTime!='' and  (endTime==null or endTime=='')">
+                and date_format(u.create_time,'%Y-%m-%d') &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' and  (startTime==null or startTime=='')">
+                and date_format(u.create_time,'%Y-%m-%d') &lt;= #{endTime}
+            </if>
+        </where>
+
+    </select>
+
+    <select id="queryInviterCount" resultType="int">
+        select count(*) from tb_user
+        where inviter_code=#{inviterCode} and status=1
+     </select>
+    <select id="queryUserCount" resultType="int">
+        select count(*)from tb_user where 1=1
+        <if test="type==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+        <if test="platform!=null">
+            and platform=#{platform}
+        </if>
+        <if test="qdCode!=null">
+            and qd_code=#{qdCode}
+        </if>
+    </select>
+    <select id="queryPayMoney" resultType="Double">
+        select sum(p.money) from pay_details p
+        left join tb_user u on u.user_id=p.user_id
+        where p.`state`=1
+        <if test="type==1">
+            and date_format(p.create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(p.create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(p.create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+        <if test="qdCode!=null">
+            and u.qd_code=#{qdCode}
+        </if>
+    </select>
+
+     <select id="queryCourseOrder" resultType="com.sqx.modules.app.response.CourseOrderResponse">
+        select * from (
+         select c.course_id  as courseId,sum(o.pay_money) as 'coursemoney' ,count(*) as 'coursenum',any_value(c.title) as 'coursename'
+         from orders o
+         left join course c on o.course_id=c.course_id
+         where o.status=1 and o.orders_type=1
+         <if test="sysUserId!=null">
+             and sys_user_id=#{sysUserId}
+         </if>
+         <if test="type==1">
+             and date_format(o.create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+         </if>
+         <if test="type==2">
+             and date_format(o.create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+         </if>
+         <if test="type==3">
+             and date_format(o.create_time,'%Y')=date_format(#{date},'%Y')
+         </if>
+     group by c.course_id
+         ) a
+     order by a.coursenum desc
+     </select>
+     <select id="userMessage" resultType="int">
+       select count(*) from tb_user t
+       left join user_vip v on t.user_id=v.user_id where v.is_vip=2
+         <if test="type==1">
+             and date_format(t.create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+         </if>
+         <if test="type==2">
+             and date_format(t.create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+         </if>
+         <if test="type==3">
+             and date_format(t.create_time,'%Y')=date_format(#{date},'%Y')
+         </if>
+         <if test="qdCode!=null">
+             and t.qd_code=#{qdCode}
+         </if>
+         <if test="vipType!=null">
+             and v.vip_type=#{vipType}
+         </if>
+     </select>
+
+
+    <insert id="insertUser" parameterType="com.sqx.modules.app.entity.UserEntity" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO tb_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="null != userName and '' != userName">
+                user_name,
+            </if>
+            <if test="null != phone and '' != phone">
+                phone,
+            </if>
+            <if test="null != avatar and '' != avatar">
+                avatar,
+            </if>
+            <if test="null != sex and '' != sex">
+                sex,
+            </if>
+            <if test="null != openId and '' != openId">
+                open_id,
+            </if>
+            <if test="null != wxOpenId and '' != wxOpenId">
+                wx_open_id,
+            </if>
+            <if test="null != password and '' != password">
+                password,
+            </if>
+            <if test="null != createTime and '' != createTime">
+                create_time,
+            </if>
+            <if test="null != updateTime and '' != updateTime">
+                update_time,
+            </if>
+            <if test="null != appleId and '' != appleId">
+                apple_id,
+            </if>
+            <if test="null != sysPhone and '' != sysPhone">
+                sys_phone,
+            </if>
+            <if test="null != status and '' != status">
+                status,
+            </if>
+            <if test="null != platform and '' != platform">
+                platform,
+            </if>
+            <if test="null != jifen and '' != jifen">
+                jifen,
+            </if>
+            <if test="null != invitationCode and '' != invitationCode">
+                invitation_code,
+            </if>
+            <if test="null != inviterCode and '' != inviterCode">
+                inviter_code,
+            </if>
+            <if test="null != clientid and '' != clientid">
+                clientid,
+            </if>
+            <if test="null != zhiFuBaoName and '' != zhiFuBaoName">
+                zhi_fu_bao_name,
+            </if>
+            <if test="null != zhiFuBao and '' != zhiFuBao">
+                zhi_fu_bao,
+            </if>
+            <if test="null != wxId and '' != wxId">
+                wx_id
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="null != userName and '' != userName">
+                #{userName},
+            </if>
+            <if test="null != phone and '' != phone">
+                #{phone},
+            </if>
+            <if test="null != avatar and '' != avatar">
+                #{avatar},
+            </if>
+            <if test="null != sex and '' != sex">
+                #{sex},
+            </if>
+            <if test="null != openId and '' != openId">
+                #{openId},
+            </if>
+            <if test="null != wxOpenId and '' != wxOpenId">
+                #{wxOpenId},
+            </if>
+            <if test="null != password and '' != password">
+                #{password},
+            </if>
+            <if test="null != createTime and '' != createTime">
+                #{createTime},
+            </if>
+            <if test="null != updateTime and '' != updateTime">
+                #{updateTime},
+            </if>
+            <if test="null != appleId and '' != appleId">
+                #{appleId},
+            </if>
+            <if test="null != sysPhone and '' != sysPhone">
+                #{sysPhone},
+            </if>
+            <if test="null != status and '' != status">
+                #{status},
+            </if>
+            <if test="null != platform and '' != platform">
+                #{platform},
+            </if>
+            <if test="null != jifen and '' != jifen">
+                #{jifen},
+            </if>
+            <if test="null != invitationCode and '' != invitationCode">
+                #{invitationCode},
+            </if>
+            <if test="null != inviterCode and '' != inviterCode">
+                #{inviterCode},
+            </if>
+            <if test="null != clientid and '' != clientid">
+                #{clientid},
+            </if>
+            <if test="null != zhiFuBaoName and '' != zhiFuBaoName">
+                #{zhiFuBaoName},
+            </if>
+            <if test="null != zhiFuBao and '' != zhiFuBao">
+                #{zhiFuBao},
+            </if>
+            <if test="null != wxId and '' != wxId">
+                #{wxId}
+            </if>
+        </trim>
+    </insert>
+
+
+    <select id="selectInviteUserList" resultType="com.sqx.modules.app.entity.UserEntity">
+        select *,(select count(*) from tb_user u1 where u1.inviter_code=u.invitation_code) as counts,
+               (select ifnull(sum(money),0.00) from invite i where i.user_id=u.user_id) as money
+               from tb_user u
+        where 1=1
+        <if test="userName!=null and userName!=''">
+            and user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone!=null and phone!=''">
+            and phone like concat('%',#{phone},'%')
+        </if>
+        order by money desc,counts desc
+    </select>
+
+    <select id="selectChannelUserListByRecommend" resultType="com.sqx.modules.app.entity.UserEntity">
+        select * from tb_user
+        where is_channel=1 and status=1 and recommend_user_id=#{userId}
+        <if test="userName!=null and userName!=''">
+            and user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone!=null and phone!=''">
+            and phone like concat('%',#{phone},'%')
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="selectUserListByAgencyIndex" resultType="com.sqx.modules.app.entity.UserEntity">
+        select u.*,(select ifnull(sum(money),0.00) from pay_details p where p.user_id=u.user_id and p.state=1) as money
+        from tb_user u
+        where u.status=1 and u.inviter_code=#{invitationCode}
+        <if test="userName!=null and userName!=''">
+            and u.user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone!=null and phone!=''">
+            and u.phone like concat('%',#{phone},'%')
+        </if>
+        order by u.create_time desc
+    </select>
+
+    <select id="selectUserListByInviteCode" resultType="com.sqx.modules.app.entity.UserEntity">
+        select u.*,(select ifnull(sum(money),0.00) from user_money_details p where p.by_user_id=u.user_id and p.user_id=#{userId}
+        <if test="sort==2">
+            and date_format(p.create_time,'%Y-%m-%d')=date_format(now(),'%Y-%m-%d')
+        </if>
+        <if test="sort==3">
+            and date_format(p.create_time,'%Y-%m')=date_format(now(),'%Y-%m')
+        </if>
+            ) as money
+        from tb_user u
+        where u.status=1
+        <if test="search!=null and search!=''">
+            and (u.user_name like concat('%',#{search},'%') or u.phone like concat('%',#{search},'%') or u.invitation_code like concat('%',#{search},'%') )
+        </if>
+        <if test="classify!=null and classify==0">
+            and (u.inviter_code=#{invitationCode} or u.inviter_code in (select invitation_code from tb_user where inviter_code=#{invitationCode})
+            <if test="qdCode!=null and qdCode!=''">
+                or u.qd_code=#{qdCode}
+            </if>
+                )
+        </if>
+        <if test="classify!=null and classify==1">
+            and date_format(u.create_time,'%Y-%m-%d')=date_format(now(),'%Y-%m-%d')
+            and  u.inviter_code=#{invitationCode}
+        </if>
+        <if test="classify!=null and classify==2">
+            and date_format(u.create_time,'%Y-%m')=date_format(now(),'%Y-%m')
+            and  u.inviter_code=#{invitationCode}
+        </if>
+        <if test="classify!=null and classify==3">
+            and u.inviter_code=#{invitationCode}
+        </if>
+        <if test="classify!=null and classify==4">
+            and u.qd_code=#{qdCode} and u.inviter_code!=#{invitationCode}
+        </if>
+        <if test="classify!=null and classify==5">
+            and u.qd_code=#{qdCode}
+        </if>
+        <if test="sort==1">
+            order by u.create_time desc
+        </if>
+        <if test="sort==2 or sort==3 or sort==4">
+            order by money desc
+        </if>
+    </select>
+
+
+    <select id="selectUserOnLineCount" resultType="Integer">
+        select count(*) from tb_user where now()&lt;=DATE_ADD(on_line_time, INTERVAL 10 MINUTE )
+        <if test="qdCode!=null">
+            and qd_code=#{qdCode}
+        </if>
+    </select>
+
+    <update id="updateUserClientIdIsNull">
+        update tb_user
+        set clientid=''
+        where clientid = #{clientid}
+    </update>
+
+    <update id="updateUserQdCodeByInviterCode">
+        update tb_user
+        set qd_code=#{qdCode}
+        where inviter_code=#{inviterCode}
+    </update>
+
+    <update id="updateUserQdCodeByInviterCodeList">
+        update tb_user
+        set qd_code=#{qdCode}
+        where inviter_code in (select invitation_code from (select invitation_code from tb_user where inviter_code=#{inviterCode}) a )
+    </update>
+
+    <select id="selectChannelCountAndIsRecommend" resultType="int">
+        select count(*) from tb_user where is_channel=1 and status=1
+    </select>
+
+    <select id="selectChannelCountByRecommendUserId" resultType="int">
+        select count(*) from tb_user where is_channel=1 and status=1 and recommend_user_id = #{userId}
+    </select>
+
+    <select id="selectAgencyByQdCodeTime" resultType="int">
+        select count(*)
+        from tb_user
+        where status=1
+        <if test="classify==2">
+            and agency_index=1
+        </if>
+        <if test="classify==3">
+            and agency_index=2
+        </if>
+        and date_format(agency_start_time,'%Y-%m-%d')=date_format(#{time},'%Y-%m-%d')
+          and qd_code = #{qdCode}
+    </select>
+
+    <select id="selectAgencyByQdCodeTimes" resultType="int">
+        select count(*)
+        from tb_user
+        where status=1
+        <if test="classify==2">
+            and agency_index=1
+        </if>
+        <if test="classify==3">
+            and agency_index=2
+        </if>
+        and date_format(agency_start_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+        and date_format(agency_start_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+        and qd_code = #{qdCode}
+    </select>
+
+    <select id="selectAgencyIndexCountByQdCodeByTime" resultType="int">
+        select count(*)
+        from tb_user
+        where status=1 and qd_code = #{qdCode}
+        <if test="classify==1">
+            and agency_index in (1,2)
+        </if>
+        <if test="classify==2">
+            and agency_index=1
+        </if>
+        <if test="classify==3">
+            and agency_index=2
+        </if>
+        <if test="startTime!=null and startTime!=''">
+            and date_format(create_time,'%Y-%m-%d')>=date_format(#{startTime},'%Y-%m-%d')
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and date_format(create_time,'%Y-%m-%d')&lt;=date_format(#{endTime},'%Y-%m-%d')
+        </if>
+    </select>
+
+    <update id="updateUserAgencyByEndTime">
+        update tb_user set agency_index=null where agency_index in (1,2) and date_format(agency_end_time,'%Y-%m-%d %H:%i:%S')&lt;=date_format(now(),'%Y-%m-%d %H:%i:%S')
+    </update>
+
+    <select id="queryActiveUserCountByInviterCode" resultType="int">
+        select count(*) from tb_user
+        where inviter_code=#{inviterCode} and status=1 and DATE_ADD(update_time, INTERVAL 7 day )>=now()
+    </select>
+
+    <select id="queryMoneyUserCountByInviterCode" resultType="int">
+        select count(*) from tb_user
+        where inviter_code=#{inviterCode} and status=1 and user_id in (select user_id from pay_details where state=1)
+    </select>
+
+    <select id="queryAgencyUserCountByInviterCode" resultType="int">
+        select count(*) from tb_user
+        where inviter_code=#{inviterCode} and status=1 and agency_index in (1,2)
+    </select>
+
+    <select id="queryUserCountByInviterCode" resultType="int">
+        select count(*) from tb_user
+        where inviter_code=#{inviterCode} and status=1 and agency_index is null
+    </select>
+
+    <update id="updateUserNum">
+        update tb_user set user_name_num=0,avatar_num=0
+    </update>
+
+</mapper>
