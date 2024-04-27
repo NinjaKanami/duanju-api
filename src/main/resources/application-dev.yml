@@ -3,9 +3,9 @@ spring:
         type: com.alibaba.druid.pool.DruidDataSource
         druid:
             driver-class-name: com.mysql.cj.jdbc.Driver
-            url: jdbc:mysql://10.10.5.4:3306/duanjuv2?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
+            url: jdbc:mysql://localhost:3306/duanju?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
             username: root
-            password: yf8yCAS!i99ry#&#
+            password: root
             initial-size: 10
             max-active: 100
             min-idle: 10
@@ -33,3 +33,7 @@ spring:
                     config:
                         multi-statement-allow: true
 
+#mybatis-log
+mybatis-plus:
+    configuration:
+        log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
