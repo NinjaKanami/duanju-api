@@ -38,10 +38,10 @@ function app_stop()
 
 function app_start()
 {
-        java_opts="-Xms512m -Xmx512m \
+        java_opts="-Xms1024m -Xmx1024m \
                       -Djava.security.egd=/dev/urandom "
         cd ${app_home}/
-        nohup java -javaagent:${app_home}/opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=duanju,token=vchZEkGkDVEJRKQjIYre -Dotel.exporter.otlp.endpoint=http://pl.ap-shanghai.apm.tencentcs.com:4317 -jar ${app_name}.jar --spring.profiles.active=prod  > start.log 2>&1 &
+        nohup java ${java_opts} -javaagent:${app_home}/opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=duanju,token=vchZEkGkDVEJRKQjIYre -Dotel.exporter.otlp.endpoint=http://pl.ap-shanghai.apm.tencentcs.com:4317 -jar ${app_name}.jar --spring.profiles.active=prod --spring.redis.host=10.10.5.8 > start.log 2>&1 &
         echo start application success
 }
 

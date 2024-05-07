@@ -163,8 +163,7 @@ public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements
                 }
                 //获取用户的剧荐管 判断是不是传递过来的剧荐管 不是则不让激活
                 if(StringUtils.isNotEmpty(userEntity.getQdCode())){
-                    UserEntity channelUser = queryByQdCode(userEntity.getQdCode());
-                    if(channelUser!=null && !channelUser.getQdCode().equals(channelCode)){
+                    if(!userEntity.getQdCode().equals(channelCode)){
                         return Result.error("请使用其他手机号激活");
                     }
                 }
@@ -1529,6 +1528,9 @@ public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements
                 }else if(oldUser.getIsRecommend()!=null && oldUser.getIsRecommend()==1){
                     return Result.error("当前用户已经推荐人了,不能成为剧荐管");
                 }
+                if(StringUtils.isNotEmpty(oldUser.getQdCode())){
+                    return Result.error("该用户手机号已在联盟中，不能升级剧荐官,请更换手机号！");
+                }
                 UserEntity userEntity1 = queryByInvitationCode(userEntity.getInviterCode());
                 userEntity.setInviterCode(null);
                 userEntity.setRecommendUserId(userEntity1.getUserId());
@@ -1541,6 +1543,9 @@ public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements
                 }
             }
 
+            if(StringUtils.isEmpty(userEntity.getInviterCode())){
+                userEntity.setInviterCode(oldUser.getInviterCode());
+            }
             userEntity.setUserId(oldUser.getUserId());
             baseMapper.updateById(userEntity);
 
@@ -1552,7 +1557,11 @@ public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements
                     return Result.error("该渠道码已经使用过了！");
                 }
             }
-
+            if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
+                UserEntity userEntity1 = queryByInvitationCode(userEntity.getInviterCode());
+                userEntity.setInviterCode(null);
+                userEntity.setRecommendUserId(userEntity1.getUserId());
+            }
             userEntity.setInviterCode(commonInfoService.findOne(88).getValue());
             userEntity.setCreateTime(DateUtils.format(new Date()));
             userEntity.setStatus(1);
@@ -1563,17 +1572,19 @@ public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements
         }
 
         if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
-            UserEntity userEntity1 = queryByInvitationCode(userEntity.getInviterCode());
-            //增加积分
-            userIntegralService.updateIntegral(1,userEntity1.getUserId(),1);
-            UserIntegralDetails userIntegralDetails=new UserIntegralDetails();
-            userIntegralDetails.setClassify(1);
-            userIntegralDetails.setContent("邀请剧荐管："+userEntity.getUserName());
-            userIntegralDetails.setCreateTime(DateUtils.format(new Date()));
-            userIntegralDetails.setNum(1);
-            userIntegralDetails.setType(1);
-            userIntegralDetails.setUserId(userEntity1.getUserId());
-            userIntegralDetailsDao.insert(userIntegralDetails);
+            UserEntity userEntity1 = selectUserById(userEntity.getRecommendUserId());
+            if(userEntity1!=null){
+                //增加积分
+                userIntegralService.updateIntegral(1,userEntity1.getUserId(),1);
+                UserIntegralDetails userIntegralDetails=new UserIntegralDetails();
+                userIntegralDetails.setClassify(1);
+                userIntegralDetails.setContent("邀请剧荐管："+userEntity.getUserName());
+                userIntegralDetails.setCreateTime(DateUtils.format(new Date()));
+                userIntegralDetails.setNum(1);
+                userIntegralDetails.setType(1);
+                userIntegralDetails.setUserId(userEntity1.getUserId());
+                userIntegralDetailsDao.insert(userIntegralDetails);
+            }
         }
 
         return Result.success();

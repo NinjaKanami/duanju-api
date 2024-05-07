@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * <p>
@@ -50,6 +51,15 @@ public class SdkInfoServiceImpl extends ServiceImpl<SdkInfoDao, SdkInfo> impleme
     private UserMoneyDetailsService userMoneyDetailsService;
     @Autowired
     private OrdersService ordersService;
+    /**
+     * 创建线程池
+     */
+    private ExecutorService newCachedThreadPool = new ThreadPoolExecutor(30, 100, 0L,
+            TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(1024),
+            Executors.defaultThreadFactory(),
+            new ThreadPoolExecutor.AbortPolicy());
+
 
 
     @Override
@@ -58,21 +68,26 @@ public class SdkInfoServiceImpl extends ServiceImpl<SdkInfoDao, SdkInfo> impleme
         if (sdkType==null){
             return Result.error("卡密类型不存在");
         }
-        SdkInfo sdkInfo = new SdkInfo();
-        for (int i = 0; i < num; i++) {
-            String replace = UUID.randomUUID().toString().replace("-", "");
-            sdkInfo.setSdkContent(replace);
-            sdkInfo.setStatus(0);
-            sdkInfo.setCreateTime(DateUtils.format(new Date()));
-            sdkInfo.setTypeId(typeId);
-            Calendar calendar=Calendar.getInstance();
-            calendar.add(Calendar.DAY_OF_MONTH,sdkType.getValidDay());
-            sdkInfo.setOverdueTime(DateUtils.format(calendar.getTime()));
-            sdkInfo.setSdkRemarks(sdkType.getRemarks());
-            sdkInfo.setGiveNum(sdkType.getGiveNum());
-            sdkInfo.setSysUserId(sysUserId);
-            baseMapper.insert(sdkInfo);
-        }
+        newCachedThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < num; i++) {
+                    SdkInfo sdkInfo=new SdkInfo();
+                    String replace = UUID.randomUUID().toString().replace("-", "");
+                    sdkInfo.setSdkContent(replace);
+                    sdkInfo.setStatus(0);
+                    sdkInfo.setCreateTime(DateUtils.format(new Date()));
+                    sdkInfo.setTypeId(typeId);
+                    Calendar calendar=Calendar.getInstance();
+                    calendar.add(Calendar.DAY_OF_MONTH,sdkType.getValidDay());
+                    sdkInfo.setOverdueTime(DateUtils.format(calendar.getTime()));
+                    sdkInfo.setSdkRemarks(sdkType.getRemarks());
+                    sdkInfo.setGiveNum(sdkType.getGiveNum());
+                    sdkInfo.setSysUserId(sysUserId);
+                    baseMapper.insert(sdkInfo);
+                }
+            }
+        });
         return Result.success();
     }
 
@@ -94,7 +109,7 @@ public class SdkInfoServiceImpl extends ServiceImpl<SdkInfoDao, SdkInfo> impleme
         ExcelData data = new ExcelData();
         data.setName("提现列表");
         List<String> titles = new ArrayList();
-        titles.add("编号");titles.add("卡密名称");titles.add("卡密");titles.add("赠送会员天数");
+        titles.add("编号");titles.add("卡密名称");titles.add("卡密");titles.add("赠送点券");
         titles.add("到期时间"); titles.add("领取用户");titles.add("状态");titles.add("创建时间");
         data.setTitles(titles);
         List<List<Object>> rows = new ArrayList();
