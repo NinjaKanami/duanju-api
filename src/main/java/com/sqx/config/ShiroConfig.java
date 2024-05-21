@@ -50,7 +50,6 @@ public class ShiroConfig {
         filterMap.put("/courseClassification/selectCourseClassification", "anon");
         filterMap.put("/sys/login", "anon");
         filterMap.put("/swagger/**", "anon");
-        filterMap.put("/alioss/**", "anon");
         filterMap.put("/v2/api-docs", "anon");
         filterMap.put("/swagger-ui.html", "anon");
         filterMap.put("/swagger-resources/**", "anon");

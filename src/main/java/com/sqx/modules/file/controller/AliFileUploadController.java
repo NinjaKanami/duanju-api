@@ -1,4 +1,4 @@
-package com.sqx.modules.file;
+package com.sqx.modules.file.controller;
 
 
 
