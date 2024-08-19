@@ -216,6 +216,11 @@ public class Course implements Serializable {
      */
     private Integer dyShow;
 
+    /**
+     * 排序序列号
+     */
+    private Integer sequence;
+
 
     @TableField(exist = false)
     private String remark;
