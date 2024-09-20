@@ -207,7 +207,7 @@ public class ApiWeiXinPayController {
             return result;
         }
     }
-    
+
 
 
     /**
@@ -215,10 +215,10 @@ public class ApiWeiXinPayController {
      *
      * @return openid
      */
-    @RequestMapping(value = "/notifyXPay", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/notifyXPayBak", method = {RequestMethod.GET, RequestMethod.POST})
     @ApiOperation("虚拟支付回调")
     @ResponseBody
-    public void connectWeixinsqx(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void connectWeixinsqxBak(HttpServletRequest request, HttpServletResponse response) throws IOException {
         //公众号Token
         CommonInfo token = commonInfoService.findOne(826);
         //公众号EncodingAESKey
@@ -302,6 +302,113 @@ public class ApiWeiXinPayController {
                 + eventMessage.getToUserName() + "__"
                 + eventMessage.getMsgId() + "__"
                 + eventMessage.getCreateTime();
+        if (expireKey.exists(key)) {
+            //重复通知不作处理
+            return;
+        } else {
+            expireKey.add(key);
+        }
+
+        String event = eventMessage.getEvent();
+        String msgType1 = eventMessage.getMsgType();
+        String eventKey = eventMessage.getEventKey();
+        log.error("getEvent----" + event);
+        log.error("getMsgType----" + msgType1);
+        log.error("eventKey----" + eventKey);
+        //判断请求是否事件类型 event 用户关注公众号事件
+        if (MessageUtil.MESSAGE_EVENT.equals(msgType1) && "xpay_goods_deliver_notify".equals(event)) {
+            List<Element> otherElements = eventMessage.getOtherElements();
+            Element element1 = otherElements.get(1);
+            String textContent = element1.getTextContent();
+            String notifyXPay = wxService.notifyXPay(textContent);
+            outputStreamWrite(outputStream, notifyXPay);
+        }
+        outputStreamWrite(outputStream, "<xml><Errcode>0</ErrCode><ErrMsg><![CDATA[success]]></ErrMsg></xml>");
+    }
+
+    /**
+     * 微信小程序消息推送
+     *
+     * @return openid
+     */
+    @RequestMapping(value = "/notifyXPay", method = {RequestMethod.GET, RequestMethod.POST})
+    @ApiOperation("小程序虚拟支付回调")
+    @ResponseBody
+    public void connectWeixinsqx(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //微信APPID
+        CommonInfo appid = commonInfoService.findOne(45);
+        //消息推送Token
+        CommonInfo token = commonInfoService.findOne(826);
+        //消息推送EncodingAESKey
+        CommonInfo EncodingAESKey = commonInfoService.findOne(827);
+        ServletInputStream inputStream = request.getInputStream();
+        ServletOutputStream outputStream = response.getOutputStream();
+        //首次验证参数&明文参数
+        String signature = request.getParameter("signature");
+        String timestamp = request.getParameter("timestamp");
+        String nonce = request.getParameter("nonce");
+        String echostr = request.getParameter("echostr");
+        //加密模式(安全模式)
+        String encrypt_type = request.getParameter("encrypt_type");
+        String msg_signature = request.getParameter("msg_signature");
+        String accessToken = SenInfoCheckUtil.getMpAccessToken();
+        WXBizMsgCrypt wxBizMsgCrypt = null;
+        //加密方式
+        boolean isAes = "aes".equals(encrypt_type);
+
+        if (isAes) {
+            try {
+                wxBizMsgCrypt = new WXBizMsgCrypt(token.getValue(), EncodingAESKey.getValue() , appid.getValue());
+            } catch (AesException e) {
+                e.printStackTrace();
+            }
+        }
+
+        EventMessage eventMessage = null;
+
+        if (isAes) {
+            //若为安全模式消息推送
+            try {
+                //获取XML数据（含加密参数）
+                String postData = StreamUtils.copyToString(inputStream, Charset.forName("utf-8"));
+                //解密XML 数据
+                assert wxBizMsgCrypt != null;
+                String xmlData = wxBizMsgCrypt.decryptMsg(msg_signature, timestamp, nonce, postData);
+                //XML 转换为bean 对象
+                eventMessage = XMLConverUtil.convertToObject(EventMessage.class, xmlData);
+            } catch (AesException e) {
+                e.printStackTrace();
+            }
+        } else {
+            //若非安全模式消息推送 则明文模式消息推送 或 验证消息推送
+            if (signature == null) {
+                System.out.println("The request signature is null");
+                return;
+            }
+            //验证请求签名
+            if (!signature.equals(SignatureUtil.generateEventMessageSignature(token.getValue() , timestamp, nonce))) {
+                System.out.println("The request signature is invalid");
+                return;
+            }
+            //首次请求申请验证,返回echostr
+            if (echostr != null) {
+                echostr = URLDecoder.decode(echostr, "utf-8");
+                outputStreamWrite(outputStream, echostr);
+                log.info("=========首次验证echostr========="+echostr);
+                return;
+            }
+            //明文模式消息推送
+            if (inputStream != null) {
+                //XML 转换为bean 对象
+                eventMessage = XMLConverUtil.convertToObject(EventMessage.class, inputStream);
+            }
+        }
+
+        String key = eventMessage.getFromUserName() + "__"
+                + eventMessage.getToUserName() + "__"
+                + eventMessage.getMsgId() + "__"
+                + eventMessage.getCreateTime();
+
         if (expireKey.exists(key)) {
             //重复通知不作处理
             return;
