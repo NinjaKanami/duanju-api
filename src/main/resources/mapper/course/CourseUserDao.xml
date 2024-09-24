@@ -29,12 +29,13 @@
                    ORDER BY
                        cc.update_time desc
                    LIMIT 1
-            ) AS courseDetailsId
+            ) AS courseDetailsId,
+        MAX(u.create_time) as ucreate_time  <!-- 过滤重复数据 使排序子句不会因未加入group by子句报错 不影响原有逻辑  -->
         from course_user u
         left join course c on u.course_id=c.course_id
         where u.user_id=#{userId} and c.is_delete=0
         group by c.course_id
-        order by u.create_time desc
+        order by ucreate_time desc
     </select>
 
     <select id="selectCourseUser" resultType="com.sqx.modules.course.entity.CourseUser">
