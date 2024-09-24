@@ -47,6 +47,11 @@ public class Course implements Serializable {
     private BigDecimal price;
 
     /**
+     * 价格种类 0单集购买 1整剧购买
+     */
+    private Integer priceType;
+
+    /**
      * 上下架 1上架  2下架
      */
     private Integer status;
@@ -131,7 +136,7 @@ public class Course implements Serializable {
     private  Integer bannerId;
 
     /**
-     * 是否收费 1是 2免费
+     * 是否收费 1vip 2免费 3云短剧
      */
     private Integer isPrice;
 

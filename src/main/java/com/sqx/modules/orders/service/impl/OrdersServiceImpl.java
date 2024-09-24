@@ -160,12 +160,20 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
                 orders.setUserId(userId);
                 //设置短剧id
                 orders.setCourseId(courseId);
-                orders.setCourseDetailsId(courseDetailsId);
-                if (courseDetailsId != null) {
-                    CourseDetails courseDetails = courseDetailsService.getById(courseDetailsId);
-                    orders.setPayMoney(courseDetails.getPrice());
-                } else {
+                //判断是单集购买还是全集购买
+                if (course.getPriceType() == 0) {
+                    orders.setCourseDetailsId(courseDetailsId);
+                    if (courseDetailsId != null) {
+                        CourseDetails courseDetails = courseDetailsService.getById(courseDetailsId);
+                        orders.setPayMoney(courseDetails.getPrice());
+                    } else {
+                        orders.setPayMoney(course.getPrice());
+                    }
+                } else if (course.getPriceType()==1) {
+                    //设置为全集购买价格
                     orders.setPayMoney(course.getPrice());
+                }else{
+                    return Result.error("未设置购买方式");
                 }
                 //设置支付状态
                 orders.setStatus(0);
