@@ -1,0 +1,37 @@
+name: Docker
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '*'
+
+env:
+  IMAGE_VERSION: ${{ github.sha }}
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+#    env:
+#      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+#      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build
+        uses: appleboy/ssh-action@master
+        with:
+          host: 101.35.215.228
+          username: ubuntu
+          key: ${{ secrets.PROD_SERVER_KEY }}
+          port: 22
+          script: |
+            export BUILD_TAG=duanju-api@${{env.IMAGE_VERSION}}
+            git clone git@github.com:yuhu-tech/duanju-api.git /apps/data/duanju-build/${BUILD_TAG}
+            cd /apps/data/duanju-build/${BUILD_TAG}
+            git reset --hard ${{env.IMAGE_VERSION}}
+            docker run --rm -v /apps/data/duanju-build/${BUILD_TAG}:/apps/duanju-api/ \
+              -v /apps/data/build-cache/maven-repository:/root/.m2/repository \
+              maven:3.6.0-jdk-8-slim \
+              sh -c "cd /apps/duanju-api && mvn -B package"
