@@ -139,7 +139,7 @@ public class DyServiceImpl implements DyService {
         sku.put("price",money);
         sku.put("quantity",1);
         Orders orders = ordersService.selectOrderById(orderId);
-        if(orders.getOrdersType()==1){
+        if(orders.getOrdersType() == 1 || orders.getOrdersType() == 11){
             Course course = courseService.getById(bean.getCourseId());
             sku.put("title",course.getTitle());
             JSONArray imageList=new JSONArray();

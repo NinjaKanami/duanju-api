@@ -293,7 +293,7 @@
     </select>
 
     <select id="selectOrdersPingMoneyByMonth" resultType="Double">
-        select ifnull(sum(ping_money),0.00) from orders where orders_type in (1,2) and status=1
+        select ifnull(sum(ping_money),0.00) from orders where orders_type in (1,11,2) and status=1
         and date_format(create_time,'%Y-%m')=date_format(#{time},'%Y-%m')
     </select>
 

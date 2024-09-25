@@ -42,7 +42,7 @@ public class CourseCollect implements Serializable {
     private Long userId;
 
     /**
-     * 分类 1收藏 2点赞 3历史记录 4是否自动扣费
+     * 分类 1收藏 2点赞 3历史记录 4是否自动扣费 5是否整剧购买
      */
     private Integer classify;
 

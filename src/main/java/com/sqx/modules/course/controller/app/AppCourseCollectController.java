@@ -37,9 +37,13 @@ public class AppCourseCollectController extends AbstractController {
     @Login
     @GetMapping("/selectPayCourse")
     @ApiOperation("app查询收藏短剧信息")
-    public Result selectPayCourse(Long courseId,@RequestAttribute Long userId){
-        return Result.success().put("data",courseCollectService.count(new QueryWrapper<CourseCollect>()
-                .eq("course_id",courseId).eq("user_id",userId).eq("classify",4)));
+    public Result selectPayCourse(Long courseId, @RequestAttribute Long userId) {
+        return Result.success().put("data", courseCollectService.count(
+                new QueryWrapper<CourseCollect>()
+                        .eq("course_id", courseId)
+                        .eq("user_id", userId)
+                        .in("classify", 4, 5)
+        ));
     }
 
 

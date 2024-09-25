@@ -87,89 +87,131 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
         return Result.success();
     }
 
+
+    /**
+     * 根据ID查询短剧详情
+     * 
+     * @param id 短剧ID
+     * @param token 用户认证令牌
+     * @param courseDetailsId 短剧详情ID
+     * @return 返回短剧详情结果
+     */
     @Override
     public Result selectCourseDetailsById(Long id,String token,String courseDetailsId){
+        // Redis缓存键名构造
         String redisCourseDetailsName="selectCourseDetailsById_"+id;
+        // 尝试从Redis缓存中获取短剧详情字符串
         String s1 = redisUtils.get(redisCourseDetailsName);
+        // 如果缓存中没有数据，则从数据库中查询
         if(StringUtils.isEmpty(s1)){
+            // 通过短剧ID从数据库中查询短剧信息
             Course bean = courseDao.selectById(id);
             /*
+            // 以下为注释掉的代码，用于统计短剧的浏览量
             if(bean.getViewCounts()==null){
                 bean.setViewCounts(1);
             }else{
                 bean.setViewCounts(bean.getViewCounts()+1);
             }
+            // 更新数据库中的浏览量信息
             courseDao.updateById(bean);*/
+            // 初始化用户ID为null
             Long userId=null;
+            // 如果token非空，尝试解析token获取用户ID
             if(StringUtils.isNotEmpty(token)){
+                // 从token中获取用户信息
                 Claims claims = jwtUtils.getClaimByToken(token);
+                // 验证claims是否非空且token未过期
                 if(claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())){
+                    // 将claims中的用户ID转换为Long类型
                     userId=Long.parseLong(claims.getSubject());
                 }
             }
+            // 初始化短剧收藏状态为0
             bean.setIsCollect(0);
+            // 如果用户ID非空，进一步处理用户相关逻辑
             if (userId != null) {
+                // 查询用户是否收藏了该短剧
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id",userId).eq("classify",1).eq("course_id",bean.getCourseId())));
+                // 根据用户ID查询用户信息
                 UserEntity userEntity = userService.selectUserById(userId);
-                //查询用户是否购买了整集
+                // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
 
-                //直接直接通过redis缓存所有集
+                // 使用Redis缓存短剧详情列表
                 String redisCourseDetailsListName="selectCourseDetailsList_"+id+"user_id"+userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
                 List<CourseDetails> courseDetailsList = null;
                 if(StringUtils.isEmpty(redisCourseDetailsList)){
+                    // 如果Redis中没有缓存数据，则从数据库查询
                     courseDetailsList = baseMapper.findByCourseId(id, userId);
+                    // 将查询结果转换为JSON字符串并存入Redis
                     redisUtils.set(redisCourseDetailsListName,JSONObject.toJSONString(courseDetailsList));
                 }else{
+                    // 如果Redis中有缓存数据，则直接读取并转换为对象列表
                     String s = redisUtils.get(redisCourseDetailsListName);
                     courseDetailsList = JSON.parseArray(s, CourseDetails.class);
                 }
 
+                // 使用Redis缓存未包含视频URL的短剧详情列表
                 String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id+"user_id"+userId;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
                 if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                    // 如果Redis中没有缓存数据，则从数据库查询
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
+                    // 将查询结果转换为JSON字符串并存入Redis
                     redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
                 }else{
+                    // 如果Redis中有缓存数据，则直接读取并转换为对象列表
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
                     courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
                 }
 
-                String value = commonInfoService.findOne(887).getValue();
-                //判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
-                String[] split = value.split(",");
+                // 标记用户是否为特定会员类型
                 boolean flag=false;
 
-                for (String member:split){
-                    if("1".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==1){
-                            flag=true;
-                        }
-                    }else if("2".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==2){
-                            flag=true;
-                        }
-                    }else if("3".equals(member)){
-                        if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
-                            flag=true;
-                        }
-                    }else if("4".equals(member)){
-                        if(userEntity.getIsRecommend()!=null && userEntity.getIsRecommend()==1){
-                            flag=true;
+                //如果不是云短剧 根据会员类型选择性放行
+                if(bean.getIsPrice()!=3){
+
+                    // 获取会员类型信息
+                    String value = commonInfoService.findOne(887).getValue();
+                    // 判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
+                    String[] split = value.split(",");
+
+                    // 根据会员类型判断用户是否享有特权
+                    for (String member:split){
+                        if("1".equals(member)){
+                            if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==1){
+                                flag=true;
+                            }
+                        }else if("2".equals(member)){
+                            if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==2){
+                                flag=true;
+                            }
+                        }else if("3".equals(member)){
+                            if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
+                                flag=true;
+                            }
+                        }else if("4".equals(member)){
+                            if(userEntity.getIsRecommend()!=null && userEntity.getIsRecommend()==1){
+                                flag=true;
+                            }
                         }
                     }
                 }
 
+                // 查询用户是否购买了全集
                 if (courseUser != null || (flag)) {
-                    //用户购买了整集
+                    // 用户购买了整集，设置包含全部详情的列表
                     bean.setListsDetail(courseDetailsList);
                 }else{
+                    // 用户未购买整集，设置不包含视频URL的详情列表
                     bean.setListsDetail(courseDetailsNotList);
-                    //查询用户是否单独购买了集
+                    // 查询用户是否单独购买了集
                     List<CourseUser> courseUsers = courseUserDao.selectCourseUserList(id, userId);
+                    // 如果用户单独购买了某些集，则更新这些集的视频URL
                     if(courseUsers.size()>0){
                         for (CourseUser courseUser1:courseUsers){
                             for (CourseDetails courseDetails:bean.getListsDetail()) {
@@ -181,24 +223,39 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                         }
                     }
                 }
+            // 如果短剧详情未在缓存中找到
             } else {
+                // 构造Redis中短剧详情列表的键名
                 String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id;
+                // 从Redis中获取短剧详情列表字符串
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
+                // 初始化未包含URL的短剧详情列表
                 List<CourseDetails> courseDetailsNotList = null;
+                // 如果Redis中没有短剧详情列表缓存数据
                 if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                    // 通过数据库查询短剧详情列表，排除已收藏的URL
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
+                    // 将查询结果转为JSON字符串并存入Redis
                     redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
                 }else{
+                    // 从Redis中获取短剧详情列表字符串
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
+                    // 将JSON字符串解析为短剧详情列表
                     courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
                 }
+                // 设置短剧详情列表到返回对象
                 bean.setListsDetail(courseDetailsNotList);
             }
+
+            // 如果短剧详情ID不为空
             if(courseDetailsId!=null){
+                // 如果短剧详情列表存在且不为空
                 if (bean.getListsDetail().size()>0){
+                    // 遍历短剧详情列表
                     for (CourseDetails courseDetails:bean.getListsDetail()){
+                        // 在列表中查找与给定短剧详情ID匹配的项
                         if(courseDetails.getCourseDetailsId().equals(Long.parseLong(courseDetailsId)) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())){
-                            //微信内
+                            // 获取微信内部的视频链接
                             String url="https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token="+ SenInfoCheckUtil.getMpToken();
                             JSONObject jsonObject=new JSONObject();
                             jsonObject.put("media_id",courseDetails.getWxCourseDetailsId());
@@ -206,96 +263,124 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                             String s = HttpClientUtil.doPostJson(url, jsonObject.toJSONString());
                             JSONObject jsonObject1 = JSONObject.parseObject(s);
                             String errcode = jsonObject1.getString("errcode");
+                            // 检查是否成功获取视频链接
                             if(!"0".equals(errcode)){
                                 return Result.error("获取微信播放链接失败："+jsonObject1.getString("errmsg"));
                             }
                             JSONObject media_info = jsonObject1.getJSONObject("media_info");
                             String mp4_url = media_info.getString("mp4_url");
+                            // 将链接存储在短剧详情对象中
                             courseDetails.setWxUrl(mp4_url);
                             break;
                         }
                     }
                 }
             }
+            // 将更新后的短剧详情列表存储到Redis中
             redisUtils.set(redisCourseDetailsName,bean);
+            // 返回成功结果，包含更新后的短剧详情列表
             return Result.success().put("data",bean);
         }else{
+            // 从Redis中获取短剧详情数据
             String ss = redisUtils.get(redisCourseDetailsName);
+            // 将JSON字符串转换为Course对象
             Course bean = JSONObject.parseObject(ss, Course.class);
-            Long userId=null;
-            if(StringUtils.isNotEmpty(token)){
+            // 初始化用户ID为null
+            Long userId = null;
+            // 如果token存在且不为空
+            if (StringUtils.isNotEmpty(token)) {
+                // 通过token获取claims信息
                 Claims claims = jwtUtils.getClaimByToken(token);
-                if(claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())){
-                    userId=Long.parseLong(claims.getSubject());
+                // 如果claims存在且token未过期
+                if (claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())) {
+                    // 将claims中的用户ID转换为Long类型
+                    userId = Long.parseLong(claims.getSubject());
                 }
             }
+            // 初始化是否收藏状态为0
             bean.setIsCollect(0);
+            // 如果用户ID存在
             if (userId != null) {
+                // 查询用户是否收藏了短剧
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
-                        .eq("user_id",userId).eq("classify",1).eq("course_id",bean.getCourseId())));
+                        .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
+                // 查询用户信息
                 UserEntity userEntity = userService.selectUserById(userId);
-                //查询用户是否购买了整集
+                // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
-
-                //直接直接通过redis缓存所有集
-                String redisCourseDetailsListName="selectCourseDetailsList_"+id+"user_id"+userId;
+            
+                // 缓存所有集的详情到Redis
+                String redisCourseDetailsListName = "selectCourseDetailsList_" + id + "user_id" + userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
                 List<CourseDetails> courseDetailsList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsList)){
+                if (StringUtils.isEmpty(redisCourseDetailsList)) {
+                    // 如果Redis中没有缓存数据，则从数据库查询
                     courseDetailsList = baseMapper.findByCourseId(id, userId);
-                    redisUtils.set(redisCourseDetailsListName,JSONObject.toJSONString(courseDetailsList));
-                }else{
-                    String s = redisUtils.get(redisCourseDetailsListName);
-                    courseDetailsList = JSON.parseArray(s, CourseDetails.class);
+                    // 将查询结果存入Redis
+                    redisUtils.set(redisCourseDetailsListName, JSONObject.toJSONString(courseDetailsList));
+                } else {
+                    // 如果Redis中有缓存数据，则直接获取
+                    courseDetailsList = JSON.parseArray(redisCourseDetailsList, CourseDetails.class);
                 }
-
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id+"user_id"+userId;
+            
+                // 缓存没有视频URL的短剧详情到Redis
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id + "user_id" + userId;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
+                    // 如果Redis中没有缓存数据，则从数据库查询
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
-                    String s = redisUtils.get(redisCourseDetailsNoUrlListName);
-                    courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
+                    // 将查询结果存入Redis
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
+                    // 如果Redis中有缓存数据，则直接获取
+                    courseDetailsNotList = JSON.parseArray(redisCourseDetailsNoUrlList, CourseDetails.class);
                 }
 
-                String value = commonInfoService.findOne(887).getValue();
-                //判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
-                String[] split = value.split(",");
+                // 标记用户是否为特定会员类型
                 boolean flag=false;
 
-                for (String member:split){
-                    if("1".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==1){
-                            flag=true;
-                        }
-                    }else if("2".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==2){
-                            flag=true;
-                        }
-                    }else if("3".equals(member)){
-                        if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
-                            flag=true;
-                        }
-                    }else if("4".equals(member)){
-                        if(userEntity.getIsRecommend()!=null && userEntity.getIsRecommend()==1){
-                            flag=true;
+                //如果不是云短剧 根据会员类型选择性放行
+                if(bean.getIsPrice()!=3){
+
+                    // 获取会员类型配置
+                    String value = commonInfoService.findOne(887).getValue();
+                    // 划分会员类型
+                    String[] split = value.split(",");
+
+                    // 判断用户是否为特定会员类型
+                    for (String member : split) {
+                        if ("1".equals(member)) {
+                            if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 1) {
+                                flag = true;
+                            }
+                        } else if ("2".equals(member)) {
+                            if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 2) {
+                                flag = true;
+                            }
+                        } else if ("3".equals(member)) {
+                            if (userEntity.getIsChannel() != null && userEntity.getIsChannel() == 1) {
+                                flag = true;
+                            }
+                        } else if ("4".equals(member)) {
+                            if (userEntity.getIsRecommend() != null && userEntity.getIsRecommend() == 1) {
+                                flag = true;
+                            }
                         }
                     }
                 }
-
-                if (courseUser != null || (flag)) {
-                    //用户购买了整集
+            
+                // 根据用户是否购买整集或是否为特定会员类型，设置短剧详情列表
+                if (courseUser != null || flag) {
                     bean.setListsDetail(courseDetailsList);
-                }else{
+                } else {
                     bean.setListsDetail(courseDetailsNotList);
-                    //查询用户是否单独购买了集
+                    // 查询用户是否单独购买了集
                     List<CourseUser> courseUsers = courseUserDao.selectCourseUserList(id, userId);
-                    if(courseUsers.size()>0){
-                        for (CourseUser courseUser1:courseUsers){
-                            for (CourseDetails courseDetails:bean.getListsDetail()) {
-                                if(courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())){
+                    if (courseUsers.size() > 0) {
+                        for (CourseUser courseUser1 : courseUsers) {
+                            for (CourseDetails courseDetails : bean.getListsDetail()) {
+                                if (courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())) {
                                     CourseDetails courseDetails1 = baseMapper.selectById(courseDetails.getCourseDetailsId());
                                     courseDetails.setVideoUrl(courseDetails1.getVideoUrl());
                                 }
@@ -304,41 +389,56 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                     }
                 }
             } else {
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id;
+                // 如果用户ID不存在，则直接从Redis或数据库获取短剧详情列表，不带视频URL
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
-                    String s = redisUtils.get(redisCourseDetailsNoUrlListName);
-                    courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
+                    courseDetailsNotList = JSON.parseArray(redisCourseDetailsNoUrlList, CourseDetails.class);
                 }
                 bean.setListsDetail(courseDetailsNotList);
             }
+            // 如果短剧详情ID不为空
             if(courseDetailsId!=null){
+                // 如果短剧详情列表大于0
                 if (bean.getListsDetail().size()>0){
+                    // 遍历短剧详情列表
                     for (CourseDetails courseDetails:bean.getListsDetail()){
+                        // 如果当前短剧详情的ID与给定的短剧详情ID相等且微信短剧详情ID不为空
                         if(courseDetails.getCourseDetailsId().equals(Long.parseLong(courseDetailsId)) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())){
-                            //微信内
+                            // 在微信环境内获取视频链接
                             String url="https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token="+ SenInfoCheckUtil.getMpToken();
                             JSONObject jsonObject=new JSONObject();
+                            // 将微信短剧详情ID放入JSON对象
                             jsonObject.put("media_id",courseDetails.getWxCourseDetailsId());
+                            // 设置过期时间戳
                             jsonObject.put("t",(System.currentTimeMillis()/1000)+7200);
+                            // 发起HTTP请求获取视频链接
                             String s = HttpClientUtil.doPostJson(url, jsonObject.toJSONString());
+                            // 解析返回的JSON对象
                             JSONObject jsonObject1 = JSONObject.parseObject(s);
+                            // 获取错误码
                             String errcode = jsonObject1.getString("errcode");
+                            // 如果错误码不为0，则获取视频链接失败
                             if(!"0".equals(errcode)){
                                 return Result.error("获取微信播放链接失败："+jsonObject1.getString("errmsg"));
                             }
+                            // 获取媒体信息
                             JSONObject media_info = jsonObject1.getJSONObject("media_info");
+                            // 获取mp4视频链接
                             String mp4_url = media_info.getString("mp4_url");
+                            // 设置短剧详情的微信视频链接
                             courseDetails.setWxUrl(mp4_url);
+                            // 找到对应的短剧详情后，停止遍历
                             break;
                         }
                     }
                 }
             }
+            // 返回包含短剧详情列表的结果对象
             return Result.success().put("data",bean);
         }
 

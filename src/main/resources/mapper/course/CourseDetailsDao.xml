@@ -21,13 +21,21 @@
     </select>
 
     <select id="findByCourseIdNotUrl" resultType="com.sqx.modules.course.entity.CourseDetails">
-        select c.course_details_id as courseDetailsId,c.course_id as courseId,c.wx_course_details_id as wxCourseDetailsId,
-               c.course_details_name as courseDetailsName,c.create_time as createTime,
+        <!-- 从course_details表中选择特定课程的详细信息 -->
+        <!-- 选择课程详细信息的ID、课程ID、微信课程详细信息ID、课程详细名称、创建时间、抖音剧集ID -->
+        <!-- 计算用户是否点赞（收藏）了该课程详情，基于用户ID和课程详情ID -->
+        <!-- 选择标题图片、内容、点赞数量、价格 -->
+        <!-- 根据课程是否付费，条件性地选择视频URL -->
+        <!-- 从course_details表中选择数据 -->
+        <!-- 根据课程ID进行查询，并按课程详细信息ID升序排序 -->
+        select c.course_details_id as courseDetailsId, c.course_id as courseId, c.wx_course_details_id as wxCourseDetailsId,
+               c.course_details_name as courseDetailsName, c.create_time as createTime,
                c.dy_episode_id as dyEpisodeId,
                (select count(*) from course_collect cc where cc.user_id=#{userId} and cc.course_details_id=c.course_details_id and cc.classify=2) as isGood,
-               c.title_img as titleImg,c.content,c.good_num as goodNum,c.price,if(is_price!=1,c.video_url,'') as videoUrl
+               c.title_img as titleImg, c.content, c.good_num as goodNum, c.price, if(c.is_price!=1, c.video_url, '') as videoUrl
         from course_details c
-        where c.course_id=#{id}  order by c.course_details_id asc
+        where c.course_id=#{id} order by c.course_details_id asc
+
     </select>
 
     <select id="findByUserCourseId" resultType="com.sqx.modules.course.entity.CourseDetails">

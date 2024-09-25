@@ -174,7 +174,7 @@
          select c.course_id  as courseId,sum(o.pay_money) as 'coursemoney' ,count(*) as 'coursenum',any_value(c.title) as 'coursename'
          from orders o
          left join course c on o.course_id=c.course_id
-         where o.status=1 and o.orders_type=1
+         where o.status=1 and o.orders_type in (1,11)
          <if test="sysUserId!=null">
              and sys_user_id=#{sysUserId}
          </if>

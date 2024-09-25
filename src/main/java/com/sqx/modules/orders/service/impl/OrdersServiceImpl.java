@@ -91,7 +91,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
     @Override
     public Result insertOrders(Orders orders) {
         //如果订单的种类是短剧
-        if (orders.getOrdersType() == 1) {
+        if (orders.getOrdersType() == 1 || orders.getOrdersType() == 11) {
             //将短剧加入到我的列表
             CourseUser courseUser = new CourseUser();
             //设置短剧id
@@ -253,7 +253,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
             if (orders == null || !orders.getStatus().equals(0)) {
                 return Result.error("订单错误，请刷新后重试！");
             }
-            if(orders.getOrdersType()==1){
+            if(orders.getOrdersType() == 1 || orders.getOrdersType() == 11){
                 int count=0;
                 if(orders.getCourseDetailsId() != null){
                     count = courseUserDao.selectCount(new QueryWrapper<CourseUser>()
@@ -330,7 +330,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
             if (orders == null || !orders.getStatus().equals(0)) {
                 return Result.error("订单错误，请刷新后重试！");
             }
-            if(orders.getOrdersType()==1){
+            if(orders.getOrdersType() == 1 || orders.getOrdersType() == 11){
                 int count=0;
                 if(orders.getCourseDetailsId() != null){
                     count = courseUserDao.selectCount(new QueryWrapper<CourseUser>()
@@ -440,7 +440,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
         }
         bean.setStatus(2);
         baseMapper.updateById(bean);
-        if (bean.getOrdersType() == 1) {
+        if (bean.getOrdersType() == 1 || bean.getOrdersType() == 11) {
             CourseUser courseUser = courseUserDao.selectOne(new QueryWrapper<CourseUser>().eq("order_id", bean.getOrdersId()));
             if (courseUser != null) {
                 courseUserDao.deleteById(courseUser.getCourseUserId());
@@ -469,7 +469,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
         IPage<Orders> orderPage = new Page<>(page, limit);
         QueryWrapper<Orders> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
-        queryWrapper.eq("orders_type", 1);
+        queryWrapper.in("orders_type", 1,11);
         queryWrapper.eq("status", 1);
         queryWrapper.orderByDesc("create_time");
         IPage<Orders> iPage = baseMapper.selectPage(orderPage, queryWrapper);
@@ -494,7 +494,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
         if (bean != null && bean.size() > 0) {
             for (int i = 0; bean.size() > i; i++) {
                 Orders orders = bean.get(i);
-                if(orders.getOrdersType()==1){
+                if(orders.getOrdersType() == 1 || orders.getOrdersType() == 11){
                     orders.setCourse(courseDao.selectById(bean.get(i).getCourseId()));
                 }
             }
