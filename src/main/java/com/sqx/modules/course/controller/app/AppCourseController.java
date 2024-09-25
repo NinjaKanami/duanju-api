@@ -27,7 +27,7 @@ public class AppCourseController extends AbstractController {
     @GetMapping("/selectCourse")
     @ApiOperation("查询短剧信息")
     public Result selectCourse(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
-                               @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, Integer isPrice,
+                               @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, @ApiParam("付费方式") Integer isPrice,
                                Integer over,Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow, HttpServletRequest request) {
         if(StringUtils.isEmpty(token)){
             token = request.getHeader("Token");

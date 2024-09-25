@@ -173,14 +173,23 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
                     //设置为全集购买价格
                     orders.setPayMoney(course.getPrice());
                 }else{
-                    return Result.error("未设置购买方式");
+                    return Result.error("未设置价格种类");
                 }
                 //设置支付状态
                 orders.setStatus(0);
                 //设置订单创建时间
                 orders.setCreateTime(df.format(new Date()));
+
                 //设置订单种类
-                orders.setOrdersType(1);
+                if (course.getIsPrice() == 1) {
+                    //短剧
+                    orders.setOrdersType(1);
+                }else if (course.getIsPrice() == 3){
+                    //云短剧
+                    orders.setOrdersType(11);
+                }else{
+                    return Result.error("未设置收费品类");
+                }
 
                 //不是会员或会员过期直接生成订单直接生成订单
                 int count = baseMapper.insertOrders(orders);

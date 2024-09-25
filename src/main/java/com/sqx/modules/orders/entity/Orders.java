@@ -82,7 +82,7 @@ public class Orders implements Serializable {
     private String refundContent;
 
     /**
-     * 订单种类 1短剧 2会员 3充值  4余额充值 5点卷兑换  6（虚拟 查询平台收入的）
+     * 订单种类 1短剧 11云短剧 2会员 3充值  4余额充值 5点卷兑换  6（虚拟 查询平台收入的）
      */
     private Integer ordersType;
 
