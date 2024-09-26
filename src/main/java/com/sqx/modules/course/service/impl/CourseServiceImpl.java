@@ -1067,7 +1067,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 emptyCount++;
                 continue;
             }
-            if (courseIn.getIsPrice() == 1) {
+            if (courseIn.getIsPrice() != 2) {
                 if (courseIn.getPrice() == null || courseIn.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
                     return Result.error("第【" + index + "】行数据为收费短剧,但并没有设置价格");
                 }
