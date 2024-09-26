@@ -32,4 +32,7 @@ build/
 /src/main/resources/rebel.xml
 /spy.log
 /logs/duanju.log
+
+### Others ###
 /.RestfulApiTool/RestfulApiTool-SavedRequest-Cache.xml
+/logs

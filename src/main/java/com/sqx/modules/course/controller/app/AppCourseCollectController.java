@@ -1,5 +1,6 @@
 package com.sqx.modules.course.controller.app;
 
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
@@ -38,7 +39,7 @@ public class AppCourseCollectController extends AbstractController {
     @GetMapping("/selectPayCourse")
     @ApiOperation("app查询收藏短剧信息")
     public Result selectPayCourse(Long courseId, @RequestAttribute Long userId) {
-        return Result.success().put("data", courseCollectService.count(
+        return Result.success().put("data", courseCollectService.getOne(
                 new QueryWrapper<CourseCollect>()
                         .eq("course_id", courseId)
                         .eq("user_id", userId)
