@@ -48,4 +48,12 @@ public class CourseIn implements Serializable {
     @Excel(name = "状态", orderNum = "14", replace = {"使用中_0", "已删除_1"})
     private Integer isDelete;
 
+    @Excel(name = "购买方式", orderNum = "15", replace = {"单集购买_0", "整剧购买_1"})
+    private Integer priceType;
+
+    @Excel(name = "状态", orderNum = "16", replace = {"不可_0", "可以_1"})
+    private Integer isCut;
+
+
+
 }
