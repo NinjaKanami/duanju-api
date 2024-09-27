@@ -74,7 +74,12 @@ public class AppCourseCutController extends ApiController {
     @GetMapping("/selectCourseCutList")
     @ApiOperation("查询用户砍剧短剧信息列表")
     public Result selectCourseCutList(@Validated @RequestAttribute("userId") Long userId) {
-        return Result.success().put("data", courseCutService.list(new QueryWrapper<CourseCut>().eq("user_id", userId).in("cut_status", 0, 1)));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return Result.success().put("data", courseCutService.list(new QueryWrapper<CourseCut>()
+                .eq("user_id", userId).eq("cut_status", 1)
+                .or()
+                .eq("user_id", userId).eq("cut_status", 0).ge("deadline", sdf.format(System.currentTimeMillis()))
+        ));
     }
 
     /**
