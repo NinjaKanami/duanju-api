@@ -9,9 +9,11 @@ import com.sqx.modules.course.dao.CourseCutInviteDao;
 import com.sqx.modules.course.entity.CourseCollect;
 import com.sqx.modules.course.entity.CourseCut;
 import com.sqx.modules.course.entity.CourseCutInvite;
+import com.sqx.modules.course.entity.CourseUser;
 import com.sqx.modules.course.service.CourseCollectService;
 import com.sqx.modules.course.service.CourseCutInviteService;
 import com.sqx.modules.course.service.CourseCutService;
+import com.sqx.modules.course.service.CourseUserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,6 +35,9 @@ public class CourseCutInviteServiceImpl extends ServiceImpl<CourseCutInviteDao, 
 
     @Resource
     private CourseCollectService courseCollectService;
+
+    @Resource
+    private CourseUserService courseUserService;
 
     @Resource
     private UserMoneyService userMoneyService;
@@ -67,8 +72,9 @@ public class CourseCutInviteServiceImpl extends ServiceImpl<CourseCutInviteDao, 
             courseCut.setInvitedCount(courseCut.getInvitedCount() + 1);
             // 判断是否砍价完成
             if (Objects.equals(courseCut.getInvitedCount(), courseCut.getInviteCount())) {
-                //人数全部邀请完成，更新状态1
+                // 人数全部邀请完成，更新状态1
                 courseCut.setCutStatus(1);
+                // 新增短剧收藏-砍剧记录
                 CourseCollect courseCollect = new CourseCollect();
                 courseCollect.setCourseId(courseCut.getCourseId());
                 courseCollect.setUserId(courseCut.getUserId());
@@ -76,6 +82,14 @@ public class CourseCutInviteServiceImpl extends ServiceImpl<CourseCutInviteDao, 
                 courseCollect.setCreateTime(sdf.format(System.currentTimeMillis()));
                 courseCollect.setUpdateTime(sdf.format(System.currentTimeMillis()));
                 courseCollectService.save(courseCollect);
+                // 新增用户短剧-整集记录
+                CourseUser courseUser = new CourseUser();
+                courseUser.setCourseId(courseCut.getCourseId());
+                courseUser.setUserId(courseCut.getUserId());
+                courseUser.setClassify(1);
+                courseUser.setCreateTime(sdf.format(System.currentTimeMillis()));
+                courseUser.setUpdateTime(sdf.format(System.currentTimeMillis()));
+                courseUserService.save(courseUser);
             }
             courseCutService.updateById(courseCut);
             /* } */
