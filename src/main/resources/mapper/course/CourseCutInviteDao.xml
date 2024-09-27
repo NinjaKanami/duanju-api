@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.course.dao.CourseCutInviteDao">
+    <resultMap type="com.sqx.modules.course.entity.CourseCutInvite" id="CourseCutInviteMap">
+        <result property="inviteId" column="invite_id" jdbcType="INTEGER"/>
+        <result property="cutId" column="cut_id" jdbcType="INTEGER"/>
+        <result property="invitedUserId" column="invited_user_id" jdbcType="INTEGER"/>
+        <result property="invitedTime" column="invited_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="inviteId" useGeneratedKeys="true">
+        insert into duanjuv2.course_cut_invite(cut_idinvited_user_idinvited_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.cutId}#{entity.invitedUserId}#{entity.invitedTime})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="inviteId" useGeneratedKeys="true">
+        insert into duanjuv2.course_cut_invite(cut_idinvited_user_idinvited_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.cutId}#{entity.invitedUserId}#{entity.invitedTime})
+        </foreach>
+        on duplicate key update
+        cut_id = values(cut_id) invited_user_id = values(invited_user_id) invited_time = values(invited_time)
+    </insert>
+</mapper>

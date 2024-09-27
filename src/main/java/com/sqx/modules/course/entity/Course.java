@@ -221,8 +221,24 @@ public class Course implements Serializable {
     /**
      * 排序序列号
      */
-    @TableField(fill = FieldFill.UPDATE)
     private Integer sequence;
+
+    /**
+     * 是否可砍剧
+     */
+    private Integer isCut;
+    /**
+     * 需邀请的用户数量
+     */
+    private Integer inviteTarget;
+    /**
+     * 每次砍剧获得的点券
+     */
+    private Integer rewardMoney;
+    /**
+     * 砍剧时间限制（小时）
+     */
+    private Integer cutTimeLimit;
 
 
     @TableField(exist = false)

@@ -22,7 +22,8 @@ public interface CourseDao extends BaseMapper<Course> {
                                             @Param("sort") Integer sort,
                                             @Param("isPrice") Integer isPrice,@Param("over") Integer over,
                                             @Param("wxCourse") Integer wxCourse,@Param("dyCourse") Integer dyCourse,
-                                            @Param("wxShow") Integer wxShow,@Param("dyShow") Integer dyShow);
+                                            @Param("wxShow") Integer wxShow,@Param("dyShow") Integer dyShow,
+                                            @Param("isCut") Integer isCut,@Param("priceType") Integer priceType);
 
     IPage<Map<String, Object>> selectCourseAdmin(Page<Map<String, Object>> pages, @Param("classifyId") Long classifyId,
                                             @Param("title") String title,@Param("isRecommend") Integer isRecommend,
@@ -30,7 +31,8 @@ public interface CourseDao extends BaseMapper<Course> {
                                             @Param("sort") Integer sort,@Param("userId") Long userId,
                                             @Param("isPrice") Integer isPrice,@Param("over") Integer over,
                                             @Param("wxCourse") Integer wxCourse,@Param("dyCourse") Integer dyCourse,
-                                            @Param("wxShow") Integer wxShow,@Param("dyShow") Integer dyShow);
+                                            @Param("wxShow") Integer wxShow,@Param("dyShow") Integer dyShow,
+                                            @Param("isCut") Integer isCut,@Param("priceType") Integer priceType);
 
     /**
      * 根据title 模糊查询短剧

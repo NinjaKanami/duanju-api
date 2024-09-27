@@ -21,7 +21,7 @@ public interface CourseService extends IService<Course> {
 
     Result selectCourse(Integer page, Integer limit, Long classifyId, String title, Integer isRecommend,
                         Integer status, Long bannerId, Integer sort, String token, Integer isPrice, Integer admin, Integer over,
-                        Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow);
+                        Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType);
 
     Result selectCourseById(Integer page,Integer limit,Long id,Integer good);
 

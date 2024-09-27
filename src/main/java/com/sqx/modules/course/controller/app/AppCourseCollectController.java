@@ -23,7 +23,7 @@ public class AppCourseCollectController extends AbstractController {
     @Login
     @PostMapping("/insertCourseCollect")
     @ApiOperation("app收藏短剧信息")
-    public Result insertCourseCollect(@RequestBody CourseCollect courseCollect,@RequestAttribute("userId") Long userId){
+    public Result insertCourseCollect(@RequestBody CourseCollect courseCollect, @RequestAttribute("userId") Long userId) {
         courseCollect.setUserId(userId);
         return courseCollectService.insertCourseCollect(courseCollect);
     }
@@ -31,8 +31,8 @@ public class AppCourseCollectController extends AbstractController {
     @Login
     @GetMapping("/selectByUserId")
     @ApiOperation("app查询收藏短剧信息")
-    public Result selectByUserId(Integer page, Integer limit,@RequestAttribute("userId") Long userId,Integer classify){
-        return courseCollectService.selectByUserId(page,limit,userId,classify);
+    public Result selectByUserId(Integer page, Integer limit, @RequestAttribute("userId") Long userId, Integer classify) {
+        return courseCollectService.selectByUserId(page, limit, userId, classify);
     }
 
     @Login
@@ -43,7 +43,7 @@ public class AppCourseCollectController extends AbstractController {
                 new QueryWrapper<CourseCollect>()
                         .eq("course_id", courseId)
                         .eq("user_id", userId)
-                        .in("classify", 4, 5)
+                        .in("classify", 4, 5, 6)
         ));
     }
 

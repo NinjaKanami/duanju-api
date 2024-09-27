@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.course.dao.CourseCutDao">
+    <resultMap type="com.sqx.modules.course.entity.CourseCut" id="CourseCutMap">
+        <result property="cutId" column="cut_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="cutStatus" column="cut_status" jdbcType="INTEGER"/>
+        <result property="inviteCount" column="invite_count" jdbcType="INTEGER"/>
+        <result property="invitedCount" column="invited_count" jdbcType="INTEGER"/>
+        <result property="rewardMoney" column="reward_money" jdbcType="INTEGER"/>
+        <result property="deadline" column="deadline" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="cutId" useGeneratedKeys="true">
+        insert into
+        duanjuv2.course_cut(course_iduser_idcut_statusinvite_countinvited_countdeadlinecreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.courseId}#{entity.userId}#{entity.cutStatus}#{entity.inviteCount}#{entity.invitedCount}#{entity.deadline}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="cutId" useGeneratedKeys="true">
+        insert into
+        duanjuv2.course_cut(course_iduser_idcut_statusinvite_countinvited_countdeadlinecreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.courseId}#{entity.userId}#{entity.cutStatus}#{entity.inviteCount}#{entity.invitedCount}#{entity.deadline}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        course_id = values(course_id) user_id = values(user_id) cut_status = values(cut_status) invite_count =
+        values(invite_count) invited_count = values(invited_count) deadline = values(deadline) create_time =
+        values(create_time) update_time = values(update_time)
+    </insert>
+</mapper>

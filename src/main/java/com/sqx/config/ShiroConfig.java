@@ -42,6 +42,10 @@ public class ShiroConfig {
 
         Map<String, String> filterMap = new LinkedHashMap<>();
         filterMap.put("/course/synCourse", "anon");
+        filterMap.put("/courseCut/**", "anon");
+        filterMap.put("/courseCutInvite/**", "anon");
+        filterMap.put("/app/courseCut/**", "anon");
+        filterMap.put("/app/courseCutInvite/**", "anon");
         filterMap.put("/webjars/**", "anon");
         filterMap.put("/druid/**", "anon");
         filterMap.put("/app/**", "anon");

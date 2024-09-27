@@ -123,7 +123,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     @Override
     public Result selectCourse(Integer page, Integer limit, Long classifyId, String title,Integer isRecommend,Integer status,
                                Long bannerId,Integer sort,String token, Integer isPrice,Integer admin, Integer over,
-                               Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow) {
+                               Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType) {
         Long userId=null;
         if(admin==null){
             if(StringUtils.isNotEmpty(token)){
@@ -143,7 +143,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             if(StringUtils.isEmpty(s)){
                 //
                 IPage<Map<String, Object>> mapIPage = baseMapper.selectCourse(pages, classifyId, title, isRecommend, status, bannerId,
-                        sort, isPrice, over,wxCourse,dyCourse,wxShow,dyShow);
+                        sort, isPrice, over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
                 List<Map<String, Object>> records = mapIPage.getRecords();
                 for (Map<String, Object> map:records){
                     Object courseId = map.get("courseId");
@@ -223,7 +223,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             }
         }
         IPage<Map<String, Object>> mapIPage = baseMapper.selectCourseAdmin(pages, classifyId, title, isRecommend, status, bannerId,
-                sort, userId, isPrice, over, wxCourse, dyCourse,wxShow,dyShow);
+                sort, userId, isPrice, over, wxCourse, dyCourse,wxShow,dyShow,isCut,priceType);
         List<Map<String, Object>> records = mapIPage.getRecords();
         for (Map<String, Object> map:records){
             Object courseId = map.get("courseId");

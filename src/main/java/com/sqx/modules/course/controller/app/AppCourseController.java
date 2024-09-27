@@ -28,7 +28,7 @@ public class AppCourseController extends AbstractController {
     @ApiOperation("查询短剧信息")
     public Result selectCourse(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
                                @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, @ApiParam("付费方式") Integer isPrice,
-                               Integer over,Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow, HttpServletRequest request) {
+                               Integer over,Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType, HttpServletRequest request) {
         if(StringUtils.isEmpty(token)){
             token = request.getHeader("Token");
             if(StringUtils.isBlank(token)){
@@ -36,7 +36,7 @@ public class AppCourseController extends AbstractController {
             }
         }
         return courseService.selectCourse(page, limit, classifyId, title,null,1,bannerId,sort,token,isPrice,
-                null, over,wxCourse,dyCourse,wxShow,dyShow);
+                null, over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
     }
 
 
@@ -63,18 +63,18 @@ public class AppCourseController extends AbstractController {
     @ApiOperation("模糊根据短剧标题查询短剧")
     public Result selectCourseTitle(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
                                     @ApiParam("搜索内容") String title,Long bannerId,Integer sort,String token, Integer isPrice,Integer over,
-                                    Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow) {
+                                    Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType) {
         return courseService.selectCourse(page, limit, classifyId, title,null,1,bannerId,sort,token,isPrice,
-                null, over,wxCourse,dyCourse,wxShow,dyShow);
+                null, over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
     }
 
     @GetMapping("/selectCourseTitles")
     @ApiOperation("模糊根据短剧标题查询短剧")
     public Result selectCourseTitles(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
                                      @ApiParam("搜索内容") String title,Long bannerId,Integer sort,String token, Integer isPrice,Integer over,
-                                     Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow) {
+                                     Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType) {
         return courseService.selectCourse(page, limit, classifyId, title,null,1,bannerId,sort,token,isPrice,
-                null, over,wxCourse,dyCourse,wxShow,dyShow);
+                null, over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
     }
 
     @Login

@@ -22,6 +22,7 @@
         c.msg_url as msgUrl,
         c.pay_num as payNum,
         c.price,
+        c.price_type as priceType,
         c.over,
         c.title,
         c.is_price as isPrice,
@@ -37,6 +38,11 @@
         c.wx_course_id as wxCourseId,
         c.wx_show as wxShow,
         c.dy_show as dyShow,
+        c.sequence as sequence,
+        c.is_cut as isCut,
+        c.invite_target as inviteTarget,
+        c.reward_money as rewardMoney,
+        c.cut_time_limit as cutTimeLimit,
         (select count(*) from course_details d where d.course_id=c.course_id ) as courseDetailsCount,
         (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
         (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
@@ -86,6 +92,7 @@
         c.msg_url as msgUrl,
         c.pay_num as payNum,
         c.price,
+        c.price_type as priceType,
         c.over,
         c.title,
         c.is_price as isPrice,
@@ -102,6 +109,10 @@
         c.wx_show as wxShow,
         c.dy_show as dyShow,
         c.sequence as sequence,
+        c.is_cut as isCut,
+        c.invite_target as inviteTarget,
+        c.reward_money as rewardMoney,
+        c.cut_time_limit as cutTimeLimit,
         (select count(*) from course_details d where d.course_id=c.course_id ) as courseDetailsCount,
         (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
         (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
@@ -155,6 +166,24 @@
         <if test="dyCourse!=null">
             and c.dy_status=4
         </if>
+        <!--<if test="dyCourse!=null">
+            and c.sequence=#{isPrice}
+        </if>
+        <if test="dyCourse!=null">
+            and c.is_cut=#{isPrice}
+        </if>
+        <if test="dyCourse!=null">
+            and c.invite_target=#{isPrice}
+        </if>
+        <if test="dyCourse!=null">
+            and c.reward_money=#{isPrice}
+        </if>
+        <if test="dyCourse!=null">
+            and c.cut_time_limit=#{isPrice}
+        </if>-->
+        <if test="isCut!=null">
+            and c.is_cut=#{isCut}
+        </if>
         <if test="sort==null">
             order by c.create_time desc
         </if>
@@ -185,6 +214,7 @@
         c.msg_url as msgUrl,
         c.pay_num as payNum,
         c.price,
+        c.price_type as priceType,
         c.over,
         c.title,
         c.is_price as isPrice,
@@ -208,6 +238,10 @@
         c.wx_show as wxShow,
         c.dy_show as dyShow,
         c.sequence as sequence,
+        c.is_cut as isCut,
+        c.invite_target as inviteTarget,
+        c.reward_money as rewardMoney,
+        c.cut_time_limit as cutTimeLimit,
         (select count(*) from course_details where dy_url_status in (1,3) or dy_url_status=null) as dyUrlStatus,
         (select sum(o.pay_money) from orders o where o.course_id=c.course_id and o.status=1) as payMoney,
         (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
@@ -264,6 +298,9 @@
         <if test="dyCourse!=null">
             and c.dy_status=4
         </if>
+        <if test="isCut!=null">
+            and c.is_cut=#{isCut}
+        </if>
         <if test="sort==null">
             order by c.create_time desc
         </if>
@@ -292,10 +329,12 @@
         c.msg_url as msgUrl,
         c.pay_num as payNum,
         c.price,
+        c.price_type as priceType,
         c.status,
         c.title,
         c.title_img as titleImg,
-        c.update_time as updateTime
+        c.update_time as updateTime,
+        c.is_cut as isCut,
         FROM
         course c
         WHERE
