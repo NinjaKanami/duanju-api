@@ -138,7 +138,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         if(admin==null){
             String redisCourseName="page_"+page+"_limit_"+limit+"_classifyId_"+classifyId+"_title_"+title+"_isRecommend_"+isRecommend+"_status_"+status+
                     "_bannerId_"+bannerId+"_sort_"+sort+"_isPrice_"+isPrice+"_over_"+over+"_wxCourse_"+wxCourse+"_dyCourse_"+dyCourse+"_wxShow_"+wxShow+
-                    "_dyShow_"+dyShow;
+                    "_dyShow_"+dyShow+"_isCut_"+isCut+"_priceType_"+priceType;
             String s = redisUtils.get(redisCourseName);
             if(StringUtils.isEmpty(s)){
                 //
