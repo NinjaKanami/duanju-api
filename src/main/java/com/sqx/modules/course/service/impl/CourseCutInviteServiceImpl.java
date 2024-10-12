@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.entity.UserMoney;
 import com.sqx.modules.app.service.UserMoneyService;
+import com.sqx.modules.common.entity.CommonInfo;
+import com.sqx.modules.common.service.CommonInfoService;
 import com.sqx.modules.course.dao.CourseCutInviteDao;
 import com.sqx.modules.course.entity.CourseCollect;
 import com.sqx.modules.course.entity.CourseCut;
@@ -19,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -43,6 +48,24 @@ public class CourseCutInviteServiceImpl extends ServiceImpl<CourseCutInviteDao, 
     @Resource
     private UserMoneyService userMoneyService;
 
+    @Resource
+    private CommonInfoService commonInfoService;
+
+    /**
+     * 获取当天的起始时间和结束时间（字符串格式）
+     **/
+    private String getTodayBoundary(Date currentDate, int hour, int minute, int second, int millisecond) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, second);
+        calendar.set(Calendar.MILLISECOND, millisecond);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(calendar.getTime());
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result insertCourseCutInvite(Long cutId, Long userId) {
@@ -59,6 +82,25 @@ public class CourseCutInviteServiceImpl extends ServiceImpl<CourseCutInviteDao, 
 
             if (Objects.equals(courseCut.getUserId(), userId)) {
                 return Result.error("自己不能为自己助力");
+            }
+
+            // 每日可砍剧次数
+            CommonInfo commonInfo = commonInfoService.findOne(1001);
+            if (commonInfo == null) {
+                return Result.error("系统配置信息异常");
+            }
+            // 获取当前时间
+            Date currentDate = new Date();
+
+            // 获取当天的起始时间和结束时间
+            String todayStartStr = getTodayBoundary(currentDate, 0, 0, 0, 0);
+            String todayEndStr = getTodayBoundary(currentDate, 23, 59, 59, 999);
+
+            // 用户已砍剧次数
+            int count = this.count(new QueryWrapper<CourseCutInvite>().eq("invited_user_id", userId).between("invited_time", todayStartStr, todayEndStr));
+            // 判断是否超过每日砍价次数
+            if (count >= Integer.parseInt(commonInfo.getValue())) {
+                return Result.error("每日砍价次数已达上限");
             }
 
             CourseCutInvite courseCutInvite = new CourseCutInvite();
