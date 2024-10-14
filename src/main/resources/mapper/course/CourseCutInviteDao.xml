@@ -26,4 +26,10 @@
         on duplicate key update
         cut_id = values(cut_id) invited_user_id = values(invited_user_id) invited_time = values(invited_time)
     </insert>
+    <select id="selectUsersByCutId" resultType="com.sqx.modules.course.entity.CourseCutInvite">
+        select cci.*, user_name as invitedUserName, avatar as invitedUserAvatar
+        from duanjuv2.course_cut_invite cci
+                 left join duanjuv2.tb_user on invited_user_id = tb_user.user_id
+        where cut_id = #{cutId}
+    </select>
 </mapper>

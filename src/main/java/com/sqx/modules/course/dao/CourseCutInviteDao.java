@@ -33,4 +33,13 @@ public interface CourseCutInviteDao extends BaseMapper<CourseCutInvite> {
      */
     int insertOrUpdateBatch(@Param("entities") List<CourseCutInvite> entities);
 
+    /**
+     * 根据cutId查询邀请人信息
+     *
+     * @param cutId 砍剧id
+     * @return java.util.List<com.sqx.modules.course.entity.CourseCutInvite>
+     * @author Zhou
+     **/
+    List<CourseCutInvite> selectUsersByCutId(Long cutId);
+
 }

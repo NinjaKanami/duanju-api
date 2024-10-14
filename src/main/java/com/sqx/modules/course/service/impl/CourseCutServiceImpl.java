@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.course.dao.CourseCutDao;
+import com.sqx.modules.course.dao.CourseCutInviteDao;
 import com.sqx.modules.course.entity.Course;
 import com.sqx.modules.course.entity.CourseCut;
 import com.sqx.modules.course.entity.CourseCutInvite;
@@ -31,6 +32,8 @@ public class CourseCutServiceImpl extends ServiceImpl<CourseCutDao, CourseCut> i
     private CourseService courseService;
     @Resource
     private CourseCutInviteService courseCutInviteService;
+    @Resource
+    private CourseCutInviteDao courseCutInviteDao;
 
     @Override
     public Result selectCourseCut(Long cutId, Long userId) {
@@ -47,7 +50,8 @@ public class CourseCutServiceImpl extends ServiceImpl<CourseCutDao, CourseCut> i
         }
 
         // 查询砍剧邀请信息
-        List<CourseCutInvite> courseCutInviteList = courseCutInviteService.list(new QueryWrapper<CourseCutInvite>().eq("cut_id", cutId));
+        //List<CourseCutInvite> courseCutInviteList = courseCutInviteService.list(new QueryWrapper<CourseCutInvite>().eq("cut_id", cutId));
+        List<CourseCutInvite> courseCutInviteList = courseCutInviteDao.selectUsersByCutId(cutId);
 
         courseCut.setCourseCutInviteList(courseCutInviteList);
 
