@@ -84,6 +84,11 @@ public class CourseCutInviteServiceImpl extends ServiceImpl<CourseCutInviteDao, 
                 return Result.error("自己不能为自己助力");
             }
 
+            int i = this.count(new QueryWrapper<CourseCutInvite>().eq("invited_user_id", userId).eq("cut_id", cutId));
+            if (i >= 1) {
+                return Result.error("已助力过");
+            }
+
             // 每日可砍剧次数
             CommonInfo commonInfo = commonInfoService.findOne(1001);
             if (commonInfo == null) {
