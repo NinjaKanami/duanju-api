@@ -11,6 +11,7 @@ import com.sqx.common.utils.PageUtils;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.entity.*;
 import com.sqx.modules.app.service.*;
+import com.sqx.modules.box.service.BoxPointService;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
 import com.sqx.modules.course.dao.CourseDao;
@@ -37,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -47,6 +49,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @Service
 @Slf4j
 public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements OrdersService {
+    @Autowired
+    private BoxPointService boxPointService;
     @Autowired
     private WxService wxService;
     @Autowired
@@ -247,6 +251,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result payMoney(Long ordersId) {
         reentrantReadWriteLock.writeLock().lock();
@@ -255,19 +260,25 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
             if (orders == null || !orders.getStatus().equals(0)) {
                 return Result.error("订单错误，请刷新后重试！");
             }
+            int size = 0;
             if (orders.getOrdersType() == 1 || orders.getOrdersType() == 11) {
                 int count = 0;
                 if (orders.getCourseDetailsId() != null) {
+                    // 单集购买
                     count = courseUserDao.selectCount(new QueryWrapper<CourseUser>()
                             .eq("user_id", orders.getUserId())
                             .eq("classify", 2)
                             .eq("course_id", orders.getCourseId())
                             .eq(orders.getCourseDetailsId() != null, "course_details_id", orders.getCourseDetailsId()));
+                    size = 1;
                 } else {
+                    // 全集购买
                     count = courseUserDao.selectCount(new QueryWrapper<CourseUser>()
                             .eq("user_id", orders.getUserId())
                             .eq("classify", 1)
                             .eq("course_id", orders.getCourseId()));
+                    // 总集数
+                    size = courseDetailsService.count(new QueryWrapper<CourseDetails>().eq("course_id", orders.getCourseId()));
                 }
                 if (count > 0) {
                     return Result.error("您已购买，请不要重复点击");
@@ -312,6 +323,14 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
                 }*/
                 baseMapper.updateById(orders);
                 insertOrders(orders);
+                // 获取积分
+                // 非云短剧无法获得积分
+                if (orders.getOrdersType() == 11) {
+                    Result result = boxPointService.getPoints(orders.getUserId(), orders.getCourseId(), size);
+                    if (!result.get("code").equals(0)) {
+                        throw new Exception(result.get("msg").toString());
+                    }
+                }
                 return Result.success();
             }
         } catch (Exception e) {

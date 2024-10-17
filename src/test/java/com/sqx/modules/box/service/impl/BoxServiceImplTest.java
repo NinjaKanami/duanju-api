@@ -27,7 +27,7 @@ class BoxServiceImplTest {
     void save() {
         Box box = new Box();
         box.setUserId(1L);
-        box.setCourseId(1);
+        box.setCourseId(1L);
         box.setCount(1);
         boxService.save(box);
     }

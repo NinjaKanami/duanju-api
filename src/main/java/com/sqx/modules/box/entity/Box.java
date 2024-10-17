@@ -28,7 +28,7 @@ public class Box implements Serializable {
      * 课程id
      */
     @TableField(value = "course_id")
-    private Integer courseId;
+    private Long courseId;
 
     /**
      * 盲盒数量 <3

@@ -28,7 +28,7 @@ public class BoxPoint implements Serializable {
      * 课程id
      */
     @TableField(value = "course_id")
-    private Integer courseId;
+    private Long courseId;
 
     /**
      * 碎片数量 <100
