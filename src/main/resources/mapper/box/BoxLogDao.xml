@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.box.dao.BoxLogDao">
+
+    <resultMap type="com.sqx.modules.box.entity.BoxLog" id="BoxLogMap">
+        <result property="boxLogId" column="box_log_id" jdbcType="INTEGER"/>
+        <result property="foreignId" column="foreign_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="action" column="action" jdbcType="INTEGER"/>
+        <result property="num" column="num" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="boxLogId" useGeneratedKeys="true">
+        insert into duanjuv2.box_log(foreign_idtypeactionnumcreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.foreignId}#{entity.type}#{entity.action}#{entity.num}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="boxLogId" useGeneratedKeys="true">
+        insert into duanjuv2.box_log(foreign_idtypeactionnumcreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.foreignId}#{entity.type}#{entity.action}#{entity.num}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        foreign_id = values(foreign_id) type = values(type) action = values(action) num = values(num) create_time =
+        values(create_time) update_time = values(update_time)
+    </insert>
+
+</mapper>

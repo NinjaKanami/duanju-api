@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.box.dao.BoxItemDao">
+
+    <resultMap type="com.sqx.modules.box.entity.BoxItem" id="BoxItemMap">
+        <result property="boxItemId" column="box_item_id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="odds" column="odds" jdbcType="NUMERIC"/>
+        <result property="share" column="share" jdbcType="INTEGER"/>
+        <result property="isRandom" column="is_random" jdbcType="INTEGER"/>
+        <result property="remains" column="remains" jdbcType="INTEGER"/>
+        <result property="hit" column="hit" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="boxItemId" useGeneratedKeys="true">
+        insert into duanjuv2.box_item(nameoddsshareis_randomremainshitcreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.name}#{entity.odds}#{entity.share}#{entity.isRandom}#{entity.remains}#{entity.hit}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="boxItemId" useGeneratedKeys="true">
+        insert into duanjuv2.box_item(nameoddsshareis_randomremainshitcreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.name}#{entity.odds}#{entity.share}#{entity.isRandom}#{entity.remains}#{entity.hit}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        name = values(name) odds = values(odds) share = values(share) is_random = values(is_random) remains =
+        values(remains) hit = values(hit) create_time = values(create_time) update_time = values(update_time)
+    </insert>
+
+</mapper>

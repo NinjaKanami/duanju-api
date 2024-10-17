@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.box.dao.CollectLogDao">
+
+    <resultMap type="com.sqx.modules.box.entity.CollectLog" id="CollectLogMap">
+        <result property="collectLogId" column="collect_log_id" jdbcType="INTEGER"/>
+        <result property="foreignId" column="foreign_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="plus" column="plus" jdbcType="INTEGER"/>
+        <result property="reduce" column="reduce" jdbcType="INTEGER"/>
+        <result property="itemName" column="item_name" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="collectLogId" useGeneratedKeys="true">
+        insert into duanjuv2.collect_log(foreign_idtypeplusreduceitem_namecreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.foreignId}#{entity.type}#{entity.plus}#{entity.reduce}#{entity.itemName}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="collectLogId" useGeneratedKeys="true">
+        insert into duanjuv2.collect_log(foreign_idtypeplusreduceitem_namecreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.foreignId}#{entity.type}#{entity.plus}#{entity.reduce}#{entity.itemName}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        foreign_id = values(foreign_id) type = values(type) plus = values(plus) reduce = values(reduce) item_name =
+        values(item_name) create_time = values(create_time) update_time = values(update_time)
+    </insert>
+
+</mapper>
