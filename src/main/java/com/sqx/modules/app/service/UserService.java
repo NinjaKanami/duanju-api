@@ -21,6 +21,15 @@ import java.util.Map;
  */
 public interface UserService extends IService<UserEntity> {
 
+    /**
+     * 身份信息验证
+     * @param phone 手机号
+     * @param idNumber 身份证号
+     * @param idName 姓名
+     * @return
+     */
+    Result verifyUserIdNumber(String phone,String idNumber,String idName);
+
     Result authenticationSuperUser(JSONObject jsonObject, HttpServletRequest request);
 
     String getUserName();
