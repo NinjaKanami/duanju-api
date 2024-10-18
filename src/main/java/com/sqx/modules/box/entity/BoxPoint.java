@@ -6,10 +6,10 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
+ * @author Zbc
  * @TableName box_point
  */
-@TableName(value ="box_point")
+@TableName(value = "box_point")
 @Data
 public class BoxPoint implements Serializable {
     /**
@@ -31,10 +31,17 @@ public class BoxPoint implements Serializable {
     private Long courseId;
 
     /**
-     * 碎片数量 <100
+     * 获得积分数量 <100
      */
-    @TableField(value = "count")
-    private Integer count;
+    @TableField(value = "point")
+    private Integer point;
+
+    /**
+     * 获得盲盒数量 <3
+     */
+    @TableField(value = "reward")
+    private Integer reward;
+
 
     /**
      * 创建时间
@@ -64,11 +71,11 @@ public class BoxPoint implements Serializable {
         }
         BoxPoint other = (BoxPoint) that;
         return (this.getBoxPointId() == null ? other.getBoxPointId() == null : this.getBoxPointId().equals(other.getBoxPointId()))
-            && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-            && (this.getCourseId() == null ? other.getCourseId() == null : this.getCourseId().equals(other.getCourseId()))
-            && (this.getCount() == null ? other.getCount() == null : this.getCount().equals(other.getCount()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
+                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
+                && (this.getCourseId() == null ? other.getCourseId() == null : this.getCourseId().equals(other.getCourseId()))
+                && (this.getPoint() == null ? other.getPoint() == null : this.getPoint().equals(other.getPoint()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
     }
 
     @Override
@@ -78,7 +85,7 @@ public class BoxPoint implements Serializable {
         result = prime * result + ((getBoxPointId() == null) ? 0 : getBoxPointId().hashCode());
         result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
         result = prime * result + ((getCourseId() == null) ? 0 : getCourseId().hashCode());
-        result = prime * result + ((getCount() == null) ? 0 : getCount().hashCode());
+        result = prime * result + ((getPoint() == null) ? 0 : getPoint().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         return result;
@@ -93,7 +100,7 @@ public class BoxPoint implements Serializable {
         sb.append(", boxPointId=").append(boxPointId);
         sb.append(", userId=").append(userId);
         sb.append(", courseId=").append(courseId);
-        sb.append(", count=").append(count);
+        sb.append(", point=").append(point);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);

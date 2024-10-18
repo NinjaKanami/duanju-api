@@ -28,17 +28,136 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
     @Autowired
     private BoxLogService boxLogService;
 
-
     /**
      * 获得积分
      *
      * @param userId   用户
      * @param courseId 短剧
-     * @return Result
+     * @param n        随机次数
+     * @return 获得盲盒数量
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Result getPoints(Long userId, Long courseId, int size) {
+    public int getPoints(Long userId, Long courseId, int n) {
+        try {
+            // 参数校验
+            if (userId == null || courseId == null || n <= 0) {
+                log.warn("参数错误");
+                return 0;
+            }
+
+            // 设置最大盲盒
+            int maxReward = 3;
+            // 设置最大积分
+            int maxPoint = 100;
+            // 获得盲盒
+            int reward = 0;
+            // 获得积分
+            int point = 0;
+
+            // 查询积分
+            BoxPoint boxPoint = this.getOne(new QueryWrapper<BoxPoint>().eq("user_id", userId).eq("course_id", courseId));
+
+            // 判断奖励是否大于等于最大盲盒
+            if (boxPoint != null && boxPoint.getReward() >= maxReward) {
+                log.warn("奖励已达上限");
+                return 0;
+            }
+
+            // 没有积分 初始化
+            if (boxPoint == null) {
+                boxPoint = new BoxPoint();
+                boxPoint.setUserId(userId);
+                boxPoint.setCourseId(courseId);
+                boxPoint.setPoint(0);
+                boxPoint.setReward(0);
+            }
+
+            // 获得积分
+            if (n == 1) {
+                // 随机获得积分 1-6
+                point = (int) (Math.random() * 6 + 1);
+            } else {
+                // 随机获得size次积分1-6的和
+                for (int i = 0; i < n; i++) {
+                    point += (int) (Math.random() * 6 + 1);
+                }
+            }
+            // 获得积分log
+            int getPoint = point;
+
+            // 如果最终积分小于100
+            if (boxPoint.getPoint() + point < maxPoint) {
+                // 更新积分
+                boxPoint.setPoint(boxPoint.getPoint() + point);
+            } else {
+                // 积分大于最大盲盒时取除数 获得盲盒的数量
+                reward = point / maxPoint;
+                // 判断应得盲盒是否大于等于(最大盲盒-已获得盲盒) 并取最小值
+                reward = Math.min(reward, maxReward - boxPoint.getReward());
+                // 更新奖励
+                boxPoint.setReward(boxPoint.getReward() + reward);
+
+                // 积分大于最大盲盒时取余 获得剩余的积分
+                point = point % maxPoint;
+                // 更新积分 获得盲盒
+                boxPoint.setPoint(point);
+
+                // 查询盲盒
+                Box box = boxService.getOne(new QueryWrapper<Box>().eq("user_id", userId));
+                // 没有盲盒
+                if (box == null) {
+                    // 添加盲盒
+                    box = new Box();
+                    box.setUserId(userId);
+                    box.setCount(0);
+                }
+
+                // 更新盲盒
+                box.setCount(box.getCount() + reward);
+                boxService.saveOrUpdate(box);
+            }
+
+            // 更新积分
+            this.saveOrUpdate(boxPoint);
+
+            // 更新log
+            BoxPoint boxPoint1 = this.getOne(new QueryWrapper<BoxPoint>().eq("user_id", userId).eq("course_id", courseId));
+            Box box1 = boxService.getOne(new QueryWrapper<Box>().eq("user_id", userId));
+
+            BoxLog boxPointLog = new BoxLog();
+            boxPointLog.setForeignId(boxPoint1.getBoxPointId());
+            boxPointLog.setType(0);
+            boxPointLog.setAction(0);
+            boxPointLog.setNum(getPoint);
+            boxLogService.save(boxPointLog);
+
+            if (box1 != null) {
+                BoxLog boxLog = new BoxLog();
+                boxLog.setForeignId(box1.getBoxId());
+                boxLog.setType(1);
+                boxLog.setAction(0);
+                boxLog.setNum(reward);
+                boxLogService.save(boxLog);
+            }
+
+        } catch (Exception e) {
+            log.error("系统异常", e);
+        }
+        return 0;
+    }
+
+
+    /**
+     * 获得积分 旧box表(带courseId)设计方案
+     *
+     * @param userId   用户
+     * @param courseId 短剧
+     * @return Result
+     */
+    /* @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Result getPointsOld(Long userId, Long courseId, int size) {
         try {
             if (userId == null || courseId == null) {
                 return Result.error("参数错误");
@@ -64,7 +183,7 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
                 boxPoint = new BoxPoint();
                 boxPoint.setUserId(userId);
                 boxPoint.setCourseId(courseId);
-                boxPoint.setCount(0);
+                boxPoint.setPoint(0);
             }
 
             // 获得积分
@@ -83,9 +202,9 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
             // 获得积分log
             int get = num;
             // 如果最终积分小于100
-            if (boxPoint.getCount() + num < maxPoint) {
+            if (boxPoint.getPoint() + num < maxPoint) {
                 // 更新积分
-                boxPoint.setCount(boxPoint.getCount() + num);
+                boxPoint.setPoint(boxPoint.getPoint() + num);
             } else {
                 // 积分大于100时对100取余并保留除数 获得盲盒的数量
                 count = num / maxPoint;
@@ -93,7 +212,7 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
                 // 积分大于100时对100取余 剩余的积分
                 num = num % maxPoint;
                 // 更新积分 获得盲盒
-                boxPoint.setCount(num);
+                boxPoint.setPoint(num);
                 // 没有盲盒
                 if (box == null) {
                     // 添加盲盒
@@ -131,5 +250,7 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
             return Result.error("系统异常" + e);
         }
         return Result.success();
-    }
+    } */
+
+
 }

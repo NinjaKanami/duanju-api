@@ -25,10 +25,8 @@ class BoxPointServiceImplTest {
 
     @Test
     void getPoints() {
-        Result result = boxPointService.getPoints(10086L, 10010L, 1000);
-        if (result.get("code").equals(0)) {
-            System.out.println(">>>>>>>>>>>>>>>>" + result);
-        }
+        int result = boxPointService.getPoints(10086L, 10010L, 1000);
+        System.out.println(">>>>>>>>>>>>>>>>" + result);
 
     }
 }

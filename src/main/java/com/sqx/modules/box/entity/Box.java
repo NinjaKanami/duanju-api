@@ -25,13 +25,7 @@ public class Box implements Serializable {
     private Long userId;
 
     /**
-     * 课程id
-     */
-    @TableField(value = "course_id")
-    private Long courseId;
-
-    /**
-     * 盲盒数量 <3
+     * 盲盒数量
      */
     @TableField(value = "count")
     private Integer count;
@@ -65,7 +59,6 @@ public class Box implements Serializable {
         Box other = (Box) that;
         return (this.getBoxId() == null ? other.getBoxId() == null : this.getBoxId().equals(other.getBoxId()))
                 && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-                && (this.getCourseId() == null ? other.getCourseId() == null : this.getCourseId().equals(other.getCourseId()))
                 && (this.getCount() == null ? other.getCount() == null : this.getCount().equals(other.getCount()))
                 && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
                 && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
@@ -77,7 +70,6 @@ public class Box implements Serializable {
         int result = 1;
         result = prime * result + ((getBoxId() == null) ? 0 : getBoxId().hashCode());
         result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
-        result = prime * result + ((getCourseId() == null) ? 0 : getCourseId().hashCode());
         result = prime * result + ((getCount() == null) ? 0 : getCount().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
@@ -92,7 +84,6 @@ public class Box implements Serializable {
         sb.append("Hash = ").append(hashCode());
         sb.append(", boxId=").append(boxId);
         sb.append(", userId=").append(userId);
-        sb.append(", courseId=").append(courseId);
         sb.append(", count=").append(count);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);

@@ -260,7 +260,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
             if (orders == null || !orders.getStatus().equals(0)) {
                 return Result.error("订单错误，请刷新后重试！");
             }
-            int size = 0;
+            // 购买的集数
+            int n = 0;
             if (orders.getOrdersType() == 1 || orders.getOrdersType() == 11) {
                 int count = 0;
                 if (orders.getCourseDetailsId() != null) {
@@ -270,7 +271,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
                             .eq("classify", 2)
                             .eq("course_id", orders.getCourseId())
                             .eq(orders.getCourseDetailsId() != null, "course_details_id", orders.getCourseDetailsId()));
-                    size = 1;
+                    n = 1;
                 } else {
                     // 全集购买
                     count = courseUserDao.selectCount(new QueryWrapper<CourseUser>()
@@ -278,7 +279,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
                             .eq("classify", 1)
                             .eq("course_id", orders.getCourseId()));
                     // 总集数
-                    size = courseDetailsService.count(new QueryWrapper<CourseDetails>().eq("course_id", orders.getCourseId()));
+                    n = courseDetailsService.count(new QueryWrapper<CourseDetails>().eq("course_id", orders.getCourseId()).eq("is_price", 1));
                 }
                 if (count > 0) {
                     return Result.error("您已购买，请不要重复点击");
@@ -325,13 +326,11 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
                 insertOrders(orders);
                 // 获取积分
                 // 非云短剧无法获得积分
+                int i = 0;
                 if (orders.getOrdersType() == 11) {
-                    Result result = boxPointService.getPoints(orders.getUserId(), orders.getCourseId(), size);
-                    if (!result.get("code").equals(0)) {
-                        throw new Exception(result.get("msg").toString());
-                    }
+                    i = boxPointService.getPoints(orders.getUserId(), orders.getCourseId(), n);
                 }
-                return Result.success();
+                return Result.success().put("boxCount", i);
             }
         } catch (Exception e) {
             e.printStackTrace();

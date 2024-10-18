@@ -24,7 +24,7 @@ import java.util.List;
  * @author makejava
  * @since 2024-09-26 19:54:53
  */
-@Api(value = "短剧砍剧邀请", tags = {"短剧砍剧邀请"})
+@Api(value = "App短剧砍剧邀请", tags = {"App短剧砍剧邀请"})
 @RestController
 @RequestMapping("app/courseCutInvite")
 public class AppCourseCutInviteController extends ApiController {

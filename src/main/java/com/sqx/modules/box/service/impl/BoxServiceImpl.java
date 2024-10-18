@@ -81,7 +81,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             // 剩余发行数量
             CommonInfo remain = commonInfoService.findOne(2004);
             if (remain != null) {
-                boxCollection.setCollectMax(Integer.parseInt(remain.getValue()));
+                boxCollection.setCollectRemain(Integer.parseInt(remain.getValue()));
             }
 
             return Result.success().put("data", boxCollection);

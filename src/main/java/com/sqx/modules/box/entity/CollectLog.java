@@ -21,8 +21,8 @@ public class CollectLog implements Serializable {
     /**
      * 数据id
      */
-    @TableField(value = "foreign_id")
-    private Long foreignId;
+    @TableField(value = "user_id")
+    private Long userId;
 
     /**
      * 0碎片 1藏品
@@ -76,7 +76,7 @@ public class CollectLog implements Serializable {
         }
         CollectLog other = (CollectLog) that;
         return (this.getCollectLogId() == null ? other.getCollectLogId() == null : this.getCollectLogId().equals(other.getCollectLogId()))
-            && (this.getForeignId() == null ? other.getForeignId() == null : this.getForeignId().equals(other.getForeignId()))
+            && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
             && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
             && (this.getPlus() == null ? other.getPlus() == null : this.getPlus().equals(other.getPlus()))
             && (this.getReduce() == null ? other.getReduce() == null : this.getReduce().equals(other.getReduce()))
@@ -90,7 +90,7 @@ public class CollectLog implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getCollectLogId() == null) ? 0 : getCollectLogId().hashCode());
-        result = prime * result + ((getForeignId() == null) ? 0 : getForeignId().hashCode());
+        result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
         result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
         result = prime * result + ((getPlus() == null) ? 0 : getPlus().hashCode());
         result = prime * result + ((getReduce() == null) ? 0 : getReduce().hashCode());
@@ -107,7 +107,7 @@ public class CollectLog implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", collectLogId=").append(collectLogId);
-        sb.append(", foreignId=").append(foreignId);
+        sb.append(", userId=").append(userId);
         sb.append(", type=").append(type);
         sb.append(", plus=").append(plus);
         sb.append(", reduce=").append(reduce);

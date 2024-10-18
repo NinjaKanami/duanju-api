@@ -13,13 +13,22 @@ import com.sqx.modules.box.entity.BoxPoint;
 public interface BoxPointService extends IService<BoxPoint> {
 
     /**
+     * 获得积分 旧box表(带courseId)设计方案
+     *
+     * @param userId   用户
+     * @param courseId 短剧
+     * @return Result
+     */
+    /* Result getPointsOld(Long userId, Long courseId, int size); */
+
+    /**
      * 获得积分
      *
      * @param userId   用户
      * @param courseId 短剧
-     * @param size     集数
-     * @return Result
+     * @param n        随机次数
+     * @return int 获得盲盒数量
      */
-    Result getPoints(Long userId, Long courseId, int size);
+    int getPoints(Long userId, Long courseId, int n);
 
 }

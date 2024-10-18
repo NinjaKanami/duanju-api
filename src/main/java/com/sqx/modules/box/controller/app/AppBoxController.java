@@ -1,4 +1,4 @@
-package com.sqx.modules.box.controller;
+package com.sqx.modules.box.controller.app;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -23,10 +23,10 @@ import java.util.List;
  * @author makejava
  * @since 2024-10-17 15:49:35
  */
-@Api(value = "用户盲盒", tags = {"用户盲盒"})
+@Api(value = "App用户盲盒", tags = {"app用户盲盒"})
 @RestController
-@RequestMapping("box")
-public class BoxController extends ApiController {
+@RequestMapping("app/box")
+public class AppBoxController extends ApiController {
     /**
      * 服务对象
      */
@@ -51,6 +51,7 @@ public class BoxController extends ApiController {
      * @param id 主键
      * @return 单条数据
      */
+    @Login
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
         return success(this.boxService.getById(id));
@@ -62,6 +63,7 @@ public class BoxController extends ApiController {
      * @param box 实体对象
      * @return 新增结果
      */
+    @Login
     @PostMapping
     public R insert(@RequestBody Box box) {
         return success(this.boxService.save(box));
@@ -73,6 +75,7 @@ public class BoxController extends ApiController {
      * @param box 实体对象
      * @return 修改结果
      */
+    @Login
     @PutMapping
     public R update(@RequestBody Box box) {
         return success(this.boxService.updateById(box));
@@ -84,6 +87,7 @@ public class BoxController extends ApiController {
      * @param idList 主键结合
      * @return 删除结果
      */
+    @Login
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.boxService.removeByIds(idList));
@@ -91,7 +95,7 @@ public class BoxController extends ApiController {
 
     @Login
     @GetMapping("/selectBoxCollection")
-    @ApiOperation("查询用户盲盒信息")
+    @ApiOperation("App查询用户盲盒信息")
     public Result selectBoxCollection(@RequestAttribute Long userId) {
         return this.boxService.selectBoxCollection(userId);
     }

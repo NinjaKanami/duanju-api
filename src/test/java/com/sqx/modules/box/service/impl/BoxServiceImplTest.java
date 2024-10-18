@@ -1,5 +1,6 @@
 package com.sqx.modules.box.service.impl;
 
+import com.sqx.common.utils.Result;
 import com.sqx.modules.box.entity.Box;
 import com.sqx.modules.box.service.BoxService;
 import org.junit.jupiter.api.Test;
@@ -27,8 +28,13 @@ class BoxServiceImplTest {
     void save() {
         Box box = new Box();
         box.setUserId(1L);
-        box.setCourseId(1L);
         box.setCount(1);
         boxService.save(box);
+    }
+
+    @Test
+    void selectBoxCollection() {
+        Result result = boxService.selectBoxCollection(10086L);
+        System.out.println(result);
     }
 }
