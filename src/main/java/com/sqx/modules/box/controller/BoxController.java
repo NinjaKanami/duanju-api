@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sqx.common.utils.Result;
 import com.sqx.modules.box.entity.Box;
 import com.sqx.modules.box.service.BoxService;
 import org.springframework.web.bind.annotation.*;
@@ -82,5 +83,10 @@ public class BoxController extends ApiController {
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.boxService.removeByIds(idList));
+    }
+
+    @GetMapping
+    public Result selectBoxCollection(@RequestAttribute Long userId) {
+        return this.boxService.selectBoxCollection(userId);
     }
 }

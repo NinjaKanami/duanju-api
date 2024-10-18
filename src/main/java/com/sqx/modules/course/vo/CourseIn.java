@@ -6,7 +6,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-//导入集模板
+// 导入集模板
 @Data
 public class CourseIn implements Serializable {
 
@@ -21,7 +21,7 @@ public class CourseIn implements Serializable {
     @Excel(name = "封面图", orderNum = "4")
     private String titleImg;
 
-    @Excel(name = "是否收费", orderNum = "5", replace = {"免费_2", "vip_1" , "云短剧_3"})
+    @Excel(name = "是否收费", orderNum = "5", replace = {"免费_2", "vip_1", "云短剧_3"})
     private Integer isPrice;
 
     @Excel(name = "短剧标签", orderNum = "6")
@@ -51,9 +51,11 @@ public class CourseIn implements Serializable {
     @Excel(name = "购买方式", orderNum = "15", replace = {"单集购买_0", "整剧购买_1"})
     private Integer priceType;
 
-    @Excel(name = "状态", orderNum = "16", replace = {"不可_0", "可以_1"})
+    @Excel(name = "是否可砍剧", orderNum = "16", replace = {"不可_0", "可以_1"})
     private Integer isCut;
 
+    @Excel(name = "备案号", orderNum = "17")
+    private Integer licenseNum;
 
 
 }

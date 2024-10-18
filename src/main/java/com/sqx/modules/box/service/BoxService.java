@@ -1,6 +1,8 @@
 package com.sqx.modules.box.service;
 
+import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sqx.common.utils.Result;
 import com.sqx.modules.box.entity.Box;
 
 /**
@@ -11,4 +13,11 @@ import com.sqx.modules.box.entity.Box;
  */
 public interface BoxService extends IService<Box> {
 
+    /**
+     * 查询 盲盒 青龙 龙鳞 记录 最大发行 剩余数量
+     *
+     * @param userId 用户ID
+     * @return 盲盒 青龙 龙鳞 记录 最大发行 剩余数量
+     */
+    Result selectBoxCollection(Long userId);
 }
