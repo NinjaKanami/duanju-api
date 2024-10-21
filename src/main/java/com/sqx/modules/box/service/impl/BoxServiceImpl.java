@@ -10,6 +10,7 @@ import com.sqx.modules.box.vo.BoxCollection;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -95,6 +96,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
      * @param count  数量
      * @return 开盒结果
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result openBox(Long userId, int count) {
         try {
@@ -113,6 +115,8 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             }
             // 总份额
             long sum = list.stream().mapToLong(BoxItem::getShare).sum();
+            // 获得龙鳞数
+            int reward = 0;
 
             // 循环开盒
             for (int i = 0; i < count; i++) {
@@ -142,15 +146,23 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                                 one.setCount(one.getCount() + boxItem.getValue());
                                 collectPointService.updateById(one);
                             }
+                            reward += boxItem.getValue();
                         }
-
-                        continue;
+                        break;
                     }
                 }
             }
             // 更新用户剩余盲盒数量
             user.setCount(user.getCount() - count);
             updateById(user);
+            // 更新记录
+            CollectLog collectLog = new CollectLog();
+            collectLog.setUserId(userId);
+            collectLog.setType(0);
+            collectLog.setPlus(reward);
+            collectLog.setReduce(count);
+            collectLog.setItemName("龙鳞");
+            collectLogService.save(collectLog);
 
             return Result.success().put("data", result);
         } catch (Exception e) {
