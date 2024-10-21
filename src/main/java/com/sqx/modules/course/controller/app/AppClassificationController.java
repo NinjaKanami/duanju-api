@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -76,6 +77,7 @@ public class AppClassificationController extends AbstractController {
             }
             List<CourseClassification> classificationList = courseClassificationService.
                     list(new QueryWrapper<CourseClassification>().eq("is_delete", 0).orderByAsc("sort"));
+            List<CourseClassification> classificationListRes = new ArrayList<>();
             for (CourseClassification courseClassification : classificationList) {
                 if (courseClassification.getCourseId() != null) {
                     courseClassification.setCourse(courseService.selectCourseByCourseId(userId, courseClassification.getCourseId()));
@@ -97,18 +99,19 @@ public class AppClassificationController extends AbstractController {
                         String errcode = jsonObject1.getString("errcode");
                         if (!"0".equals(errcode)) {
                             log.warn("获取微信播放链接失败：" + jsonObject1.getString("errmsg") + ",courseDetailsId:" + courseDetails.getCourseDetailsId());
-                            classificationList.remove(courseClassification);
                             continue;
 //                            return Result.error("获取微信播放链接失败：" + jsonObject1.getString("errmsg"));
                         }
                         JSONObject media_info = jsonObject1.getJSONObject("media_info");
                         String mp4_url = media_info.getString("mp4_url");
                         courseDetails.setWxUrl(mp4_url);
+                        classificationListRes.add(courseClassification);
                     }
                 }
             }
-            return Result.success().put("data", classificationList);
+            return Result.success().put("data", classificationListRes);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("系统发生异常！");
             return Result.error("系统发生异常！");
         }
