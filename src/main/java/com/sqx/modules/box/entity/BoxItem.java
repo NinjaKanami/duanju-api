@@ -94,9 +94,10 @@ public class BoxItem implements Serializable {
     public BoxItem() {
     }
 
-    public BoxItem(String name, String img) {
+    public BoxItem(String name, String img, Integer value) {
         this.name = name;
         this.img = img;
+        this.value = value;
     }
 
     @Override

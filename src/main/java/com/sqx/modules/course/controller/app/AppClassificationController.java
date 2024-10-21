@@ -89,7 +89,7 @@ public class AppClassificationController extends AbstractController {
                         courseDetails.setIsCollect(isCollect);
                     }
                     if (courseDetails != null && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
-                        //微信内
+                        // 微信内
                         String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
@@ -99,14 +99,13 @@ public class AppClassificationController extends AbstractController {
                         String errcode = jsonObject1.getString("errcode");
                         if (!"0".equals(errcode)) {
                             log.warn("获取微信播放链接失败：" + jsonObject1.getString("errmsg") + ",courseDetailsId:" + courseDetails.getCourseDetailsId());
-                            continue;
-//                            return Result.error("获取微信播放链接失败：" + jsonObject1.getString("errmsg"));
+                        }else{
+                            JSONObject media_info = jsonObject1.getJSONObject("media_info");
+                            String mp4_url = media_info.getString("mp4_url");
+                            courseDetails.setWxUrl(mp4_url);
                         }
-                        JSONObject media_info = jsonObject1.getJSONObject("media_info");
-                        String mp4_url = media_info.getString("mp4_url");
-                        courseDetails.setWxUrl(mp4_url);
-                        classificationListRes.add(courseClassification);
                     }
+                    classificationListRes.add(courseClassification);
                 }
             }
             return Result.success().put("data", classificationListRes);

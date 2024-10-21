@@ -130,7 +130,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     // 随机数落在范围
                     if (shardMin < random && random < shard) {
                         // 中奖
-                        result.add(new BoxItem(boxItem.getName(), boxItem.getImg()));
+                        result.add(new BoxItem(boxItem.getName(), boxItem.getImg(), boxItem.getValue()));
                         // 累加中奖次数
                         boxItem.setHit(boxItem.getHit() == null ? 1 : boxItem.getHit() + 1);
                         // 剩余数量
