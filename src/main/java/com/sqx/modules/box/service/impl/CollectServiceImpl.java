@@ -62,7 +62,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectDao, Collect> impleme
                 collect = new Collect(userId, 0);
             }
             collect.setCount(collect.getCount() + count);
-            save(collect);
+            saveOrUpdate(collect);
             // 更新记录
             CollectLog collectLog = new CollectLog();
             collectLog.setUserId(userId);
