@@ -37,4 +37,10 @@ class BoxServiceImplTest {
         Result result = boxService.selectBoxCollection(10086L);
         System.out.println(result);
     }
+
+    @Test
+    void openBox() {
+        Result result = boxService.openBox(10086L, 100);
+        System.out.println(result);
+    }
 }

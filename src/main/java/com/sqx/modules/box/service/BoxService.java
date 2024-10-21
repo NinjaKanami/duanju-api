@@ -20,4 +20,12 @@ public interface BoxService extends IService<Box> {
      * @return 盲盒 青龙 龙鳞 记录 最大发行 剩余数量
      */
     Result selectBoxCollection(Long userId);
+
+    /**
+     * 开盒
+     * @param userId 用户Id
+     * @param count 数量
+     * @return 开盒结果
+     */
+    Result openBox(Long userId, int count);
 }

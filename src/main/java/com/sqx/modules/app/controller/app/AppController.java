@@ -278,7 +278,7 @@ public class AppController {
     @PostMapping("/verifyUserIdNumber")
     @ApiOperation("验证用户身份证信息")
     public Result verifyUserIdNumber(@LoginUser UserEntity userEntity, String idNumber, String idName) throws TencentCloudSDKException {
-        return userService.verifyUserIdNumber(userEntity.getPhone(), idNumber, idName);
+        return userService.verifyUserIdNumber(userEntity, idNumber, idName);
     }
 
 

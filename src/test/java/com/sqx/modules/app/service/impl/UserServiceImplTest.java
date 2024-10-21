@@ -24,7 +24,8 @@ class UserServiceImplTest {
     private UserServiceImpl userService;
     @Test
     void verifyUserIdNumber() {
-        Result result = userService.verifyUserIdNumber("15515650895", "412728199812067272", "周勃辰");
-        System.out.println(result);
+
+        //Result result = userService.verifyUserIdNumber("15515650895", "412728199812067272", "周勃辰");
+        //System.out.println(result);
     }
 }

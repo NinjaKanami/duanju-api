@@ -45,6 +45,14 @@ public class CollectPoint implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    public CollectPoint() {
+    }
+
+    public CollectPoint(Long userId, Integer count) {
+        this.userId = userId;
+        this.count = count;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {

@@ -115,27 +115,28 @@ public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements
     /**
      * 身份信息验证
      *
-     * @param phone    手机号
-     * @param idNumber 身份证号
-     * @param idName   姓名
-     * @return 验证结果
+     * @param userEntity 用户
+     * @param idNumber   身份证号
+     * @param idName     姓名
+     * @return Result
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Result verifyUserIdNumber(String phone, String idNumber, String idName) {
+    public Result verifyUserIdNumber(UserEntity userEntity, String idNumber, String idName) {
         reentrantReadWriteLock.writeLock().lock();
         try {
-            if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(idNumber) || StringUtils.isEmpty(idName)) {
-                return Result.error("请补全信息");
+            if (userEntity == null || idNumber == null || idName == null) {
+                return Result.error("参数错误");
             }
+
             String id = commonInfoService.findOne(2001).getValue();
             String key = commonInfoService.findOne(2002).getValue();
             if (id == null || key == null) {
                 return Result.error("验证密钥缺失");
             }
-            //PhoneVerification verification = new PhoneVerification("AKID63wgImNm4DE3jIiw1ykOwMrHcyRmyzY7", "Vr36ziHh5JORL5h9RaZO3Zw9C5BXuOya");
+            // PhoneVerification verification = new PhoneVerification("AKID63wgImNm4DE3jIiw1ykOwMrHcyRmyzY7", "Vr36ziHh5JORL5h9RaZO3Zw9C5BXuOya");
             PhoneVerification verification = new PhoneVerification(id, key);
-            PhoneVerificationResponse validated = verification.validate(phone, idNumber, idName);
+            PhoneVerificationResponse validated = verification.validate(userEntity.getPhone(), idNumber, idName);
             // 0: 三要素信息一致
             // -4: 三要素信息不一致
             // 不收费结果码
@@ -147,6 +148,9 @@ public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements
             // -12: 认证次数超过当日限制，请次日重试
             switch (validated.getResult()) {
                 case "0":
+                    userEntity.setIdNumberNo(idNumber);
+                    userEntity.setIdNumberName(idName);
+                    save(userEntity);
                     return Result.success("验证通过");
                 case "-4":
                     return Result.error("信息不一致");

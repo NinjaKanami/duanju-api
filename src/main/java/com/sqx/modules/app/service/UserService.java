@@ -23,12 +23,13 @@ public interface UserService extends IService<UserEntity> {
 
     /**
      * 身份信息验证
-     * @param phone 手机号
+     *
+     * @param userEntity 用户
      * @param idNumber 身份证号
-     * @param idName 姓名
-     * @return
+     * @param idName   姓名
+     * @return Result
      */
-    Result verifyUserIdNumber(String phone,String idNumber,String idName);
+    Result verifyUserIdNumber(UserEntity userEntity, String idNumber, String idName);
 
     Result authenticationSuperUser(JSONObject jsonObject, HttpServletRequest request);
 
@@ -49,6 +50,7 @@ public interface UserService extends IService<UserEntity> {
 
     /**
      * 设置渠道标识
+     *
      * @param qdCode
      * @return
      */
@@ -84,14 +86,15 @@ public interface UserService extends IService<UserEntity> {
      */
     UserEntity queryByUserId(Long userId);
 
-	UserEntity queryByInvitationCode(String invitationCode);
+    UserEntity queryByInvitationCode(String invitationCode);
 
-	/**
-	 * 根据用户appleId查询用户
-	 * @param appleId
-	 * @return
-	 */
-	UserEntity queryByAppleId(String appleId);
+    /**
+     * 根据用户appleId查询用户
+     *
+     * @param appleId
+     * @return
+     */
+    UserEntity queryByAppleId(String appleId);
 
 
     Result wxLogin(String code);
@@ -104,7 +107,7 @@ public interface UserService extends IService<UserEntity> {
      */
     Result wxRegister(UserEntity userInfo1);
 
-    Result dyLogin(String code,String anonymous_code);
+    Result dyLogin(String code, String anonymous_code);
 
     Result dyRegister(UserEntity userInfo1);
 
@@ -138,7 +141,7 @@ public interface UserService extends IService<UserEntity> {
      * @param code  验证码
      * @return
      */
-    Result wxBindMobile(String phone, String code, String wxOpenId, String token, String platform, Integer sysPhone,String inviterCode,String qdCode);
+    Result wxBindMobile(String phone, String code, String wxOpenId, String token, String platform, Integer sysPhone, String inviterCode, String qdCode);
 
     /**
      * @param phone
@@ -148,11 +151,11 @@ public interface UserService extends IService<UserEntity> {
      * @param sysPhone
      * @return
      */
-    Result iosBindMobile(String phone, String code, String appleId, String platform, Integer sysPhone,String inviterCode,String qdCode);
+    Result iosBindMobile(String phone, String code, String appleId, String platform, Integer sysPhone, String inviterCode, String qdCode);
 
     Result phoneLogin(String phone);
 
-    Result bindMobile(String phone,String platform, Integer sysPhone,String inviterCode,String qdCode);
+    Result bindMobile(String phone, String platform, Integer sysPhone, String inviterCode, String qdCode);
 
 
     /**
@@ -182,8 +185,8 @@ public interface UserService extends IService<UserEntity> {
      * @param platform 来源 app  h5
      * @return
      */
-    Result registerCode(String phone, String msg, String platform, Integer sysPhone,String password,
-                        String inviterCode,String wxId,String qdCode);
+    Result registerCode(String phone, String msg, String platform, Integer sysPhone, String password,
+                        String inviterCode, String wxId, String qdCode);
 
     Result bindWxOpenPhone(Long userId, String phone, String msg);
 
@@ -221,31 +224,31 @@ public interface UserService extends IService<UserEntity> {
 
     void pushToSingle(String title, String content, String clientId);
 
-    PageUtils selectUserPage(Integer page, Integer limit,String phone,Integer sex,String platform,String sysPhone,Integer status,
+    PageUtils selectUserPage(Integer page, Integer limit, String phone, Integer sex, String platform, String sysPhone, Integer status,
                              Integer member, String inviterCode, String userName, String invitationCode, String startTime,
-                             String endTime,String qdCode,String sysUserName,Integer vipType,String isRecommend,String isChannel, String agencyIndex);
+                             String endTime, String qdCode, String sysUserName, Integer vipType, String isRecommend, String isChannel, String agencyIndex);
 
     List<UserEntity> userListExcel(String startTime, String endTime, UserEntity userEntity);
 
     int queryInviterCount(String inviterCode);
 
-    int queryUserCount(int type,String date,String platform,String qdCode);
+    int queryUserCount(int type, String date, String platform, String qdCode);
 
-    Double queryPayMoney(int type,String qdCode);
+    Double queryPayMoney(int type, String qdCode);
 
-    IPage<Map<String, Object>> queryCourseOrder(Page<Map<String, Object>> iPage, int type, String date,Long sysUserId);
+    IPage<Map<String, Object>> queryCourseOrder(Page<Map<String, Object>> iPage, int type, String date, Long sysUserId);
 
-    int userMessage( String date, int type,String qdCode,Integer vipType);
+    int userMessage(String date, int type, String qdCode, Integer vipType);
 
 
-    Result selectInviteUserList(Integer page,Integer limit,String userName,String phone);
+    Result selectInviteUserList(Integer page, Integer limit, String userName, String phone);
 
-    Result selectChannelUserListByRecommend(Integer page,Integer limit,Long userId,String userName,String phone);
+    Result selectChannelUserListByRecommend(Integer page, Integer limit, Long userId, String userName, String phone);
 
-    Result selectUserListByAgencyIndex(Integer page,Integer limit,Long userId,String invitationCode,String userName,String phone);
+    Result selectUserListByAgencyIndex(Integer page, Integer limit, Long userId, String invitationCode, String userName, String phone);
 
-    Result selectUserListByInviteCode(Integer page,Integer limit,Long userId,String invitationCode,String search,
-                                      Integer classify,Integer sort,String qdCode);
+    Result selectUserListByInviteCode(Integer page, Integer limit, Long userId, String invitationCode, String search,
+                                      Integer classify, Integer sort, String qdCode);
 
     Result loginByOpenId(String openId);
 
@@ -259,9 +262,9 @@ public interface UserService extends IService<UserEntity> {
 
     int selectChannelCountByRecommendUserId(Long userId);
 
-    int selectAgencyByQdCodeTime(Integer classify,String qdCode,String time);
+    int selectAgencyByQdCodeTime(Integer classify, String qdCode, String time);
 
-    int selectAgencyByQdCodeTimes(Integer classify,String qdCode,String startTime,String endTime);
+    int selectAgencyByQdCodeTimes(Integer classify, String qdCode, String startTime, String endTime);
 
     int queryActiveUserCountByInviterCode(String inviterCode);
 

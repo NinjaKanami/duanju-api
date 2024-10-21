@@ -1,6 +1,7 @@
 package com.sqx.modules.box.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sqx.common.utils.Result;
 import com.sqx.modules.box.entity.Collect;
 
 /**
@@ -11,4 +12,12 @@ import com.sqx.modules.box.entity.Collect;
  */
 public interface CollectService extends IService<Collect> {
 
+    /**
+     * 合成
+     *
+     * @param userId 用户Id
+     * @param count  数量
+     * @return 结果
+     */
+    Result synthesise(Long userId, int count);
 }

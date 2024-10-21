@@ -7,8 +7,8 @@ import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
-import com.sqx.modules.box.entity.Box;
-import com.sqx.modules.box.service.BoxService;
+import com.sqx.modules.box.entity.Collect;
+import com.sqx.modules.box.service.CollectService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -18,31 +18,31 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * (Box)表控制层
+ * (Collect)表控制层
  *
  * @author makejava
- * @since 2024-10-17 15:49:35
+ * @since 2024-10-17 15:49:34
  */
-@Api(value = "App用户盲盒", tags = {"App用户盲盒"})
+@Api(value = "App用户藏品", tags = {"App用户藏品"})
 @RestController
-@RequestMapping("app/box")
-public class AppBoxController extends ApiController {
+@RequestMapping("app/collect")
+public class AppCollectController extends ApiController {
     /**
      * 服务对象
      */
     @Resource
-    private BoxService boxService;
+    private CollectService collectService;
 
     /**
      * 分页查询所有数据
      *
-     * @param page 分页对象
-     * @param box  查询实体
+     * @param page    分页对象
+     * @param collect 查询实体
      * @return 所有数据
      */
     @GetMapping
-    public R selectAll(Page<Box> page, Box box) {
-        return success(this.boxService.page(page, new QueryWrapper<>(box)));
+    public R selectAll(Page<Collect> page, Collect collect) {
+        return success(this.collectService.page(page, new QueryWrapper<>(collect)));
     }
 
     /**
@@ -51,34 +51,31 @@ public class AppBoxController extends ApiController {
      * @param id 主键
      * @return 单条数据
      */
-    @Login
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
-        return success(this.boxService.getById(id));
+        return success(this.collectService.getById(id));
     }
 
     /**
      * 新增数据
      *
-     * @param box 实体对象
+     * @param collect 实体对象
      * @return 新增结果
      */
-    @Login
     @PostMapping
-    public R insert(@RequestBody Box box) {
-        return success(this.boxService.save(box));
+    public R insert(@RequestBody Collect collect) {
+        return success(this.collectService.save(collect));
     }
 
     /**
      * 修改数据
      *
-     * @param box 实体对象
+     * @param collect 实体对象
      * @return 修改结果
      */
-    @Login
     @PutMapping
-    public R update(@RequestBody Box box) {
-        return success(this.boxService.updateById(box));
+    public R update(@RequestBody Collect collect) {
+        return success(this.collectService.updateById(collect));
     }
 
     /**
@@ -87,24 +84,16 @@ public class AppBoxController extends ApiController {
      * @param idList 主键结合
      * @return 删除结果
      */
-    @Login
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.boxService.removeByIds(idList));
-    }
-
-    @Login
-    @GetMapping("/selectBoxCollection")
-    @ApiOperation("App查询用户盲盒信息")
-    public Result selectBoxCollection(@RequestAttribute Long userId) {
-        return this.boxService.selectBoxCollection(userId);
+        return success(this.collectService.removeByIds(idList));
     }
 
 
     @Login
-    @GetMapping("/openBox")
-    @ApiOperation("开盒")
-    public Result openBox(@RequestAttribute Long userId, @RequestParam int count) {
-        return this.boxService.openBox(userId, count);
+    @GetMapping("/synthesise")
+    @ApiOperation("合成")
+    public Result synthesise(@RequestAttribute Long userId, @RequestParam int count) {
+        return this.collectService.synthesise(userId, count);
     }
 }

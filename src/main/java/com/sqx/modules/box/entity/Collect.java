@@ -6,10 +6,9 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
  * @TableName collect
  */
-@TableName(value ="collect")
+@TableName(value = "collect")
 @Data
 public class Collect implements Serializable {
     /**
@@ -45,6 +44,14 @@ public class Collect implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    public Collect() {
+    }
+
+    public Collect(Long userId, Integer count) {
+        this.userId = userId;
+        this.count = count;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -58,10 +65,10 @@ public class Collect implements Serializable {
         }
         Collect other = (Collect) that;
         return (this.getCollectId() == null ? other.getCollectId() == null : this.getCollectId().equals(other.getCollectId()))
-            && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-            && (this.getCount() == null ? other.getCount() == null : this.getCount().equals(other.getCount()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
+                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
+                && (this.getCount() == null ? other.getCount() == null : this.getCount().equals(other.getCount()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
     }
 
     @Override

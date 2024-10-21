@@ -4,20 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.box.dao.BoxDao;
-import com.sqx.modules.box.entity.Box;
-import com.sqx.modules.box.entity.Collect;
-import com.sqx.modules.box.entity.CollectLog;
-import com.sqx.modules.box.entity.CollectPoint;
-import com.sqx.modules.box.service.BoxService;
-import com.sqx.modules.box.service.CollectLogService;
-import com.sqx.modules.box.service.CollectPointService;
-import com.sqx.modules.box.service.CollectService;
+import com.sqx.modules.box.entity.*;
+import com.sqx.modules.box.service.*;
 import com.sqx.modules.box.vo.BoxCollection;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +24,8 @@ import java.util.List;
 @Service("boxService")
 public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxService {
 
+    @Resource
+    private BoxItemService boxItemService;
     @Resource
     private CollectService collectService;
     @Resource
@@ -88,6 +85,77 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
         } catch (Exception e) {
             log.error("查询用户盲盒藏品信息失败", e);
             return Result.error("查询失败");
+        }
+    }
+
+    /**
+     * 开盒
+     *
+     * @param userId 用户Id
+     * @param count  数量
+     * @return 开盒结果
+     */
+    @Override
+    public Result openBox(Long userId, int count) {
+        try {
+            Box user = getOne(new QueryWrapper<Box>().eq("user_id", userId));
+            if (user == null) {
+                return Result.error("用户未获得盲盒");
+            }
+            if (count <= 0 || count > user.getCount()) {
+                return Result.error("数量不合规");
+            }
+
+            List<BoxItem> list = boxItemService.list(new QueryWrapper<BoxItem>().eq("is_random", 1).ne("remains", 0));
+            List<BoxItem> result = new ArrayList<BoxItem>();
+            if (list.isEmpty()) {
+                return Result.error("奖品未配置");
+            }
+            // 总份额
+            long sum = list.stream().mapToLong(BoxItem::getShare).sum();
+
+            // 循环开盒
+            for (int i = 0; i < count; i++) {
+                // 随机数
+                long random = (long) (Math.random() * sum);
+                long shard = 0;
+                // 次数
+                for (BoxItem boxItem : list) {
+                    long shardMin = shard;
+                    shard += boxItem.getShare();
+                    // 随机数落在范围
+                    if (shardMin < random && random < shard) {
+                        // 中奖
+                        result.add(new BoxItem(boxItem.getName(), boxItem.getImg()));
+                        // 累加中奖次数
+                        boxItem.setHit(boxItem.getHit() == null ? 1 : boxItem.getHit() + 1);
+                        // 剩余数量
+                        boxItem.setRemains(boxItem.getRemains() == -1 ? -1 : boxItem.getRemains() - 1);
+                        boxItemService.updateById(boxItem);
+
+                        // 若是积分奖品，则添加积分
+                        if (boxItem.getIsPoint() == 1) {
+                            CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", userId));
+                            if (one == null) {
+                                collectPointService.save(new CollectPoint(userId, boxItem.getValue()));
+                            } else {
+                                one.setCount(one.getCount() + boxItem.getValue());
+                                collectPointService.updateById(one);
+                            }
+                        }
+
+                        continue;
+                    }
+                }
+            }
+            // 更新用户剩余盲盒数量
+            user.setCount(user.getCount() - count);
+            updateById(user);
+
+            return Result.success().put("data", result);
+        } catch (Exception e) {
+            log.error("开盒失败", e);
+            return Result.error("开盒失败");
         }
     }
 }
