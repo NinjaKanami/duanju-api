@@ -65,38 +65,41 @@ public class AppClassificationController extends AbstractController {
     public Result queryClassification(HttpServletRequest request) {
         String token = request.getHeader("token");
         try {
-            Long userId=null;
-            if(StringUtils.isNotEmpty(token)){
-                if(StringUtils.isNotEmpty(token)){
+            Long userId = null;
+            if (StringUtils.isNotEmpty(token)) {
+                if (StringUtils.isNotEmpty(token)) {
                     Claims claims = jwtUtils.getClaimByToken(token);
-                    if(claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())){
-                        userId=Long.parseLong(claims.getSubject());
+                    if (claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())) {
+                        userId = Long.parseLong(claims.getSubject());
                     }
                 }
             }
             List<CourseClassification> classificationList = courseClassificationService.
-                    list(new QueryWrapper<CourseClassification>().eq("is_delete",0).orderByAsc("sort"));
-            for (CourseClassification courseClassification:classificationList){
-                if(courseClassification.getCourseId()!=null){
-                    courseClassification.setCourse(courseService.selectCourseByCourseId(userId,courseClassification.getCourseId()));
+                    list(new QueryWrapper<CourseClassification>().eq("is_delete", 0).orderByAsc("sort"));
+            for (CourseClassification courseClassification : classificationList) {
+                if (courseClassification.getCourseId() != null) {
+                    courseClassification.setCourse(courseService.selectCourseByCourseId(userId, courseClassification.getCourseId()));
                     CourseDetails courseDetails = courseDetailsDao.selectOne(new QueryWrapper<CourseDetails>().eq("course_id", courseClassification.getCourseId()).last(" order by create_time asc limit 1"));
                     courseClassification.setCourseDetails(courseDetails);
-                    int isCollect=0;
-                    if(courseDetails!=null && userId!=null){
+                    int isCollect = 0;
+                    if (courseDetails != null && userId != null) {
                         isCollect = courseCollectService.count(new QueryWrapper<CourseCollect>().eq("user_id", userId).eq("classify", 1).eq("course_id", courseDetails.getCourseId()));
                         courseDetails.setIsCollect(isCollect);
                     }
-                    if(courseDetails!=null && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())){
+                    if (courseDetails != null && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
                         //微信内
-                        String url="https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token="+ SenInfoCheckUtil.getMpToken();
-                        JSONObject jsonObject=new JSONObject();
-                        jsonObject.put("media_id",courseDetails.getWxCourseDetailsId());
-                        jsonObject.put("t",(System.currentTimeMillis()/1000)+7200);
+                        String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
+                        jsonObject.put("t", (System.currentTimeMillis() / 1000) + 7200);
                         String s = HttpClientUtil.doPostJson(url, jsonObject.toJSONString());
                         JSONObject jsonObject1 = JSONObject.parseObject(s);
                         String errcode = jsonObject1.getString("errcode");
-                        if(!"0".equals(errcode)){
-                            return Result.error("获取微信播放链接失败："+jsonObject1.getString("errmsg"));
+                        if (!"0".equals(errcode)) {
+                            log.warn("获取微信播放链接失败：" + jsonObject1.getString("errmsg") + ",courseDetailsId:" + courseDetails.getCourseDetailsId());
+                            classificationList.remove(courseClassification);
+                            continue;
+//                            return Result.error("获取微信播放链接失败：" + jsonObject1.getString("errmsg"));
                         }
                         JSONObject media_info = jsonObject1.getJSONObject("media_info");
                         String mp4_url = media_info.getString("mp4_url");
@@ -110,8 +113,6 @@ public class AppClassificationController extends AbstractController {
             return Result.error("系统发生异常！");
         }
     }
-
-
 
 
 }

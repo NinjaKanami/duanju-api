@@ -945,6 +945,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     public void sysWxCourses(){
         int offset=0;
         while (true){
+            // 获取剧目列表
+            // 该接口用于获取已提交的剧目列表。
+            // https://developers.weixin.qq.com/miniprogram/dev/platform-capabilities/industry/mini-drama/mini_drama.html#_3-2-%E8%8E%B7%E5%8F%96%E5%89%A7%E7%9B%AE%E5%88%97%E8%A1%A8
             String url="https://api.weixin.qq.com/wxa/sec/vod/listdramas?access_token="+SenInfoCheckUtil.getMpToken();
             JSONObject jsonObject=new JSONObject();
             jsonObject.put("offset",offset);
@@ -976,6 +979,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         for (Course course:courseList){
             offset=0;
             while (true){
+                // 获取媒资列表
+                // 该接口用于获取已上传到平台的媒资列表。
+                // https://developers.weixin.qq.com/miniprogram/dev/platform-capabilities/industry/mini-drama/mini_drama.html#_2-1-%E8%8E%B7%E5%8F%96%E5%AA%92%E8%B5%84%E5%88%97%E8%A1%A8
                 String url="https://api.weixin.qq.com/wxa/sec/vod/listmedia?access_token="+SenInfoCheckUtil.getMpToken();
                 JSONObject jsonObject=new JSONObject();
                 jsonObject.put("drama_id",Integer.parseInt(course.getWxCourseId()));
@@ -1004,6 +1010,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
 
                     CourseDetails courseDetails = courseDetailsDao.selectOne(new QueryWrapper<CourseDetails>()
                             .eq("course_id", course.getCourseId()).eq("course_details_name", name));
+                    // course.courseId=1189 name="穆少别虐了 - 第1集", 有空格的
                     if(courseDetails!=null){
                         courseDetails.setWxCourseDetailsId(jsonObject2.getString("media_id"));
                         courseDetailsDao.updateById(courseDetails);
