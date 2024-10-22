@@ -85,11 +85,12 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
             }
             // 获得积分log
             int getPoint = point;
+            point += boxPoint.getPoint();
 
             // 如果最终积分小于100
-            if (boxPoint.getPoint() + point < maxPoint) {
+            if (point < maxPoint) {
                 // 更新积分
-                boxPoint.setPoint(boxPoint.getPoint() + point);
+                boxPoint.setPoint(point);
             } else {
                 // 积分大于最大盲盒时取除数 获得盲盒的数量
                 reward = point / maxPoint;
@@ -140,7 +141,7 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
                 boxLog.setNum(reward);
                 boxLogService.save(boxLog);
             }
-
+            return reward;
         } catch (Exception e) {
             log.error("系统异常", e);
         }
