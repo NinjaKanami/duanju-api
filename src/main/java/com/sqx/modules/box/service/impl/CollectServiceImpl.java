@@ -3,6 +3,8 @@ package com.sqx.modules.box.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.Result;
+import com.sqx.modules.app.entity.UserEntity;
+import com.sqx.modules.app.service.UserService;
 import com.sqx.modules.box.dao.CollectDao;
 import com.sqx.modules.box.entity.Collect;
 import com.sqx.modules.box.entity.CollectLog;
@@ -30,6 +32,9 @@ public class CollectServiceImpl extends ServiceImpl<CollectDao, Collect> impleme
     @Resource
     private CollectLogService collectLogService;
 
+    @Resource
+    private UserService userService;
+
     /**
      * 合成
      *
@@ -47,6 +52,13 @@ public class CollectServiceImpl extends ServiceImpl<CollectDao, Collect> impleme
             if (count <= 0) {
                 return Result.error("合成失败，请输入正确的数量！");
             }
+
+            //判断是否实名
+            UserEntity user = userService.getOne(new QueryWrapper<UserEntity>().eq("user_id", userId));
+            if (user.getIdNumberNo() == null) {
+                return Result.error("合成失败，请先实名认证！");
+            }
+
             // 判断龙鳞
             CollectPoint collectPoint = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", userId));
             if (collectPoint == null || collectPoint.getCount() < count * need) {
