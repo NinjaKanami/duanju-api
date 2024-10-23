@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.box.dao.BoxOnlineDao">
+
+    <resultMap type="com.sqx.modules.box.entity.BoxOnline" id="BoxOnlineMap">
+        <result property="boxPointId" column="box_point_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="minite" column="minite" jdbcType="INTEGER"/>
+        <result property="nextMinite" column="next_minite" jdbcType="INTEGER"/>
+        <result property="reward" column="reward" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="boxPointId" useGeneratedKeys="true">
+        insert into duanjuv2.box_online(user_idminitenext_miniterewardcreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId}#{entity.minite}#{entity.nextMinite}#{entity.reward}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="boxPointId" useGeneratedKeys="true">
+        insert into duanjuv2.box_online(user_idminitenext_miniterewardcreate_timeupdate_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId}#{entity.minite}#{entity.nextMinite}#{entity.reward}#{entity.createTime}#{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        user_id = values(user_id) minite = values(minite) next_minite = values(next_minite) reward = values(reward)
+        create_time = values(create_time) update_time = values(update_time)
+    </insert>
+
+</mapper>

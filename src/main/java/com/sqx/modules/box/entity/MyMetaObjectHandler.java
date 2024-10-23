@@ -30,7 +30,9 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         log.info("开始更新填充...");
+        //MetaObjectHandler 提供的默认方法策略是：如果属性有值则不覆盖，如果填充值为 null 则不填充
         // this.strictUpdateFill(metaObject, "updateTime", String.class, LocalDateTime.now().toString());
-        this.strictUpdateFill(metaObject, "createTime", String.class, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        //this.strictUpdateFill(metaObject, "updateTime", String.class, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        this.setFieldValByName( "updateTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), metaObject);
     }
 }

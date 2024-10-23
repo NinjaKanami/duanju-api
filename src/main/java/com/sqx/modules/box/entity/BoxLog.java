@@ -25,7 +25,7 @@ public class BoxLog implements Serializable {
     private Long foreignId;
 
     /**
-     * 0积分 1盲盒
+     * 0积分 1盲盒 3观剧
      */
     @TableField(value = "type")
     private Integer type;

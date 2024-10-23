@@ -10,6 +10,8 @@ import com.sqx.modules.box.entity.BoxPoint;
 import com.sqx.modules.box.service.BoxLogService;
 import com.sqx.modules.box.service.BoxPointService;
 import com.sqx.modules.box.service.BoxService;
+import com.sqx.modules.common.entity.CommonInfo;
+import com.sqx.modules.common.service.CommonInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,8 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
     private BoxService boxService;
     @Autowired
     private BoxLogService boxLogService;
+    @Autowired
+    private CommonInfoService commonInfoService;
 
     /**
      * 获得积分
@@ -47,9 +51,11 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
             }
 
             // 设置最大盲盒
-            int maxReward = 3;
+            CommonInfo one = commonInfoService.findOne(2005);
+            int maxReward = Integer.parseInt(one.getValue());
             // 设置最大积分
-            int maxPoint = 100;
+            CommonInfo one2 = commonInfoService.findOne(2007);
+            int maxPoint = Integer.parseInt(one2.getValue());
             // 获得盲盒
             int reward = 0;
             // 获得积分
