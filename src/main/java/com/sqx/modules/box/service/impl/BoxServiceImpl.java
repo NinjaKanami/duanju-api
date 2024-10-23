@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +88,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             log.error("查询用户盲盒藏品信息失败", e);
             return Result.error("查询失败");
         }
+
     }
 
     /**
@@ -116,7 +118,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             // 总份额
             long sum = list.stream().mapToLong(BoxItem::getShare).sum();
             // 获得龙鳞数
-            int reward = 0;
+            BigDecimal reward = BigDecimal.valueOf(0);
 
             // 循环开盒
             for (int i = 0; i < count; i++) {
@@ -128,7 +130,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     long shardMin = shard;
                     shard += boxItem.getShare();
                     // 随机数落在范围
-                    if (shardMin < random && random < shard) {
+                    if (shardMin <= random && random < shard) {
                         // 中奖
                         result.add(new BoxItem(boxItem.getName(), boxItem.getImg(), boxItem.getValue()));
                         // 累加中奖次数
@@ -143,10 +145,10 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                             if (one == null) {
                                 collectPointService.save(new CollectPoint(userId, boxItem.getValue()));
                             } else {
-                                one.setCount(one.getCount() + boxItem.getValue());
+                                one.setCount(one.getCount().add(boxItem.getValue()));
                                 collectPointService.updateById(one);
                             }
-                            reward += boxItem.getValue();
+                            reward = reward.add(boxItem.getValue());
                         }
                         break;
                     }

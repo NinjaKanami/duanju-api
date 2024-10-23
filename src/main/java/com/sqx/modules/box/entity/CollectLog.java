@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 
@@ -34,7 +35,7 @@ public class CollectLog implements Serializable {
      * 获得数量
      */
     @TableField(value = "plus")
-    private Integer plus;
+    private BigDecimal plus;
 
     /**
      * 消耗数量

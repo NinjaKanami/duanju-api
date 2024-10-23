@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 
 /**
  * (Collect)表服务实现类
@@ -45,7 +46,8 @@ public class CollectServiceImpl extends ServiceImpl<CollectDao, Collect> impleme
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Result synthesise(Long userId, int count) {
-        try {
+        return null;
+        /* try {
             // 合成需要的数量 10
             int need = 10;
             // 判断数量
@@ -61,11 +63,11 @@ public class CollectServiceImpl extends ServiceImpl<CollectDao, Collect> impleme
 
             // 判断龙鳞
             CollectPoint collectPoint = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", userId));
-            if (collectPoint == null || collectPoint.getCount() < count * need) {
+            if (collectPoint == null || collectPoint.getCount().intValueExact() < count * need) {
                 return Result.error("合成失败，您的龙鳞不足！");
             }
             // 更新龙鳞
-            collectPoint.setCount((collectPoint.getCount() - count * need));
+            collectPoint.setCount((collectPoint.getCount().subtract(BigDecimal.valueOf(((long) count * need)))));
             collectPointService.updateById(collectPoint);
 
             // 更新藏品
@@ -87,6 +89,6 @@ public class CollectServiceImpl extends ServiceImpl<CollectDao, Collect> impleme
         } catch (Exception e) {
             log.error("合成失败！", e);
             return Result.error("系统繁忙，请稍后再试！");
-        }
+        } */
     }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 
@@ -28,7 +29,7 @@ public class CollectPoint implements Serializable {
      * 碎片数量
      */
     @TableField(value = "count")
-    private Integer count;
+    private BigDecimal count;
 
     /**
      * 创建时间
@@ -48,7 +49,7 @@ public class CollectPoint implements Serializable {
     public CollectPoint() {
     }
 
-    public CollectPoint(Long userId, Integer count) {
+    public CollectPoint(Long userId, BigDecimal count) {
         this.userId = userId;
         this.count = count;
     }

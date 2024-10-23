@@ -1,9 +1,6 @@
 package com.sqx.modules.box.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -19,7 +16,7 @@ public class BoxItem implements Serializable {
     /**
      * 盲盒物品
      */
-    @TableId(value = "box_item_id")
+    @TableId(value = "box_item_id", type = IdType.AUTO)
     private Long boxItemId;
 
     /**
@@ -38,7 +35,7 @@ public class BoxItem implements Serializable {
      * 积分值
      */
     @TableField(value = "value")
-    private Integer value;
+    private BigDecimal value;
 
     /**
      * 图片url
@@ -94,7 +91,7 @@ public class BoxItem implements Serializable {
     public BoxItem() {
     }
 
-    public BoxItem(String name, String img, Integer value) {
+    public BoxItem(String name, String img, BigDecimal value) {
         this.name = name;
         this.img = img;
         this.value = value;

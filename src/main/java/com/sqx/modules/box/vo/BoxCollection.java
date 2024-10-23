@@ -3,6 +3,7 @@ package com.sqx.modules.box.vo;
 import com.sqx.modules.box.entity.CollectLog;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
 public class BoxCollection {
     private int box;
     private int collect;
-    private int collectPoint;
+    private BigDecimal collectPoint;
     private int collectMax;
     private int collectRemain;
     private List<CollectLog> collectLogs;
