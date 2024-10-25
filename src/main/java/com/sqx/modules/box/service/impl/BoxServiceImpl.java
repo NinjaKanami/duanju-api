@@ -9,6 +9,7 @@ import com.sqx.modules.box.service.*;
 import com.sqx.modules.box.vo.BoxCollection;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -102,6 +103,16 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     @Override
     public Result openBox(Long userId, int count) {
         try {
+            // 剩余发行数量
+            CommonInfo remain = commonInfoService.findOne(2004);
+            if (remain == null) {
+                return Result.error("龙鳞暂无发行数量");
+            }
+            BigDecimal remainValue = new BigDecimal(remain.getValue());
+            if (remainValue.compareTo(BigDecimal.valueOf(0)) < 0) {
+                return Result.error("龙鳞发行数量不足");
+            }
+
             Box user = getOne(new QueryWrapper<Box>().eq("user_id", userId));
             if (user == null) {
                 return Result.error("用户未获得盲盒");
@@ -154,6 +165,18 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     }
                 }
             }
+
+            // 龙鳞
+            if (reward.compareTo(BigDecimal.valueOf(0)) > 0) {
+                // 更新龙鳞发行数量
+                remainValue = remainValue.subtract(reward);
+                if (remainValue.compareTo(BigDecimal.valueOf(0)) < 0) {
+                    throw new RuntimeException("龙鳞发行数量不足");
+                }
+                remain.setValue(String.valueOf(remainValue));
+                commonInfoService.updateById(remain);
+            }
+
             // 更新用户剩余盲盒数量
             user.setCount(user.getCount() - count);
             updateById(user);
@@ -169,7 +192,26 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             return Result.success().put("data", result);
         } catch (Exception e) {
             log.error("开盒失败", e);
-            return Result.error("开盒失败");
+            return Result.error("开盒失败：" + e.getMessage());
+        }
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void restRemain() {
+        try {
+            // 剩余发行数量
+            CommonInfo max = commonInfoService.findOne(2003);
+            CommonInfo remain = commonInfoService.findOne(2004);
+            if (max != null && remain != null) {
+                if (max.getValue() != null && remain.getValue() != null) {
+                    remain.setValue(max.getValue());
+                    commonInfoService.updateBody(remain);
+                    return;
+                }
+            }
+            log.error("restRemain error");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
