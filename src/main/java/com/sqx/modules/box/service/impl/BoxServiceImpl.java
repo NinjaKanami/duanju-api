@@ -3,12 +3,16 @@ package com.sqx.modules.box.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.Result;
+import com.sqx.modules.app.entity.UserEntity;
+import com.sqx.modules.app.service.UserService;
 import com.sqx.modules.box.dao.BoxDao;
 import com.sqx.modules.box.entity.*;
 import com.sqx.modules.box.service.*;
+import com.sqx.modules.box.util.DataSync;
 import com.sqx.modules.box.vo.BoxCollection;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +28,7 @@ import java.util.List;
  * @author makejava
  * @since 2024-10-17 15:49:36
  */
+@Slf4j
 @Service("boxService")
 public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxService {
 
@@ -37,6 +42,10 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     private CollectLogService collectLogService;
     @Resource
     private CommonInfoService commonInfoService;
+    @Resource
+    private UserService userService;
+    @Resource
+    private DataSync dataSync;
 
     /**
      * 查询 盲盒 青龙 龙鳞 记录 最大发行 剩余数量
@@ -47,28 +56,49 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     @Override
     public Result selectBoxCollection(Long userId) {
         try {
+
+            if (userId == null) {
+                return Result.error("查询失败，用户ID为空！");
+            }
+            UserEntity user = userService.getOne(new QueryWrapper<UserEntity>().eq("user_id", userId));
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+            if (user.getPhone() == null) {
+                return Result.error("请先绑定手机号");
+            }
+
             BoxCollection boxCollection = new BoxCollection();
 
             // 盲盒数量
-            List<Box> boxList = this.list(new QueryWrapper<Box>().eq("user_id", userId));
+            Box box = this.getOne(new QueryWrapper<Box>().eq("user_id", userId));
+            if (box != null) {
+                boxCollection.setBox(box.getCount());
+            }
+            /* List<Box> boxList = this.list(new QueryWrapper<Box>().eq("user_id", userId));
             if (boxList != null) {
                 int sum = boxList.stream()
                         .mapToInt(Box::getCount)
                         .sum();
                 boxCollection.setBox(sum);
-            }
+            } */
 
+            // 获取同步数据
+            BoxCollection userCollection = dataSync.getUserCollection(user.getPhone());
+            boxCollection.setRegistered(userCollection.isRegistered());
             // 获得龙鳞数量
             CollectPoint collectPoint = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", userId));
             if (collectPoint != null) {
                 boxCollection.setCollectPoint(collectPoint.getCount());
             }
+            boxCollection.setCollectPoint(boxCollection.getCollectPoint().add(userCollection.getCollectPoint()));
 
             // 获得青龙数量
             Collect collect = collectService.getOne(new QueryWrapper<Collect>().eq("user_id", userId));
             if (collect != null) {
                 boxCollection.setCollect(collect.getCount());
             }
+            boxCollection.setCollect(boxCollection.getCollect() + userCollection.getCollect());
 
             // 日志列表
             boxCollection.setCollectLogs(collectLogService.list(new QueryWrapper<CollectLog>().eq("user_id", userId)));
@@ -187,6 +217,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             collectLog.setPlus(reward);
             collectLog.setReduce(count);
             collectLog.setItemName("龙鳞");
+            collectLog.setIsSync(0);
             collectLogService.save(collectLog);
 
             return Result.success().put("data", result);
@@ -212,6 +243,38 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             log.error("restRemain error");
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Scheduled(cron = "0/3 * * * * *")
+    public void syncUserCollectionJob() {
+        try {
+            /* List<CollectLog> list = collectLogService.list(new QueryWrapper<CollectLog>()
+                    .eq("is_sync", 0).eq("type",0)); */
+            // 查询未同步的记录
+            List<CollectLog> list = collectLogService.selectSyncCollectLog();
+            for (CollectLog collectLog : list) {
+
+                // 同步用户积分
+                boolean b = dataSync.syncUserCollection(collectLog.getPhone(), collectLog.getPlus(), 1, collectLog.getCollectLogId().toString());
+                if (!b) {
+                    log.error("同步用户积分失败：" + collectLog.getCollectLogId());
+                    continue;
+                }
+                // 更新记录
+                collectLog.setIsSync(1);
+                collectLogService.updateById(collectLog);
+                // 削减短剧平台的积分
+                CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
+                if (one != null) {
+                    one.setCount(one.getCount().subtract(collectLog.getPlus()));
+                    collectPointService.updateById(one);
+                }
+                log.info("同步用户积分成功!ID：{}", collectLog.getCollectLogId());
+            }
+
+        } catch (Exception e) {
+            log.error("同步用户积分失败", e);
         }
     }
 }

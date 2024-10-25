@@ -6,6 +6,10 @@ import com.sqx.modules.box.entity.CollectLog;
 import com.sqx.modules.box.service.CollectLogService;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * (CollectLog)表服务实现类
  *
@@ -15,4 +19,16 @@ import org.springframework.stereotype.Service;
 @Service("collectLogService")
 public class CollectLogServiceImpl extends ServiceImpl<CollectLogDao, CollectLog> implements CollectLogService {
 
+    @Resource
+    private CollectLogDao collectLogDao;
+
+    /**
+     * 查询待同步记录with phone
+     *
+     * @return List<CollectLog>
+     */
+    @Override
+    public List<CollectLog> selectSyncCollectLog() {
+        return collectLogDao.selectSyncCollectLog();
+    }
 }

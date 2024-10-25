@@ -20,5 +20,6 @@ public class BoxCollection {
     private BigDecimal collectPoint;
     private int collectMax;
     private int collectRemain;
+    private boolean registered;
     private List<CollectLog> collectLogs;
 }

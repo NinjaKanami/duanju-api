@@ -23,6 +23,8 @@ class BoxServiceImplTest {
 
     @Resource
     private BoxService boxService;
+    @Resource
+    private BoxServiceImpl boxServiceImpl;
 
     @Test
     void save() {
@@ -42,5 +44,10 @@ class BoxServiceImplTest {
     void openBox() {
         Result result = boxService.openBox(10086L, 10);
         System.out.println(result);
+    }
+
+    @Test
+    void syncUserCollectionJob() {
+        boxServiceImpl.syncUserCollectionJob();
     }
 }

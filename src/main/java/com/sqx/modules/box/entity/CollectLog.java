@@ -7,10 +7,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 
  * @TableName collect_log
  */
-@TableName(value ="collect_log")
+@TableName(value = "collect_log")
 @Data
 public class CollectLog implements Serializable {
     /**
@@ -50,6 +49,13 @@ public class CollectLog implements Serializable {
     private String itemName;
 
     /**
+     * 是否同步 0否1是
+     */
+    @TableField(value = "is_sync")
+    private Integer isSync;
+
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
@@ -60,6 +66,9 @@ public class CollectLog implements Serializable {
      */
     @TableField(value = "update_time", fill = FieldFill.UPDATE)
     private String updateTime;
+
+    @TableField(exist = false)
+    private String phone;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
@@ -77,13 +86,15 @@ public class CollectLog implements Serializable {
         }
         CollectLog other = (CollectLog) that;
         return (this.getCollectLogId() == null ? other.getCollectLogId() == null : this.getCollectLogId().equals(other.getCollectLogId()))
-            && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
-            && (this.getPlus() == null ? other.getPlus() == null : this.getPlus().equals(other.getPlus()))
-            && (this.getReduce() == null ? other.getReduce() == null : this.getReduce().equals(other.getReduce()))
-            && (this.getItemName() == null ? other.getItemName() == null : this.getItemName().equals(other.getItemName()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
+                && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
+                && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
+                && (this.getPlus() == null ? other.getPlus() == null : this.getPlus().equals(other.getPlus()))
+                && (this.getReduce() == null ? other.getReduce() == null : this.getReduce().equals(other.getReduce()))
+                && (this.getItemName() == null ? other.getItemName() == null : this.getItemName().equals(other.getItemName()))
+                && (this.getIsSync() == null ? other.getIsSync() == null : this.getIsSync().equals(other.getIsSync()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getPhone() == null ? other.getPhone() == null : this.getPhone().equals(other.getPhone()));
     }
 
     @Override
@@ -96,8 +107,10 @@ public class CollectLog implements Serializable {
         result = prime * result + ((getPlus() == null) ? 0 : getPlus().hashCode());
         result = prime * result + ((getReduce() == null) ? 0 : getReduce().hashCode());
         result = prime * result + ((getItemName() == null) ? 0 : getItemName().hashCode());
+        result = prime * result + ((getIsSync() == null) ? 0 : getIsSync().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
+        result = prime * result + ((getPhone() == null) ? 0 : getPhone().hashCode());
         return result;
     }
 
@@ -113,8 +126,10 @@ public class CollectLog implements Serializable {
         sb.append(", plus=").append(plus);
         sb.append(", reduce=").append(reduce);
         sb.append(", itemName=").append(itemName);
+        sb.append(", isSync=").append(isSync);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
+        sb.append(", phone=").append(phone);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
