@@ -79,15 +79,15 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
                 boxOnline.setMinute(0);
             }
 
+            // 获得已达上限
+            if (boxOnline.getReward() >= maxReward) {
+                return Result.error("已达上限");
+            }
+
             // 未到下次时间
             if (boxOnline.getMinute() < boxOnline.getNextMinute()) {
                 this.saveOrUpdate(boxOnline);
                 return Result.error("未到时间");
-            }
-
-            // 获得已达上限
-            if (boxOnline.getReward() >= maxReward) {
-                return Result.error("已达上限");
             }
 
             // 更新

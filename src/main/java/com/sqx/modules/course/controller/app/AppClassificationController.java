@@ -54,7 +54,11 @@ public class AppClassificationController extends AbstractController {
     @GetMapping("/selectClassification")
     @ApiOperation("查询短剧信息")
     public Result selectClassification() {
-        return Result.success().put("data", courseClassificationService.selectClassification());
+        //return Result.success().put("data", courseClassificationService.selectClassification());
+        return Result.success()
+                .put("data", courseClassificationService.list(new QueryWrapper<CourseClassification>()
+                        .eq("is_delete", 0)
+                        .orderByAsc("sort")));
     }
 
     /**

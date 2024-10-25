@@ -29,8 +29,10 @@ public class SenInfoCheckUtil {
     private static Logger logger = LoggerFactory.getLogger(SenInfoCheckUtil.class);
 
     private static String MpAccessToken;
+    private static long lastMpTokenFetchTime = 0;
 
     private static String DyAccessToken;
+    private static long lastDyTokenFetchTime = 0;
 
     // 这里使用静态，让 service 属于类
     private static CommonInfoService commonInfoService;
@@ -44,16 +46,24 @@ public class SenInfoCheckUtil {
 
     /**
      * 获取Token  小程序
-     * @param
-     * @param
      * @return AccessToken
      */
-    public static String getMpToken(){
-        return getMpAccessToken();
+    public static String getMpToken() {
+        long currentTime = System.currentTimeMillis();
+        if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > 2 * 30 * 60 * 1000)) {
+            MpAccessToken = getMpAccessToken();
+            lastMpTokenFetchTime = currentTime;
+        }
+        return MpAccessToken;
     }
 
-    public static String getDyToken(){
-        return getDyAccessToken();
+    public static String getDyToken() {
+        long currentTime = System.currentTimeMillis();
+        if (DyAccessToken == null || (currentTime - lastDyTokenFetchTime > 2 * 30 * 60 * 1000)) {
+            DyAccessToken = getDyAccessToken();
+            lastDyTokenFetchTime = currentTime;
+        }
+        return DyAccessToken;
     }
 
 
