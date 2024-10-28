@@ -25,7 +25,7 @@ class DataSyncTest {
 
     @Test
     void sync() throws Exception {
-        boolean sync = dataSync.syncUserCollection("18827526652", new BigDecimal(100), 1, "12");
+        boolean sync = dataSync.syncUserCollection("18827526652", new BigDecimal(100), 1, "11");
         System.out.println(sync);
     }
 

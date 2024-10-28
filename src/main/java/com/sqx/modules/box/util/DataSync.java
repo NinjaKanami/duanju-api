@@ -152,6 +152,11 @@ public class DataSync {
                 // 成功
                 System.out.println("兑换成功: " + data);
                 break;
+            case 501912:
+                // 幂等成功
+                System.out.println("幂等兑换成功: " + data);
+                data = true;
+                break;
             case 501000:
                 // 验签参数错误
                 System.out.println("验签参数错误: " + emessage);

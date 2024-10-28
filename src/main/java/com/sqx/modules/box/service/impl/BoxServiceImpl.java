@@ -1,6 +1,7 @@
 package com.sqx.modules.box.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.entity.UserEntity;
@@ -247,6 +248,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     }
 
     @Scheduled(cron = "0/3 * * * * *")
+    @Transactional(rollbackFor = Exception.class)
     public void syncUserCollectionJob() {
         try {
             /* List<CollectLog> list = collectLogService.list(new QueryWrapper<CollectLog>()
@@ -263,6 +265,14 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                 }
                 // 更新记录
                 collectLog.setIsSync(1);
+                boolean update = collectLogService.update(collectLog, new UpdateWrapper<CollectLog>()
+                        .eq("collect_log_id", collectLog.getCollectLogId())
+                        .ne("is_sync", 1));
+                //.set("is_sync", 1));
+                if (!update) {
+                    log.warn("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)：{}", collectLog.getCollectLogId());
+                    continue;
+                }
                 collectLogService.updateById(collectLog);
                 // 削减短剧平台的积分
                 CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
