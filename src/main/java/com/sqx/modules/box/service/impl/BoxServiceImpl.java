@@ -14,9 +14,11 @@ import com.sqx.modules.box.vo.BoxCollection;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -47,6 +49,8 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     private UserService userService;
     @Resource
     private DataSync dataSync;
+    @Resource
+    private TransactionTemplate transactionTemplate;
 
     /**
      * 查询 盲盒 青龙 龙鳞 记录 最大发行 剩余数量
@@ -229,7 +233,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     }
 
     @Scheduled(cron = "0 0 0 * * ?")
-    public void restRemain() {
+    public void resetRemain() {
         try {
             // 剩余发行数量
             CommonInfo max = commonInfoService.findOne(2003);
@@ -248,43 +252,41 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     }
 
     @Scheduled(cron = "0/3 * * * * *")
-    @Transactional(rollbackFor = Exception.class)
     public void syncUserCollectionJob() {
-        try {
-            /* List<CollectLog> list = collectLogService.list(new QueryWrapper<CollectLog>()
-                    .eq("is_sync", 0).eq("type",0)); */
-            // 查询未同步的记录
-            List<CollectLog> list = collectLogService.selectSyncCollectLog();
-            for (CollectLog collectLog : list) {
-
-                // 同步用户积分
-                boolean b = dataSync.syncUserCollection(collectLog.getPhone(), collectLog.getPlus(), 1, collectLog.getCollectLogId().toString());
-                if (!b) {
-                    log.error("同步用户积分失败：" + collectLog.getCollectLogId());
-                    continue;
+        // 查询未同步的记录
+        List<CollectLog> list = collectLogService.selectSyncCollectLog();
+        for (CollectLog collectLog : list) {
+            transactionTemplate.execute(status -> {
+                try {
+                    // 同步用户积分
+                    boolean b = dataSync.syncUserCollection(collectLog.getPhone(), collectLog.getPlus(), 1, collectLog.getCollectLogId().toString());
+                    if (!b) {
+                        log.error("同步用户积分失败：{}", collectLog.getCollectLogId());
+                        return null; // 提前终止事务处理
+                    }
+                    // 更新记录
+                    collectLog.setIsSync(1);
+                    boolean update = collectLogService.update(collectLog, new UpdateWrapper<CollectLog>()
+                            .eq("collect_log_id", collectLog.getCollectLogId())
+                            .ne("is_sync", 1));
+                    if (!update) {
+                        log.warn("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)：{}", collectLog.getCollectLogId());
+                        return null; // 提前终止事务处理
+                    }
+                    // 削减短剧平台的积分
+                    CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
+                    if (one != null) {
+                        one.setCount(one.getCount().subtract(collectLog.getPlus()));
+                        collectPointService.updateById(one);
+                    }
+                    log.info("同步用户积分成功!ID：{}", collectLog.getCollectLogId());
+                    return null; // 事务处理完成，没有返回值
+                } catch (Exception e) {
+                    log.error("同步用户积分失败", e);
+                    status.setRollbackOnly(); // 标记事务回滚
+                    return null; // 事务处理结束
                 }
-                // 更新记录
-                collectLog.setIsSync(1);
-                boolean update = collectLogService.update(collectLog, new UpdateWrapper<CollectLog>()
-                        .eq("collect_log_id", collectLog.getCollectLogId())
-                        .ne("is_sync", 1));
-                //.set("is_sync", 1));
-                if (!update) {
-                    log.warn("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)：{}", collectLog.getCollectLogId());
-                    continue;
-                }
-                collectLogService.updateById(collectLog);
-                // 削减短剧平台的积分
-                CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
-                if (one != null) {
-                    one.setCount(one.getCount().subtract(collectLog.getPlus()));
-                    collectPointService.updateById(one);
-                }
-                log.info("同步用户积分成功!ID：{}", collectLog.getCollectLogId());
-            }
-
-        } catch (Exception e) {
-            log.error("同步用户积分失败", e);
+            });
         }
     }
 }
