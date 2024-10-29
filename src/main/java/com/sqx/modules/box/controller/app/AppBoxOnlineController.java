@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.common.utils.Result;
+import com.sqx.modules.app.annotation.Login;
 import com.sqx.modules.box.entity.BoxOnline;
 import com.sqx.modules.box.service.BoxOnlineService;
 import org.springframework.web.bind.annotation.*;
@@ -91,6 +92,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param userId 用户
      * @return 单条数据
      */
+    @Login
     @GetMapping("/updateOnline")
     public Result updateOnline(@RequestAttribute Long userId, @RequestParam int minute) {
 
