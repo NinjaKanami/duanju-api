@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -34,6 +35,9 @@ public class SenInfoCheckUtil {
     private static String DyAccessToken;
     private static long lastDyTokenFetchTime = 0;
 
+    @Value(value = "${isDevWxAccessToken}")
+    private static boolean isDev;
+
     // 这里使用静态，让 service 属于类
     private static CommonInfoService commonInfoService;
 
@@ -46,47 +50,94 @@ public class SenInfoCheckUtil {
 
     /**
      * 获取Token  小程序
+     *
      * @return AccessToken
      */
-    public static String getMpToken() {
+    /* public static String getMpToken() {
         long currentTime = System.currentTimeMillis();
         if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > 2 * 30 * 60 * 1000)) {
             MpAccessToken = getMpAccessToken();
             lastMpTokenFetchTime = currentTime;
         }
         return MpAccessToken;
+    } */
+
+    /* public static synchronized String getMpToken() {
+        long currentTime = System.currentTimeMillis();
+        if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > 2 * 30 * 60 * 1000)) {
+            logger.info("Fetching new MpAccessToken...");
+            MpAccessToken = getMpAccessToken();
+            lastMpTokenFetchTime = currentTime;
+        } else {
+            logger.info("Using cached MpAccessToken.");
+        }
+        return MpAccessToken;
+    } */
+    public static String getMpToken() {
+        long currentTime = System.currentTimeMillis();
+        if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > 2 * 30 * 60 * 1000)) {
+            synchronized (SenInfoCheckUtil.class) {
+                if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > 2 * 30 * 60 * 1000)) {
+                    logger.info("Fetching new MpAccessToken...");
+                    MpAccessToken = getMpAccessToken();
+                    lastMpTokenFetchTime = currentTime;
+                } else {
+                    logger.info("Using cached MpAccessToken.");
+                }
+            }
+        } else {
+            logger.info("Using cached MpAccessToken.");
+        }
+        return MpAccessToken;
     }
 
-    public static String getDyToken() {
+    /* public static String getDyToken() {
         long currentTime = System.currentTimeMillis();
         if (DyAccessToken == null || (currentTime - lastDyTokenFetchTime > 2 * 30 * 60 * 1000)) {
             DyAccessToken = getDyAccessToken();
             lastDyTokenFetchTime = currentTime;
         }
         return DyAccessToken;
+    } */
+
+    public static String getDyToken() {
+        long currentTime = System.currentTimeMillis();
+        if (DyAccessToken == null || (currentTime - lastDyTokenFetchTime > 2 * 60 * 60 * 1000)) {
+            synchronized (SenInfoCheckUtil.class) {
+                if (DyAccessToken == null || (currentTime - lastDyTokenFetchTime > 2 * 60 * 60 * 1000)) {
+                    logger.info("Fetching new DyAccessToken...");
+                    DyAccessToken = getDyAccessToken();
+                    lastDyTokenFetchTime = currentTime;
+                } else {
+                    logger.info("Using cached DyAccessToken.");
+                }
+            }
+        } else {
+            logger.info("Using cached DyAccessToken.");
+        }
+        return DyAccessToken;
     }
 
-
-    public static void getImg(String relation,String goodsId,String type, String page,HttpServletResponse response){
+    public static void getImg(String relation, String goodsId, String type, String page, HttpServletResponse response) {
         String mpToken = getMpToken();
-        //获取二维码数据
-        String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="+mpToken;
-        Map<String,Object> map = Maps.newHashMap();
-        map.put("scene",relation+"&"+goodsId+"&"+type);
+        // 获取二维码数据
+        String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + mpToken;
+        Map<String, Object> map = Maps.newHashMap();
+        map.put("scene", relation + "&" + goodsId + "&" + type);
         String value = commonInfoService.findOne(105).getValue();
-        if("是".equals(value)){
-            map.put("page",page);
+        if ("是".equals(value)) {
+            map.put("page", page);
         }
         map.put("width", 280);
         String jsonString = JSON.toJSONString(map);
         InputStream inputStream = sendPostBackStream(url, jsonString);
-        //生成二维码图片
+        // 生成二维码图片
         response.setContentType("image/png");
-        try{
+        try {
             BufferedImage bi = ImageIO.read(inputStream);
             ImageIO.write(bi, "JPG", response.getOutputStream());
             inputStream.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -95,40 +146,40 @@ public class SenInfoCheckUtil {
     /**
      * 获取二维码图片
      */
-    public static void getDyImg(String invitationCode,String page, HttpServletResponse response){
+    public static void getDyImg(String invitationCode, String page, HttpServletResponse response) {
         String dyToken = getDyToken();
-        //获取二维码数据
+        // 获取二维码数据
         String url = "https://open.douyin.com/api/apps/v1/qrcode/create/";
 
         JSONObject map = new JSONObject();
-        String path="{"+page+"}?{invitationCode="+invitationCode+"}";
+        String path = "{" + page + "}?{invitationCode=" + invitationCode + "}";
         try {
-            path = URLEncoder.encode(path,"utf-8");
+            path = URLEncoder.encode(path, "utf-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         String appid = commonInfoService.findOne(805).getValue();
-        map.put("appid",appid);
-        map.put("path",path);
-        map.put("app_name","douyin");
-        map.put("is_circle_code",false);
-        map.put("set_icon",true);
+        map.put("appid", appid);
+        map.put("path", path);
+        map.put("app_name", "douyin");
+        map.put("is_circle_code", false);
+        map.put("set_icon", true);
 
-        String s = HttpClientUtil.doPostJson(url, map.toJSONString(),dyToken);
+        String s = HttpClientUtil.doPostJson(url, map.toJSONString(), dyToken);
         JSONObject jsonObject = JSONObject.parseObject(s);
         String err_no = jsonObject.getString("err_no");
-        if(!"0".equals(err_no)){
-            logger.error("抖音二维码生成失败："+jsonObject.getString("err_msg"));
+        if (!"0".equals(err_no)) {
+            logger.error("抖音二维码生成失败：" + jsonObject.getString("err_msg"));
         }
         JSONObject data = jsonObject.getJSONObject("data");
         String img = data.getString("img");
         BufferedImage bi = base64ToBufferedImage(img);
-        if(bi!=null){
-            //生成二维码图片
+        if (bi != null) {
+            // 生成二维码图片
             response.setContentType("image/png");
-            try{
+            try {
                 ImageIO.write(bi, "JPG", response.getOutputStream());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error(e.getMessage());
             }
         }
@@ -137,6 +188,7 @@ public class SenInfoCheckUtil {
 
     /**
      * base64 编码转换为 BufferedImage
+     *
      * @param base64
      * @return
      */
@@ -155,30 +207,28 @@ public class SenInfoCheckUtil {
     /**
      * 获取二维码图片
      */
-    public static void getPoster(String invitationCode,String page, HttpServletResponse response){
+    public static void getPoster(String invitationCode, String page, HttpServletResponse response) {
         String mpToken = getMpToken();
-        //获取二维码数据
-        String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token="+mpToken;
-        Map<String,Object> map = Maps.newHashMap();
-        map.put("scene",invitationCode);
-        if(StringUtils.isNotEmpty(page)){
-            map.put("page",page);
+        // 获取二维码数据
+        String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + mpToken;
+        Map<String, Object> map = Maps.newHashMap();
+        map.put("scene", invitationCode);
+        if (StringUtils.isNotEmpty(page)) {
+            map.put("page", page);
         }
         map.put("width", 280);
         String jsonString = JSON.toJSONString(map);
         InputStream inputStream = sendPostBackStream(url, jsonString);
-        //生成二维码图片
+        // 生成二维码图片
         response.setContentType("image/png");
-        try{
+        try {
             BufferedImage bi = ImageIO.read(inputStream);
             ImageIO.write(bi, "JPG", response.getOutputStream());
             inputStream.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
-
-
 
 
     private static InputStream sendPostBackStream(String url, String param) {
@@ -194,19 +244,19 @@ public class SenInfoCheckUtil {
                     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
             conn.setDoOutput(true);
             conn.setDoInput(true);
-            //解决乱码问题
-            OutputStreamWriter outWriter =new OutputStreamWriter(conn.getOutputStream(), "utf-8");
-            out =new PrintWriter(outWriter);
+            // 解决乱码问题
+            OutputStreamWriter outWriter = new OutputStreamWriter(conn.getOutputStream(), "utf-8");
+            out = new PrintWriter(outWriter);
             // 发送请求参数
-            if(StringUtils.isNotBlank(param)) {
+            if (StringUtils.isNotBlank(param)) {
                 out.print(param);
             }
             // flush输出流的缓冲
             out.flush();
             return conn.getInputStream();
         } catch (Exception e) {
-            logger.error("发送 POST 请求出现异常！"+e);
-        } finally{
+            logger.error("发送 POST 请求出现异常！" + e);
+        } finally {
             IOUtils.closeQuietly(out);
         }
         return null;
@@ -215,14 +265,34 @@ public class SenInfoCheckUtil {
 
     /**
      * 获取access_token
-     * 每个两个小时自动刷新AcessTocken
+     * 每个两个小时自动刷新AccessToken
      */
-    public static String getMpAccessToken(){
+    public static String getMpAccessToken() {
         String appid = commonInfoService.findOne(45).getValue();
         String secret = commonInfoService.findOne(46).getValue();
-        String jsonResult = HttpClientUtil.doPost("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + appid + "&secret=" + secret);
+        String jsonResult;
+        if (isDev) {
+            jsonResult = HttpClientUtil.doPost("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + appid + "&secret=" + secret);
+        } else {
+            try {
+                // 构建请求头
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                //Map<String, String> jsonObject = new HashMap<>(); Map 需要手动转换为JSON字符串，否则直接调用 toString 方法可能会导致格式不正确。
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("appid", appid);
+                jsonObject.put("secret", secret);
+                jsonObject.put("grant_type", "client_credential");
+                //jsonResult = HttpClientUtil.sendPostRequest("https://api.weixin.qq.com/cgi-bin/stable_token", headers, jsonObject.toJSONString());
+                jsonResult = HttpClientUtil.doPostJson("https://api.weixin.qq.com/cgi-bin/stable_token",  jsonObject.toString());
+            } catch (Exception e) {
+                logger.error("获取access_token失败：{}", e.getMessage());
+                return "";
+            }
+        }
+
         JSONObject parseObject = JSON.parseObject(jsonResult);
-        logger.info("=========accessTokenOut========="+parseObject.toJSONString());
+        logger.info("=========accessTokenOut=========" + parseObject.toJSONString());
 
         String errcode = parseObject.getString("errcode");
         String accessToken = parseObject.getString("access_token");
@@ -235,22 +305,20 @@ public class SenInfoCheckUtil {
      * 每个两个小时自动刷新AcessTocken
      */
 
-    public static String getDyAccessToken(){
+    public static String getDyAccessToken() {
         String appid = commonInfoService.findOne(805).getValue();
         String secret = commonInfoService.findOne(806).getValue();
-        Map<String,String> jsonObject=new HashMap<>();
-        jsonObject.put("appid",appid);
-        jsonObject.put("secret",secret);
-        jsonObject.put("grant_type","client_credential");
-        String jsonResult = HttpClientUtil.doPost("https://open.douyin.com/oauth/client_token/",jsonObject);
+        Map<String, String> jsonObject = new HashMap<>();
+        jsonObject.put("appid", appid);
+        jsonObject.put("secret", secret);
+        jsonObject.put("grant_type", "client_credential");
+        String jsonResult = HttpClientUtil.doPost("https://open.douyin.com/oauth/client_token/", jsonObject);
 
         JSONObject parseObject = JSON.parseObject(jsonResult);
-        logger.info("=========accessTokenOut========="+parseObject.toJSONString());
+        logger.info("=========accessTokenOut=========" + parseObject.toJSONString());
         JSONObject data = parseObject.getJSONObject("data");
         return data.getString("access_token");
     }
-
-
 
 
 }

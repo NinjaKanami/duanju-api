@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.Buffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +109,7 @@ public class HttpClientUtil {
         return doPost(url, null);
     }
 
-    public static String doPostJson(String url, String json,String dyToken) {
+    public static String doPostJson(String url, String json, String dyToken) {
         // 创建Httpclient对象
         CloseableHttpClient httpClient = HttpClients.createDefault();
         CloseableHttpResponse response = null;
@@ -116,7 +117,7 @@ public class HttpClientUtil {
         try {
             // 创建Http Post请求
             HttpPost httpPost = new HttpPost(url);
-            httpPost.setHeader("access-token",dyToken);
+            httpPost.setHeader("access-token", dyToken);
             // 创建请求内容
             StringEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
             httpPost.setEntity(entity);
@@ -144,7 +145,7 @@ public class HttpClientUtil {
         try {
             // 创建Http Post请求
             HttpPost httpPost = new HttpPost(url);
-            httpPost.setHeader("Content-Type","application/json");
+            httpPost.setHeader("Content-Type", "application/json");
             // 创建请求内容
             StringEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
             httpPost.setEntity(entity);
@@ -206,7 +207,9 @@ public class HttpClientUtil {
     }
 
 
-    /**  将流 保存为数据数组
+    /**
+     * 将流 保存为数据数组
+     *
      * @param inStream
      * @return
      * @throws Exception
@@ -226,5 +229,41 @@ public class HttpClientUtil {
         inStream.close();
         // 把outStream里的数据写入内存
         return outStream.toByteArray();
+    }
+
+    /**
+     * post请求
+     *
+     * @param url
+     * @param headers
+     * @param requestBody
+     * @return
+     * @throws Exception
+     */
+    public static String sendPostRequest(String url, Map<String, String> headers, String requestBody) throws Exception {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(url);
+
+        // 设置请求头
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            httpPost.setHeader(entry.getKey(), entry.getValue());
+        }
+
+        // 设置请求体
+        StringEntity entity = new StringEntity(requestBody, StandardCharsets.UTF_8);
+        httpPost.setEntity(entity);
+
+        // 发送请求
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+        try {
+            if (response.getStatusLine().getStatusCode() == 200) {
+                return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            } else {
+                throw new Exception("HTTP 请求失败: " + response.getStatusLine().getStatusCode());
+            }
+        } finally {
+            response.close();
+            httpClient.close();
+        }
     }
 }
