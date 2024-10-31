@@ -40,3 +40,7 @@ mybatis-plus:
         log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 isDevWxAccessToken: true
+
+logging:
+    file:
+        path: /data/opt/logs/${spring.application.name}/${spring.application.name}.log
