@@ -95,6 +95,8 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             CollectPoint collectPoint = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", userId));
             if (collectPoint != null) {
                 boxCollection.setCollectPoint(collectPoint.getCount());
+            } else {
+                boxCollection.setCollectPoint(BigDecimal.ZERO);
             }
             boxCollection.setCollectPoint(boxCollection.getCollectPoint().add(userCollection.getCollectPoint()));
 
@@ -102,6 +104,8 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             Collect collect = collectService.getOne(new QueryWrapper<Collect>().eq("user_id", userId));
             if (collect != null) {
                 boxCollection.setCollect(collect.getCount());
+            } else {
+                boxCollection.setCollect(0);
             }
             boxCollection.setCollect(boxCollection.getCollect() + userCollection.getCollect());
 
