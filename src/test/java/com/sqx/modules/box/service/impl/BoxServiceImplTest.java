@@ -36,7 +36,7 @@ class BoxServiceImplTest {
 
     @Test
     void selectBoxCollection() {
-        Result result = boxService.selectBoxCollection(10086L);
+        Result result = boxService.selectBoxCollection(14965L);
         System.out.println(result);
     }
 

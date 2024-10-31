@@ -40,6 +40,8 @@ public class DataSync {
 
 
     public BoxCollection getUserCollection(String phone) {
+        // 创建 BoxCollection 对象并设置属性
+        BoxCollection data = new BoxCollection(0, BigDecimal.valueOf(0), false);
         try {
             // 生成时间戳
             String timestamp = String.valueOf(System.currentTimeMillis());
@@ -68,8 +70,7 @@ public class DataSync {
             String emessage = responseJson.getString("emessage");
             JSONObject dataJson = responseJson.getJSONObject("data");
 
-            // 创建 BoxCollection 对象并设置属性
-            BoxCollection data = new BoxCollection();
+
             data.setRegistered(dataJson.getBooleanValue("registered"));
             data.setCollect(dataJson.getIntValue("dragonNum"));
             data.setCollectPoint(dataJson.getBigDecimal("dragonScaleNum"));
@@ -111,7 +112,7 @@ public class DataSync {
             }
         } catch (Exception e) {
             log.error("获取用户收藏失败: {}", e.getMessage());
-            return null;
+            return data;
         }
     }
 

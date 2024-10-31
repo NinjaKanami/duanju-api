@@ -22,4 +22,13 @@ public class BoxCollection {
     private int collectRemain;
     private boolean registered;
     private List<CollectLog> collectLogs;
+
+    public BoxCollection() {
+    }
+
+    public BoxCollection(int collect, BigDecimal collectPoint, boolean registered) {
+        this.collect = collect;
+        this.collectPoint = collectPoint;
+        this.registered = registered;
+    }
 }
