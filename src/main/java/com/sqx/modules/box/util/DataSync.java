@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.sqx.modules.box.vo.BoxCollection;
 import com.sqx.modules.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -206,8 +207,12 @@ public class DataSync {
                 );
     }
 
+
     private String sendPostRequest(String url, Map<String, String> headers, String requestBody) throws Exception {
+        // 创建 HttpClient 实例
         CloseableHttpClient httpClient = HttpClients.createDefault();
+
+        // 创建 HttpPost 实例
         HttpPost httpPost = new HttpPost(url);
 
         // 设置请求头
@@ -218,6 +223,13 @@ public class DataSync {
         // 设置请求体
         StringEntity entity = new StringEntity(requestBody, StandardCharsets.UTF_8);
         httpPost.setEntity(entity);
+
+        // 设置超时配置
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(3000)  // 连接超时时间，单位为毫秒
+                .setSocketTimeout(3000)   // 读取超时时间，单位为毫秒
+                .build();
+        httpPost.setConfig(requestConfig);
 
         // 发送请求
         CloseableHttpResponse response = httpClient.execute(httpPost);
@@ -234,13 +246,23 @@ public class DataSync {
     }
 
     private String sendGetRequest(String url, Map<String, String> headers) throws Exception {
+        // 创建 HttpClient 实例
         CloseableHttpClient httpClient = HttpClients.createDefault();
+
+        // 创建 HttpGet 实例
         HttpGet httpGet = new HttpGet(url);
 
         // 设置请求头
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             httpGet.setHeader(entry.getKey(), entry.getValue());
         }
+
+        // 设置超时配置
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(3000)  // 连接超时时间，单位为毫秒
+                .setSocketTimeout(3000)   // 读取超时时间，单位为毫秒
+                .build();
+        httpGet.setConfig(requestConfig);
 
         // 发送请求
         CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -255,5 +277,6 @@ public class DataSync {
             httpClient.close();
         }
     }
+
 
 }
