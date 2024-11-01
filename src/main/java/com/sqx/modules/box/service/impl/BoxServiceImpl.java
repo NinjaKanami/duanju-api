@@ -115,12 +115,14 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             // 最大发行数量
             CommonInfo max = commonInfoService.findOne(2003);
             if (max != null) {
-                boxCollection.setCollectMax(Integer.parseInt(max.getValue()));
+                //boxCollection.setCollectMax(Integer.parseInt(max.getValue()));
+                boxCollection.setCollectPointMax(new BigDecimal(max.getValue()));
             }
             // 剩余发行数量
             CommonInfo remain = commonInfoService.findOne(2004);
             if (remain != null) {
-                boxCollection.setCollectRemain(Integer.parseInt(remain.getValue()));
+                //boxCollection.setCollectRemain(Integer.parseInt(remain.getValue()));
+                boxCollection.setCollectPointRemain(new BigDecimal(remain.getValue()));
             }
 
             return Result.success().put("data", boxCollection);
