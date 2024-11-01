@@ -1,6 +1,7 @@
 logging:
   file:
-    name: logs/duanju.log
+    path: /opt/logs/${spring.application.name}/${spring.application.name}.log
+  config: classpath:logconfig/logback-spring.xml
 
 # Tomcat
 server:
@@ -14,6 +15,8 @@ server:
     context-path: /sqx_fast
 
 spring:
+  application:
+    name: duanju-api
   main:
     allow-circular-references: true
     allow-bean-definition-overriding: true

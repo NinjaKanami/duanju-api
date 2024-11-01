@@ -4,7 +4,7 @@ spring:
         druid:
             driver-class-name: com.mysql.cj.jdbc.Driver
             #url: jdbc:mysql://101.35.215.228:3306/duanjuv2?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
-            url: jdbc:mysql://192.168.241.4:3306/duanju?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
+            url: jdbc:mysql://sh-cdb-87ppqvr8.sql.tencentcdb.com:63816/duanju?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
             username: arttest
             password: artcfgHkxvevvmbGRdfjeEc8@
             initial-size: 10
@@ -40,7 +40,3 @@ mybatis-plus:
         log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 isDevWxAccessToken: true
-
-logging:
-    file:
-        path: /data/opt/logs/${spring.application.name}/${spring.application.name}.log
