@@ -58,12 +58,18 @@
 
     <!--本地环境-->
     <springProfile name="dev | native">
-
+        <logger name="com.baomidou.mybatisplus" level="DEBUG">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+        </logger>
     </springProfile>
 
     <!--产线环境-->
     <springProfile name="prod">
-
+        <logger name="com.baomidou.mybatisplus" level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+        </logger>
     </springProfile>
 
     <!--加载配置项-->
