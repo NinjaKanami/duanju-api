@@ -91,7 +91,7 @@ public class AppCollectController extends ApiController {
 
 
     @Login
-    @GetMapping("/synthesise")
+    @PostMapping("/synthesise")
     @ApiOperation("合成")
     public Result synthesise(@RequestAttribute Long userId, @RequestParam int count) {
         return this.collectService.synthesise(userId, count);
