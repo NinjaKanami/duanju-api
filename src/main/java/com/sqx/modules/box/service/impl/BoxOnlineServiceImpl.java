@@ -12,6 +12,7 @@ import com.sqx.modules.box.service.BoxOnlineService;
 import com.sqx.modules.box.service.BoxService;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ import java.time.format.DateTimeFormatter;
  * @author makejava
  * @since 2024-10-23 13:08:05
  */
+@Slf4j
 @Service("boxOnlineService")
 public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> implements BoxOnlineService {
 
