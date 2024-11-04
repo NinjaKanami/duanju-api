@@ -1,5 +1,6 @@
 package com.sqx.modules.app.config;
 
+import com.sqx.config.interceptor.InitInterceptor;
 import com.sqx.modules.app.interceptor.AuthorizationInterceptor;
 import com.sqx.modules.app.resolver.LoginUserHandlerMethodArgumentResolver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new InitInterceptor()).addPathPatterns("/**");
         registry.addInterceptor(authorizationInterceptor).addPathPatterns("/app/**");
+
     }
 
     @Override

@@ -1,7 +1,10 @@
 package com.sqx.config.fliter;
 
 
+import com.sqx.common.context.RequestContext;
+import com.sqx.common.utils.IPUtils;
 import com.sqx.common.utils.LogTraceUtils;
+import com.sqx.modules.app.entity.UserEntity;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +74,10 @@ public class TraceFilter implements Filter {
             //链路
             String traceId = request.getHeader(LogTraceUtils.TRACE_ID);
             LogTraceUtils.setTraceId(StringUtils.defaultString(traceId, UUID.randomUUID().toString()));
+            long startTime = System.currentTimeMillis();
+            // 设置请求开始时间
+            request.setAttribute("startTime", startTime);
+
             //记录日志
             HttpServletRequest requestWrapper = getRequestWrapper(request);
             //环境拦截
