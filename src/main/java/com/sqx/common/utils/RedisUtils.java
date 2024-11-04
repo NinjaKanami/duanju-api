@@ -96,7 +96,8 @@ public class RedisUtils {
 
 
     /**
-     * @deprecated 永远不要使用这个方法!
+     * flushdb 方法内部使用SCAN + DEL命令删除Redis中的所有key
+     * 但在知道业务key的前提下，仍然建议使用 deleteByPattern 方法来代替flushdb 方法
      */
     @Deprecated
     public void flushdb(){
@@ -121,7 +122,13 @@ public class RedisUtils {
 //        }
 
         redisTemplate.execute((RedisCallback<Void>) connection -> {
-            connection.flushDb();
+            try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().count(1000).build())) {
+                while (cursor.hasNext()) {
+                    connection.del(cursor.next());
+                }
+            }
+            // NOTE: 严禁使用FLUSHDB命令
+            //connection.flushDb();
             return null;
         });
     }
