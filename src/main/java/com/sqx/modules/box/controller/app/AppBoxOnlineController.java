@@ -93,7 +93,7 @@ public class AppBoxOnlineController extends ApiController {
      * @return 单条数据
      */
     @Login
-    @GetMapping("/updateOnline")
+    @PostMapping("/updateOnline")
     public Result updateOnline(@RequestAttribute Long userId, @RequestParam int minute) {
 
         return this.boxOnlineService.updateOnline(userId, minute);

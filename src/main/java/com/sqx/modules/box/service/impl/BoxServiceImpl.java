@@ -220,7 +220,12 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
 
             // 更新用户剩余盲盒数量
             user.setCount(user.getCount() - count);
-            updateById(user);
+            boolean b = update(user, new UpdateWrapper<Box>().
+                    eq("box_id", user.getBoxId()).eq("count", user.getCount() + count));
+            if (!b) {
+                throw new RuntimeException("更新用户剩余盲盒数量失败");
+            }
+            //updateById(user);
             // 更新记录
             CollectLog collectLog = new CollectLog();
             collectLog.setUserId(userId);
