@@ -1,8 +1,13 @@
 package com.sqx.modules.sys.oauth2;
 
 import com.google.gson.Gson;
+import com.sqx.common.context.RequestContext;
 import com.sqx.common.utils.HttpContextUtils;
+import com.sqx.common.utils.IPUtils;
 import com.sqx.common.utils.Result;
+import com.sqx.modules.app.entity.UserEntity;
+import com.sqx.modules.sys.entity.SysUserEntity;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.shiro.authc.AuthenticationException;
@@ -21,6 +26,20 @@ import java.io.IOException;
  *
  */
 public class OAuth2Filter extends AuthenticatingFilter {
+
+    /**
+    *
+     */
+    @Override
+    protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
+        if (request instanceof HttpServletRequest) {
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            //上下文初始化
+            RequestContext.init(SysUserEntity.class)
+                    .setRemoteAddress(IPUtils.getIpAddr(httpRequest)).setUrl(httpRequest.getRequestURI());
+        }
+        return super.preHandle(request, response);
+    }
 
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
