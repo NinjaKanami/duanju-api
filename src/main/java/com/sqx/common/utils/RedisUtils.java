@@ -76,6 +76,29 @@ public class RedisUtils {
         return value;
     }
 
+    /**
+     * 根据表达式批量删除key。内部使用SCAN + DEL的方式进行删除
+     * 建议使用该方法替代 flushdb 方法
+     * @param pattern redis支持的表达式
+     */
+    public void deleteByPattern(String pattern){
+        redisTemplate.execute((RedisCallback<Void>) connection -> {
+            // TODO(bootun): 该删除并非是原子的，如果想要原子的删除，可以使用LUA脚本继续优化。当前版本存在只删除部分KEY的风险
+            // 使用SCAN规避KEYS的性能问题
+            try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().match(pattern).count(1000).build())) {
+                while (cursor.hasNext()) {
+                    connection.del(cursor.next());
+                }
+            }
+            return null;
+        });
+    }
+
+
+    /**
+     * @deprecated 永远不要使用这个方法!
+     */
+    @Deprecated
     public void flushdb(){
 //        // 创建Redis客户端
 //        RedisClient redisClient = RedisClient.create("redis://"+redisHost+":"+port);
