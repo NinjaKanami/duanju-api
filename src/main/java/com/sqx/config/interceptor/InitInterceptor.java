@@ -46,12 +46,15 @@ public class InitInterceptor extends HandlerInterceptorAdapter {
         long endTime = System.currentTimeMillis();
         RequestContext.Base<?> base = RequestContext.base();
         Long userId = null;
+        String mobile = null;
         if (base.getUser() instanceof UserEntity) {
             userId = ((UserEntity) base.getUser()).getUserId();
+            mobile = ((UserEntity) base.getUser()).getPhone();
             //临时兼容管理后台，后期迁移
         } else if (base.getUser() instanceof SysUserEntity) {
             userId = ((SysUserEntity) base.getUser()).getUserId();
+            mobile = ((SysUserEntity) base.getUser()).getMobile();
         }
-        log.info("url:{},userId:{},ip:{},请求耗时:{}", request.getRequestURI(), userId, IPUtils.getIpAddr(request), endTime - startTime);
+        log.info("url:{},userId:{},mobile:{},ip:{},请求耗时:{}", request.getRequestURI(), userId, mobile, IPUtils.getIpAddr(request), endTime - startTime);
     }
 }
