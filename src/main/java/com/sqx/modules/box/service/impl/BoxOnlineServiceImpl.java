@@ -71,8 +71,6 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
                 boxOnline.setUpdateTime(now);
             }
 
-            // 更新分钟
-            boxOnline.setMinute(boxOnline.getMinute() + minute);
             // 更新日期与当前日期不同时 重置获得数量与时间
             if (!boxOnline.getUpdateTime().substring(0, 10).equals(now.substring(0, 10))) {
                 boxOnline.setReward(0);
@@ -84,6 +82,8 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
                 return Result.error("已达上限");
             }
 
+            // 更新分钟
+            boxOnline.setMinute(boxOnline.getMinute() + minute);
             // 未到下次时间
             if (boxOnline.getMinute() < boxOnline.getNextMinute()) {
                 this.saveOrUpdate(boxOnline);
