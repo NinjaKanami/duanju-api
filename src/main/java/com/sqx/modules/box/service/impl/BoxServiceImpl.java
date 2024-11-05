@@ -115,13 +115,13 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             // 最大发行数量
             CommonInfo max = commonInfoService.findOne(2003);
             if (max != null) {
-                //boxCollection.setCollectMax(Integer.parseInt(max.getValue()));
+                // boxCollection.setCollectMax(Integer.parseInt(max.getValue()));
                 boxCollection.setCollectPointMax(new BigDecimal(max.getValue()));
             }
             // 剩余发行数量
             CommonInfo remain = commonInfoService.findOne(2004);
             if (remain != null) {
-                //boxCollection.setCollectRemain(Integer.parseInt(remain.getValue()));
+                // boxCollection.setCollectRemain(Integer.parseInt(remain.getValue()));
                 boxCollection.setCollectPointRemain(new BigDecimal(remain.getValue()));
             }
 
@@ -149,6 +149,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             if (remain == null) {
                 return Result.error("龙鳞暂无发行数量");
             }
+            String localRemain = remain.getValue();
             BigDecimal remainValue = new BigDecimal(remain.getValue());
             if (remainValue.compareTo(BigDecimal.valueOf(0)) < 0) {
                 return Result.error("龙鳞发行数量不足");
@@ -197,8 +198,12 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                             if (one == null) {
                                 collectPointService.save(new CollectPoint(userId, boxItem.getValue()));
                             } else {
+                                BigDecimal localCount = one.getCount();
                                 one.setCount(one.getCount().add(boxItem.getValue()));
-                                collectPointService.updateById(one);
+                                boolean b = collectPointService.update(one, new QueryWrapper<CollectPoint>().eq("collect_point_id", one.getCollectPointId()).eq("count", localCount));
+                                if (!b) {
+                                    throw new RuntimeException("更新龙鳞数量失败");
+                                }
                             }
                             reward = reward.add(boxItem.getValue());
                         }
@@ -215,7 +220,10 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     throw new RuntimeException("龙鳞发行数量不足");
                 }
                 remain.setValue(String.valueOf(remainValue));
-                commonInfoService.updateById(remain);
+                boolean b = commonInfoService.update(remain, new QueryWrapper<CommonInfo>().eq("id", remain.getId()).eq("value", localRemain));
+                if (!b) {
+                    throw new RuntimeException("更新龙鳞发行数量失败");
+                }
             }
 
             // 更新用户剩余盲盒数量
@@ -225,7 +233,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             if (!b) {
                 throw new RuntimeException("更新用户剩余盲盒数量失败");
             }
-            //updateById(user);
+            // updateById(user);
             // 更新记录
             CollectLog collectLog = new CollectLog();
             collectLog.setUserId(userId);
@@ -287,8 +295,13 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     // 削减短剧平台的积分
                     CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
                     if (one != null) {
+                        BigDecimal localCount = one.getCount();
                         one.setCount(one.getCount().subtract(collectLog.getPlus()));
-                        collectPointService.updateById(one);
+                        boolean b1 = collectPointService.update(one, new QueryWrapper<CollectPoint>().eq("collect_point_id", one.getCollectPointId()).eq("count", localCount));
+                        if (!b1) {
+                            log.warn("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新)：{}", one.getCollectPointId());
+                            return null;
+                        }
                     }
                     log.info("同步用户积分成功!ID：{}", collectLog.getCollectLogId());
                     return null; // 事务处理完成，没有返回值
