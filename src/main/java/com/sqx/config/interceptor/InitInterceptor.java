@@ -55,6 +55,6 @@ public class InitInterceptor extends HandlerInterceptorAdapter {
             userId = ((SysUserEntity) base.getUser()).getUserId();
             mobile = ((SysUserEntity) base.getUser()).getMobile();
         }
-        log.info("url:{},userId:{},mobile:{},ip:{},请求耗时:{}", request.getRequestURI(), userId, mobile, IPUtils.getIpAddr(request), endTime - startTime);
+        log.info("url:{},userId:{},mobile:{},ip:{},请求耗时:{}", request.getRequestURI(), userId, mobile, base.getRemoteAddress(), endTime - startTime);
     }
 }

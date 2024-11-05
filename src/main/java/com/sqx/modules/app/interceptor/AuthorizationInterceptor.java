@@ -87,7 +87,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
         } finally {
             RequestContext.Base<UserEntity> base = RequestContext.base();
             UserEntity userEntity = Optional.ofNullable(base.getUser()).orElse(new UserEntity());
-            log.info("url:{},userId:{},mobile:{},ip:{},token:{}", base.getUrl(), userEntity.getPhone(), userEntity.getUserId(), base.getUrl(), base.getToken());
+            log.info("url:{},userId:{},mobile:{},ip:{},token:{}", base.getUrl(), userEntity.getUserId(), userEntity.getPhone(), base.getRemoteAddress(), base.getToken());
         }
     }
 }

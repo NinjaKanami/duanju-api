@@ -50,7 +50,7 @@ public class OAuth2Filter extends AuthenticatingFilter {
     protected boolean onLoginSuccess(AuthenticationToken token, Subject subject, ServletRequest request, ServletResponse response) throws Exception {
         RequestContext.Base<SysUserEntity> base = RequestContext.base();
         SysUserEntity userEntity = Optional.ofNullable(base.getUser()).orElse(new SysUserEntity());
-        log.info("url:{},userId:{},mobile:{},ip:{},token:{}", base.getUrl(), userEntity.getMobile(), userEntity.getUserId(), base.getUrl(), base.getToken());
+        log.info("url:{},userId:{},mobile:{},ip:{},token:{}", base.getUrl(), userEntity.getUserId(), userEntity.getMobile(), base.getRemoteAddress(), base.getToken());
         return super.onLoginSuccess(token, subject, request, response);
     }
 
