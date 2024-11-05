@@ -1,6 +1,7 @@
 package com.sqx.modules.box.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.box.dao.BoxOnlineDao;
@@ -12,6 +13,7 @@ import com.sqx.modules.box.service.BoxOnlineService;
 import com.sqx.modules.box.service.BoxService;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ import java.time.format.DateTimeFormatter;
  * @author makejava
  * @since 2024-10-23 13:08:05
  */
+@Slf4j
 @Service("boxOnlineService")
 public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> implements BoxOnlineService {
 
@@ -70,6 +73,7 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
                 boxOnline.setCreateTime(now);
                 boxOnline.setUpdateTime(now);
             }
+            Integer localMinute = boxOnline.getMinute();
 
             // 更新日期与当前日期不同时 重置获得数量与时间
             if (!boxOnline.getUpdateTime().substring(0, 10).equals(now.substring(0, 10))) {
@@ -86,7 +90,14 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             boxOnline.setMinute(boxOnline.getMinute() + minute);
             // 未到下次时间
             if (boxOnline.getMinute() < boxOnline.getNextMinute()) {
-                this.saveOrUpdate(boxOnline);
+                if (boxOnline.getBoxOnlineId() != null) {
+                    boolean b = update(new QueryWrapper<BoxOnline>().eq("box_online_id", boxOnline.getBoxOnlineId()).eq("minute", localMinute));
+                    if (!b) {
+                        throw new Exception("数据不存在，更新失败");
+                    }
+                } else {
+                    save(boxOnline);
+                }
                 return Result.error("未到时间");
             }
 
@@ -94,7 +105,14 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             boxOnline.setMinute(boxOnline.getMinute() - boxOnline.getNextMinute());
             boxOnline.setReward(boxOnline.getReward() + 1);
             boxOnline.setNextMinute(random);
-            this.saveOrUpdate(boxOnline);
+            if (boxOnline.getBoxOnlineId() != null) {
+                boolean b = update(new QueryWrapper<BoxOnline>().eq("box_online_id", boxOnline.getBoxOnlineId()).eq("minute", localMinute));
+                if (!b) {
+                    throw new Exception("数据不存在，更新失败");
+                }
+            } else {
+                save(boxOnline);
+            }
 
             // 查询盲盒
             Box box = boxService.getOne(new QueryWrapper<Box>().eq("user_id", userId));
