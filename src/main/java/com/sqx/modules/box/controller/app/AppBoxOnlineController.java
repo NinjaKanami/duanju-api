@@ -37,6 +37,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param boxOnline 查询实体
      * @return 所有数据
      */
+    @Login
     @GetMapping
     public R selectAll(Page<BoxOnline> page, BoxOnline boxOnline) {
         return success(this.boxOnlineService.page(page, new QueryWrapper<>(boxOnline)));
@@ -48,6 +49,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param id 主键
      * @return 单条数据
      */
+    @Login
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
         return success(this.boxOnlineService.getById(id));
@@ -59,6 +61,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param boxOnline 实体对象
      * @return 新增结果
      */
+    @Login
     @PostMapping
     public R insert(@RequestBody BoxOnline boxOnline) {
         return success(this.boxOnlineService.save(boxOnline));
@@ -70,6 +73,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param boxOnline 实体对象
      * @return 修改结果
      */
+    @Login
     @PutMapping
     public R update(@RequestBody BoxOnline boxOnline) {
         return success(this.boxOnlineService.updateById(boxOnline));
@@ -81,6 +85,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param idList 主键结合
      * @return 删除结果
      */
+    @Login
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.boxOnlineService.removeByIds(idList));
@@ -94,7 +99,7 @@ public class AppBoxOnlineController extends ApiController {
      */
     @Login
     @PostMapping("/updateOnline")
-    public Result updateOnline(@RequestAttribute Long userId, @RequestParam int minute) {
+    public Result updateOnline(@RequestAttribute Long userId, @RequestBody int minute) {
 
         return this.boxOnlineService.updateOnline(userId, minute);
 

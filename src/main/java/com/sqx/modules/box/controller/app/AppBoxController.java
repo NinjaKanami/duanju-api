@@ -40,6 +40,7 @@ public class AppBoxController extends ApiController {
      * @param box  查询实体
      * @return 所有数据
      */
+    @Login
     @GetMapping
     public R selectAll(Page<Box> page, Box box) {
         return success(this.boxService.page(page, new QueryWrapper<>(box)));
@@ -104,7 +105,7 @@ public class AppBoxController extends ApiController {
     @Login
     @PostMapping("/openBox")
     @ApiOperation("开盒")
-    public Result openBox(@RequestAttribute Long userId, @RequestParam int count) {
+    public Result openBox(@RequestAttribute Long userId, @RequestBody int count) {
         return this.boxService.openBox(userId, count);
     }
 }

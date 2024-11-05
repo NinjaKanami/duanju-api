@@ -156,11 +156,11 @@ public class DataSync {
             switch (ecode) {
                 case 0:
                     // 成功
-                    System.out.println("兑换成功: " + data);
+                    log.info("兑换成功: {}", data);
                     break;
                 case 501912:
                     // 幂等成功
-                    System.out.println("幂等兑换成功: " + data);
+                    log.info("幂等兑换成功: {}", data);
                     data = true;
                     break;
                 case 501000:

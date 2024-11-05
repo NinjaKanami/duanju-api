@@ -40,6 +40,7 @@ public class AppCollectController extends ApiController {
      * @param collect 查询实体
      * @return 所有数据
      */
+    @Login
     @GetMapping
     public R selectAll(Page<Collect> page, Collect collect) {
         return success(this.collectService.page(page, new QueryWrapper<>(collect)));
@@ -51,6 +52,7 @@ public class AppCollectController extends ApiController {
      * @param id 主键
      * @return 单条数据
      */
+    @Login
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
         return success(this.collectService.getById(id));
@@ -62,6 +64,7 @@ public class AppCollectController extends ApiController {
      * @param collect 实体对象
      * @return 新增结果
      */
+    @Login
     @PostMapping
     public R insert(@RequestBody Collect collect) {
         return success(this.collectService.save(collect));
@@ -73,6 +76,7 @@ public class AppCollectController extends ApiController {
      * @param collect 实体对象
      * @return 修改结果
      */
+    @Login
     @PutMapping
     public R update(@RequestBody Collect collect) {
         return success(this.collectService.updateById(collect));
@@ -84,6 +88,7 @@ public class AppCollectController extends ApiController {
      * @param idList 主键结合
      * @return 删除结果
      */
+    @Login
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.collectService.removeByIds(idList));
@@ -93,7 +98,7 @@ public class AppCollectController extends ApiController {
     @Login
     @PostMapping("/synthesise")
     @ApiOperation("合成")
-    public Result synthesise(@RequestAttribute Long userId, @RequestParam int count) {
+    public Result synthesise(@RequestAttribute Long userId, @RequestBody int count) {
         return this.collectService.synthesise(userId, count);
     }
 }
