@@ -1,5 +1,6 @@
 package com.sqx.modules.sys.oauth2;
 
+import com.sqx.common.context.RequestContext;
 import com.sqx.modules.sys.entity.SysUserEntity;
 import com.sqx.modules.sys.entity.SysUserTokenEntity;
 import com.sqx.modules.sys.service.ShiroService;
@@ -40,6 +41,7 @@ public class OAuth2Realm extends AuthorizingRealm {
 
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         info.setStringPermissions(permsSet);
+        RequestContext.base().setUser(user);
         return info;
     }
 
@@ -48,6 +50,8 @@ public class OAuth2Realm extends AuthorizingRealm {
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+
+
         String accessToken = (String) token.getPrincipal();
 
         //根据accessToken，查询用户信息
@@ -64,6 +68,7 @@ public class OAuth2Realm extends AuthorizingRealm {
             throw new LockedAccountException("账号已被锁定,请联系管理员");
         }
 
+        RequestContext.base().setUser(user);
         SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(user, accessToken, getName());
         return info;
     }
