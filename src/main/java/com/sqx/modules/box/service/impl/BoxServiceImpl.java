@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
@@ -222,7 +223,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                 remain.setValue(String.valueOf(remainValue));
                 boolean b = commonInfoService.update(remain, new QueryWrapper<CommonInfo>().eq("id", remain.getId()).eq("value", localRemain));
                 if (!b) {
-                    throw new RuntimeException("更新龙鳞发行数量失败");
+                    throw new RuntimeException("活动火爆中，请稍后再试");
                 }
             }
 
@@ -247,6 +248,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             return Result.success().put("data", result);
         } catch (Exception e) {
             log.error("开盒失败", e);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return Result.error("开盒失败：" + e.getMessage());
         }
     }
