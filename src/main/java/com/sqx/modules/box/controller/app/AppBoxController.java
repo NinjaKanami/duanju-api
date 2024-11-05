@@ -105,7 +105,7 @@ public class AppBoxController extends ApiController {
     @Login
     @PostMapping("/openBox")
     @ApiOperation("开盒")
-    public Result openBox(@RequestAttribute Long userId, @RequestBody int count) {
+    public Result openBox(@RequestAttribute Long userId, Integer count) {
         return this.boxService.openBox(userId, count);
     }
 }
