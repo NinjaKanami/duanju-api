@@ -292,7 +292,8 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                             .ne("is_sync", 1));
                     if (!update) {
                         log.warn("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)：{}", collectLog.getCollectLogId());
-                        return null; // 提前终止事务处理
+                        status.setRollbackOnly();
+                        return null;
                     }
                     // 削减短剧平台的积分
                     CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
@@ -302,6 +303,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                         boolean b1 = collectPointService.update(one, new QueryWrapper<CollectPoint>().eq("collect_point_id", one.getCollectPointId()).eq("count", localCount));
                         if (!b1) {
                             log.warn("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新)：{}", one.getCollectPointId());
+                            status.setRollbackOnly();
                             return null;
                         }
                     }
