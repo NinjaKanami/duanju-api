@@ -91,7 +91,7 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             // 未到下次时间
             if (boxOnline.getMinute() < boxOnline.getNextMinute()) {
                 if (boxOnline.getBoxOnlineId() != null) {
-                    boolean b = update(new QueryWrapper<BoxOnline>().eq("box_online_id", boxOnline.getBoxOnlineId()).eq("minute", localMinute));
+                    boolean b = update(boxOnline, new QueryWrapper<BoxOnline>().eq("box_online_id", boxOnline.getBoxOnlineId()).eq("minute", localMinute));
                     if (!b) {
                         throw new Exception("数据不存在，更新失败");
                     }
@@ -106,7 +106,7 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             boxOnline.setReward(boxOnline.getReward() + 1);
             boxOnline.setNextMinute(random);
             if (boxOnline.getBoxOnlineId() != null) {
-                boolean b = update(new QueryWrapper<BoxOnline>().eq("box_online_id", boxOnline.getBoxOnlineId()).eq("minute", localMinute));
+                boolean b = update(boxOnline, new QueryWrapper<BoxOnline>().eq("box_online_id", boxOnline.getBoxOnlineId()).eq("minute", localMinute));
                 if (!b) {
                     throw new Exception("数据不存在，更新失败");
                 }
