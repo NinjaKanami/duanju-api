@@ -9,6 +9,7 @@ import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
 import com.sqx.modules.box.entity.BoxOnline;
 import com.sqx.modules.box.service.BoxOnlineService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -37,6 +38,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param boxOnline 查询实体
      * @return 所有数据
      */
+    @Profile("!prod")
     @Login
     @GetMapping
     public R selectAll(Page<BoxOnline> page, BoxOnline boxOnline) {
@@ -49,6 +51,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param id 主键
      * @return 单条数据
      */
+    @Profile("!prod")
     @Login
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
@@ -61,6 +64,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param boxOnline 实体对象
      * @return 新增结果
      */
+    @Profile("!prod")
     @Login
     @PostMapping
     public R insert(@RequestBody BoxOnline boxOnline) {
@@ -73,6 +77,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param boxOnline 实体对象
      * @return 修改结果
      */
+    @Profile("!prod")
     @Login
     @PutMapping
     public R update(@RequestBody BoxOnline boxOnline) {
@@ -85,6 +90,7 @@ public class AppBoxOnlineController extends ApiController {
      * @param idList 主键结合
      * @return 删除结果
      */
+    @Profile("!prod")
     @Login
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
