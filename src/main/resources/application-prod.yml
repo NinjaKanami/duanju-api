@@ -32,6 +32,13 @@ spring:
                 wall:
                     config:
                         multi-statement-allow: true
+
+redis:
+    database: 0
+    host: 10.10.5.8
+    port: 6379
+    password:     # 密码（默认为空）
+
 #mybatis-log
 mybatis-plus:
     configuration:
