@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.performer.dao.PerformerDao">
+    <resultMap id="performerWithTags" type="com.sqx.modules.performer.entity.Performer">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sex" property="sex"/>
+        <result column="company" property="company"/>
+        <result column="profile" property="profile"/>
+        <result column="fake_follower" property="fakeFollower"/>
+        <result column="photo" property="photo"/>
+        <collection property="tags" ofType="java.lang.Long">
+            <id column="tag_id" property="id"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectPerformersWithCondition" resultMap="performerWithTags">
+        <!--    <select id="selectPerformersWithCondition" resultType="com.sqx.modules.performer.entity.Performer">-->
+        SELECT DISTINCT p.*, t.id as tag_id, t.name as tag_name
+        FROM performer p
+        LEFT JOIN performer_ptag pt ON p.id = pt.performer_id
+        LEFT JOIN ptag t ON pt.ptag_id = t.id
+        WHERE 1=1
+        <if test="name != null">
+            AND p.name LIKE CONCAT('%',#{name},'%')
+        </if>
+        <if test="sex != null">
+            AND p.sex = #{sex}
+        </if>
+        <if test="company != null">
+            AND p.company LIKE CONCAT('%',#{company},'%')
+        </if>
+        <if test="tag != null">
+            AND pt.ptag_id = #{tag}
+        </if>
+        <if test="sort != null">
+            <choose>
+                <when test="sort == 'asc'">
+                    ORDER BY p.id ASC
+                </when>
+                <when test="sort == 'desc'">
+                    ORDER BY p.id DESC
+                </when>
+            </choose>
+        </if>
+        LIMIT #{page}, #{limit}
+    </select>
+
+</mapper>
