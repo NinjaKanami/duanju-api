@@ -25,6 +25,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * (Box)表服务实现类
@@ -201,7 +202,9 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                             } else {
                                 BigDecimal localCount = one.getCount();
                                 one.setCount(one.getCount().add(boxItem.getValue()));
-                                boolean b = collectPointService.update(one, new QueryWrapper<CollectPoint>().eq("collect_point_id", one.getCollectPointId()).eq("count", localCount));
+                                boolean b = collectPointService.update(one, new QueryWrapper<CollectPoint>()
+                                        .eq("collect_point_id", one.getCollectPointId())
+                                        .eq("count", localCount));
                                 if (!b) {
                                     throw new RuntimeException("更新龙鳞数量失败");
                                 }
@@ -221,7 +224,9 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     throw new RuntimeException("龙鳞发行数量不足");
                 }
                 remain.setValue(String.valueOf(remainValue));
-                boolean b = commonInfoService.update(remain, new QueryWrapper<CommonInfo>().eq("id", remain.getId()).eq("value", localRemain));
+                boolean b = commonInfoService.update(remain, new QueryWrapper<CommonInfo>()
+                        .eq("id", remain.getId())
+                        .eq("value", localRemain));
                 if (!b) {
                     throw new RuntimeException("活动火爆中，请稍后再试");
                 }
@@ -230,11 +235,12 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
             // 更新用户剩余盲盒数量
             user.setCount(user.getCount() - count);
             boolean b = update(user, new UpdateWrapper<Box>().
-                    eq("box_id", user.getBoxId()).eq("count", user.getCount() + count));
+                    eq("box_id", user.getBoxId())
+                    .eq("count", user.getCount() + count));
             if (!b) {
                 throw new RuntimeException("更新用户剩余盲盒数量失败");
             }
-            // updateById(user);
+
             // 更新记录
             CollectLog collectLog = new CollectLog();
             collectLog.setUserId(userId);
@@ -253,24 +259,55 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
         }
     }
 
+
     @Scheduled(cron = "0 0 0 * * ?")
     public void resetRemain() {
-        try {
-            // 剩余发行数量
-            CommonInfo max = commonInfoService.findOne(2003);
-            CommonInfo remain = commonInfoService.findOne(2004);
-            if (max != null && remain != null) {
-                if (max.getValue() != null && remain.getValue() != null) {
-                    remain.setValue(max.getValue());
-                    commonInfoService.updateBody(remain);
+        // 最大重试次数
+        final int MAX_RETRIES = 3;
+        // 重试间隔时间（毫秒）
+        final long RETRY_DELAY_MS = 5000;
+
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                // 剩余发行数量
+                CommonInfo max = commonInfoService.findOne(2003);
+                CommonInfo remain = commonInfoService.findOne(2004);
+                if (max != null && remain != null) {
+                    if (max.getValue() != null && remain.getValue() != null) {
+                        remain.setValue(max.getValue());
+                        boolean b = commonInfoService.updateById(remain);
+                        if (b) {
+                            log.info("resetRemain success");
+                            return;
+                        } else {
+                            log.warn("resetRemain failed on attempt {}", attempt);
+                        }
+                    } else {
+                        log.error("max or remain value is null");
+                        return;
+                    }
+                } else {
+                    log.error("max or remain is null");
                     return;
                 }
+            } catch (Exception e) {
+                log.error("resetRemain error on attempt {}: {}", attempt, e.getMessage(), e);
             }
-            log.error("restRemain error");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+            if (attempt < MAX_RETRIES) {
+                try {
+                    log.info("Retrying resetRemain in {} ms", RETRY_DELAY_MS);
+                    TimeUnit.MILLISECONDS.sleep(RETRY_DELAY_MS);
+                } catch (InterruptedException ie) {
+                    log.error("Interrupted during retry wait", ie);
+                    Thread.currentThread().interrupt(); // 重新设置中断标志
+                }
+            }
         }
+
+        log.error("resetRemain failed after {} attempts", MAX_RETRIES);
     }
+
 
     @Scheduled(cron = "0/3 * * * * *")
     public void syncUserCollectionJob() {
@@ -285,6 +322,24 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                         log.error("同步用户积分失败!ID：{}", collectLog.getCollectLogId());
                         return null; // 提前终止事务处理
                     }
+
+                    // 削减短剧平台的积分
+                    CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
+                    if (one != null) {
+                        BigDecimal localCount = one.getCount();
+                        one.setCount(localCount.subtract(collectLog.getPlus()));
+                        boolean b1 = collectPointService.update(one, new QueryWrapper<CollectPoint>()
+                                .eq("collect_point_id", one.getCollectPointId())
+                                .eq("count", localCount));
+                        if (!b1) {
+                            log.warn("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新)：{}", one.getCollectPointId());
+                            throw new RuntimeException("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新)");
+                        }
+                    } else {
+                        log.warn("用户积分不存在：{}", collectLog.getUserId());
+                        return null; // 提前终止事务处理
+                    }
+
                     // 更新记录
                     collectLog.setIsSync(1);
                     boolean update = collectLogService.update(collectLog, new UpdateWrapper<CollectLog>()
@@ -292,25 +347,13 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                             .ne("is_sync", 1));
                     if (!update) {
                         log.warn("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)：{}", collectLog.getCollectLogId());
-                        status.setRollbackOnly();
-                        return null;
+                        throw new RuntimeException("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)");
                     }
-                    // 削减短剧平台的积分
-                    CollectPoint one = collectPointService.getOne(new QueryWrapper<CollectPoint>().eq("user_id", collectLog.getUserId()));
-                    if (one != null) {
-                        BigDecimal localCount = one.getCount();
-                        one.setCount(one.getCount().subtract(collectLog.getPlus()));
-                        boolean b1 = collectPointService.update(one, new QueryWrapper<CollectPoint>().eq("collect_point_id", one.getCollectPointId()).eq("count", localCount));
-                        if (!b1) {
-                            log.warn("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新)：{}", one.getCollectPointId());
-                            status.setRollbackOnly();
-                            return null;
-                        }
-                    }
+
                     log.info("同步用户积分成功!ID：{}", collectLog.getCollectLogId());
-                    return null; // 事务处理完成，没有返回值
+                    return null; // 提前终止事务处理
                 } catch (Exception e) {
-                    log.error("同步用户积分失败", e);
+                    log.error("同步用户积分异常", e);
                     status.setRollbackOnly(); // 标记事务回滚
                     return null; // 事务处理结束
                 }

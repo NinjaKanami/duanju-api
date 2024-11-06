@@ -3,6 +3,7 @@ package com.sqx.modules.box.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sqx.common.utils.RedisUtils;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.box.dao.BoxOnlineDao;
 import com.sqx.modules.box.entity.Box;
@@ -39,6 +40,8 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
     private BoxLogService boxLogService;
     @Autowired
     private CommonInfoService commonInfoService;
+    @Autowired
+    private RedisUtils redisUtils;
 
     /**
      * 更新在线时间
@@ -51,6 +54,12 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
     @Transactional(rollbackFor = Exception.class)
     public Result updateOnline(Long userId, int minute) {
         try {
+            String s = redisUtils.get("online_" + userId);
+            if (s != null) {
+                return Result.error("请求频繁,请稍后再试!");
+            }
+            redisUtils.set("online_" + userId, 60);
+
 
             // 最大盲盒
             CommonInfo commonInfo = commonInfoService.findOne(2006);

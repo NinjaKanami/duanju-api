@@ -9,6 +9,7 @@ import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
 import com.sqx.modules.box.entity.BoxOnline;
 import com.sqx.modules.box.service.BoxOnlineService;
+import com.sqx.modules.utils.MD5Util;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
@@ -105,7 +106,7 @@ public class AppBoxOnlineController extends ApiController {
      */
     @Login
     @PostMapping("/updateOnline")
-    public Result updateOnline(@RequestAttribute Long userId, Integer minute) {
+    public Result updateOnline(@RequestAttribute Long userId, Integer minute,String encrypt) {
 
         return this.boxOnlineService.updateOnline(userId, minute);
 
