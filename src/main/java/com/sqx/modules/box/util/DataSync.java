@@ -13,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.aspectj.weaver.ast.Var;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -33,11 +34,14 @@ import java.util.Map;
 @Slf4j
 @Component
 public class DataSync {
-    private static final String APP_ID = "07ce409fcefc452196481618fbe40acd";
-    private static final String APP_SECRET = "E760D5B0-6A12-4A5F-9B56-D1D9D45DCD48";
-    private static final String API_URL1 = "http://feifanapitest.feifan.art/out/garonne/v1/dragon/donation";
-    private static final String API_URL2 = "http://feifanapitest.feifan.art/out/garonne/v1/user";
-
+    @Value("${DataSync.APP_ID}")
+    private String APP_ID;
+    @Value("${DataSync.APP_SECRET}")
+    private String APP_SECRET;
+    @Value("${DataSync.API_URL1}")
+    private String API_URL1;
+    @Value("${DataSync.API_URL2}")
+    private String API_URL2;
 
     public BoxCollection getUserCollection(String phone) {
         // 创建 BoxCollection 对象并设置属性
@@ -144,6 +148,7 @@ public class DataSync {
 
             // 发送 POST 请求
             String response = sendPostRequest(API_URL1, headers, requestBody.toJSONString());
+            log.info("兑换响应: {}", response);
 
             // 解析响应
             JSONObject responseJson = JSONObject.parseObject(response);

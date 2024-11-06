@@ -14,6 +14,7 @@ import com.sqx.modules.box.service.BoxOnlineService;
 import com.sqx.modules.box.service.BoxService;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
+import com.sqx.modules.utils.MD5Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,9 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * (BoxOnline)表服务实现类
@@ -52,14 +55,39 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result updateOnline(Long userId, int minute) {
+    public Result updateOnline(Long userId, int minute, String encrypt) {
         try {
             String s = redisUtils.get("online_" + userId);
             if (s != null) {
                 return Result.error("请求频繁,请稍后再试!");
             }
-            redisUtils.set("online_" + userId, 60);
+            redisUtils.set("online_" + userId, userId, 30);
 
+            // 当前秒
+            long epochSecond = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+            String newStr = MD5Util.encoderByMd5(epochSecond + "online") + ":" + epochSecond;
+            if (encrypt == null) {
+                return Result.success().put("encrypt", newStr);
+            }
+
+            // 验证参数
+            String[] split = encrypt.split(":");
+            if (split.length != 2) {
+                return Result.error("请求参数错误");
+            }
+            boolean checkMD5 = MD5Util.checkMD5(split[1] + "online", split[0]);
+            if (!checkMD5) {
+                return Result.error("请求参数错误");
+            }
+
+            // 最快请求的时间 默认两倍速  过去的时间+经过的时间
+            long l1 = Long.parseLong(split[1]) + (minute * 30L);
+
+
+            // 判断时间是否合理
+            if (l1 > epochSecond) {
+                return Result.error("请求时间不合规");
+            }
 
             // 最大盲盒
             CommonInfo commonInfo = commonInfoService.findOne(2006);
@@ -146,7 +174,7 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             boxPointLog.setNum(1);
             boxLogService.save(boxPointLog);
 
-            return Result.success();
+            return Result.success().put("encrypt", newStr);
 
         } catch (Exception e) {
             e.printStackTrace();

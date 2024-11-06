@@ -106,9 +106,9 @@ public class AppBoxOnlineController extends ApiController {
      */
     @Login
     @PostMapping("/updateOnline")
-    public Result updateOnline(@RequestAttribute Long userId, Integer minute,String encrypt) {
+    public Result updateOnline(@RequestAttribute Long userId, Integer minute, String encrypt) {
 
-        return this.boxOnlineService.updateOnline(userId, minute);
+        return this.boxOnlineService.updateOnline(userId, minute, encrypt);
 
     }
 }
