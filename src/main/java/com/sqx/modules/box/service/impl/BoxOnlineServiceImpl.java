@@ -15,6 +15,7 @@ import com.sqx.modules.box.service.BoxService;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
 import com.sqx.modules.utils.MD5Util;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,38 +57,43 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result updateOnline(Long userId, int minute, String encrypt) {
+        // 当前秒 密钥
+        long epochSecond = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+        String newStr = MD5Util.encoderByMd5(epochSecond + "online") + ":" + epochSecond;
         try {
             String s = redisUtils.get("online_" + userId);
             if (s != null) {
-                return Result.error("请求频繁,请稍后再试!");
+                return Result.error("请求频繁,请稍后再试!").put("encrypt", newStr);
             }
             redisUtils.set("online_" + userId, userId, 30);
 
-            // 当前秒
-            long epochSecond = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-            String newStr = MD5Util.encoderByMd5(epochSecond + "online") + ":" + epochSecond;
-            if (encrypt == null) {
-                return Result.success().put("encrypt", newStr);
+            if (StringUtil.isNullOrEmpty(encrypt)) {
+                return Result.error("请求参数错误").put("encrypt", newStr);
             }
 
             // 验证参数
             String[] split = encrypt.split(":");
             if (split.length != 2) {
-                return Result.error("请求参数错误");
+                return Result.error("请求参数错误").put("encrypt", newStr);
             }
             boolean checkMD5 = MD5Util.checkMD5(split[1] + "online", split[0]);
             if (!checkMD5) {
-                return Result.error("请求参数错误");
+                return Result.error("请求参数错误").put("encrypt", newStr);
+            }
+
+            // 两分钟过期
+            if (epochSecond > Long.parseLong(split[1]) + 120L) {
+                return Result.error("请求参数错误").put("encrypt", newStr);
             }
 
             // 最快请求的时间 默认两倍速  过去的时间+经过的时间
             long l1 = Long.parseLong(split[1]) + (minute * 30L);
 
-
             // 判断时间是否合理
             if (l1 > epochSecond) {
-                return Result.error("请求时间不合规");
+                return Result.error("请求时间不合规").put("encrypt", newStr);
             }
+
 
             // 最大盲盒
             CommonInfo commonInfo = commonInfoService.findOne(2006);
@@ -121,7 +127,7 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
 
             // 获得已达上限
             if (boxOnline.getReward() >= maxReward) {
-                return Result.error("已达上限");
+                return Result.error("已达上限").put("encrypt", newStr);
             }
 
             // 更新分钟
@@ -136,7 +142,7 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
                 } else {
                     save(boxOnline);
                 }
-                return Result.error("未到时间");
+                return Result.error("未到时间").put("encrypt", newStr);
             }
 
             // 更新
@@ -177,10 +183,9 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             return Result.success().put("encrypt", newStr);
 
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("更新在线时间失败:" + e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return Result.error("更新在线时间失败:" + e);
+            return Result.error("更新在线时间失败:" + e).put("encrypt", newStr);
         }
     }
 }
