@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.platform.dao.CoursePerformerDao">
+
+    <resultMap type="com.sqx.modules.platform.entity.CoursePerformer" id="CoursePerformerMap">
+        <result property="coursePerformerId" column="course_performer_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="performerId" column="performer_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="coursePerformerId" useGeneratedKeys="true">
+        insert into duanju.course_performer(course_idperformer_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.courseId}#{entity.performerId})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="coursePerformerId" useGeneratedKeys="true">
+        insert into duanju.course_performer(course_idperformer_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.courseId}#{entity.performerId})
+        </foreach>
+        on duplicate key update
+        course_id = values(course_id) performer_id = values(performer_id)
+    </insert>
+
+</mapper>

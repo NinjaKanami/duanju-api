@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.platform.dao.SeriesDao">
+
+    <resultMap type="com.sqx.modules.platform.entity.Series" id="SeriesMap">
+        <result property="seriesId" column="series_id" jdbcType="INTEGER"/>
+        <result property="seriesImg" column="series_img" jdbcType="VARCHAR"/>
+        <result property="seriesName" column="series_name" jdbcType="VARCHAR"/>
+        <result property="seriesDescripe" column="series_descripe" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="seriesId" useGeneratedKeys="true">
+        insert into duanju.series(series_imgseries_nameseries_descripecreate_timeupdate_timesort)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.seriesImg}#{entity.seriesName}#{entity.seriesDescripe}#{entity.createTime}#{entity.updateTime}#{entity.sort})
+        </foreach>
+    </insert>
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="seriesId" useGeneratedKeys="true">
+        insert into duanju.series(series_imgseries_nameseries_descripecreate_timeupdate_timesort)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.seriesImg}#{entity.seriesName}#{entity.seriesDescripe}#{entity.createTime}#{entity.updateTime}#{entity.sort})
+        </foreach>
+        on duplicate key update
+        series_img = values(series_img) series_name = values(series_name) series_descripe = values(series_descripe)
+        create_time = values(create_time) update_time = values(update_time) sort = values(sort)
+    </insert>
+
+</mapper>
