@@ -25,10 +25,6 @@ public interface PTagDao extends BaseMapper<PTag> {
             "(#{performerId}, #{tagId})" +
             "</foreach>" +
             "</script>")
-    int insertPerformerTags(@Param("performerId") Long performerId, @Param("tagIds") List<Long> tagIds);
+    int insertPerformerTags(@Param("performerId") Long performerId, @Param("tagIds") List<String> tagIds);
 
-
-    // 删除指定演员的旧标签关系，返回受影响的行数
-    @Delete("DELETE FROM performer_ptag WHERE performer_id = #{performerId}")
-    int deleteByPerformerId(@Param("performerId") Long performerId);
 }

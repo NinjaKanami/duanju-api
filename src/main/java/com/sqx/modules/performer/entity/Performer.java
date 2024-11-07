@@ -35,5 +35,9 @@ public class Performer implements Serializable {
     @TableField("photo")
     private String photo; // 照片URL
 
-    private List<Long> tags;
+    @TableField(exist = false)
+    private Long realFollower; // 真实粉丝数
+
+    @TableField(exist = false)
+    private String tags; // 标签列表, 使用","分隔
 }

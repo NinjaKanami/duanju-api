@@ -22,23 +22,6 @@ public interface PerformerDao extends BaseMapper<Performer> {
                                                   @Param("tag") Integer tag,
                                                   @Param("sort") String sort);
 
-    /**
-     * 创建演员并拿到演员id
-     * @param performer 演员信息
-     */
-    @Insert("INSERT INTO performer (name, sex, company, profile, fake_follower, photo) " +
-            "VALUES (#{name}, #{sex}, #{company}, #{profile}, #{fakeFollower}, #{photo})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insertPerformer(Performer performer);
+    List<Performer> selectUserFollowPerformerList(@Param("userId") Long userId);
 
-    // 更新 performer 表信息，返回受影响的行数
-    @Update("UPDATE performer SET name = #{name}, sex = #{sex}, company = #{company}, " +
-            "profile = #{profile}, fake_follower = #{fakeFollower}, photo = #{photo} " +
-            "WHERE id = #{id}")
-    int updatePerformer(Performer performer);
-
-
-    // 删除 performer 表中指定的演员，返回受影响的行数
-    @Delete("DELETE FROM performer WHERE id = #{id}")
-    int deletePerformer(@Param("id") Long performerId);
 }

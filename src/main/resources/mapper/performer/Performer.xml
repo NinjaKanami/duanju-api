@@ -9,17 +9,18 @@
         <result column="profile" property="profile"/>
         <result column="fake_follower" property="fakeFollower"/>
         <result column="photo" property="photo"/>
-        <collection property="tags" ofType="java.lang.Long">
-            <id column="tag_id" property="id"/>
-        </collection>
+        <result column="tags" property="tags"/>
+        <result column="real_follower" property="realFollower"/>
     </resultMap>
 
     <select id="selectPerformersWithCondition" resultMap="performerWithTags">
-        <!--    <select id="selectPerformersWithCondition" resultType="com.sqx.modules.performer.entity.Performer">-->
-        SELECT DISTINCT p.*, t.id as tag_id, t.name as tag_name
+        SELECT
+        p.*, GROUP_CONCAT(pt.ptag_id ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tags,
+        COUNT(DISTINCT pu.user_id) AS real_follower
         FROM performer p
         LEFT JOIN performer_ptag pt ON p.id = pt.performer_id
         LEFT JOIN ptag t ON pt.ptag_id = t.id
+        LEFT JOIN performer_user pu ON p.id = pu.performer_id
         WHERE 1=1
         <if test="name != null">
             AND p.name LIKE CONCAT('%',#{name},'%')
@@ -43,7 +44,20 @@
                 </when>
             </choose>
         </if>
+        GROUP BY p.id
         LIMIT #{page}, #{limit}
+    </select>
+
+    <select id="selectUserFollowPerformerList" resultMap="performerWithTags">
+        SELECT p.*,
+               GROUP_CONCAT(pt.ptag_id ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tags,
+               COUNT(DISTINCT fu.user_id)                                     AS real_follower
+        FROM performer p
+                 LEFT JOIN performer_ptag pt ON p.id = pt.performer_id
+                 LEFT JOIN ptag t ON pt.ptag_id = t.id
+                 LEFT JOIN performer_user fu ON fu.performer_id = p.id
+        WHERE fu.user_id = #{userId}
+        GROUP BY p.id
     </select>
 
 </mapper>
