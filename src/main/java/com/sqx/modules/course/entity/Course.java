@@ -26,6 +26,31 @@ public class Course implements Serializable {
     private Long courseId;
 
     /**
+     * 曾用名
+     */
+    private String formerName;
+
+    /**
+     * 出品方
+     */
+    private String producer;
+
+    /**
+     * 评分
+     */
+    private BigDecimal score;
+
+    /**
+     * 是否外部 0否 1是
+     */
+    private Integer isExternal;
+
+    /**
+     * 外部链接
+     */
+    private String externalUrl;
+
+    /**
      * 轮播图
      */
     private String bannerImg;
@@ -239,6 +264,16 @@ public class Course implements Serializable {
      * 砍剧时间限制（小时）
      */
     private Integer cutTimeLimit;
+
+    /**
+     * 地区id
+     */
+    private Integer areaId;
+
+    /**
+     * 平台id
+     */
+    private Integer platformId;
 
 
     @TableField(exist = false)
