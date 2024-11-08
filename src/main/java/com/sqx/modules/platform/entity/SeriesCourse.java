@@ -19,19 +19,19 @@ public class SeriesCourse implements Serializable {
      * 剧单_短剧id
      */
     @TableId(value = "series_course_id", type = IdType.AUTO)
-    private Integer seriesCourseId;
+    private Long seriesCourseId;
 
     /**
      * 剧单id
      */
     @TableField(value = "series_id")
-    private Integer seriesId;
+    private Long seriesId;
 
     /**
      * 短剧id
      */
     @TableField(value = "course_id")
-    private Integer courseId;
+    private Long courseId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

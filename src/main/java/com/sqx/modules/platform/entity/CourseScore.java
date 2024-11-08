@@ -23,13 +23,13 @@ public class CourseScore implements Serializable {
      * 课程id
      */
     @TableField(value = "course_id")
-    private Integer courseId;
+    private Long courseId;
 
     /**
      * 用户id
      */
     @TableField(value = "user_id")
-    private Integer userId;
+    private Long userId;
 
     /**
      * 评分

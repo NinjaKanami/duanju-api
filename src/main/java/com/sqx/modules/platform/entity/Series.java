@@ -16,7 +16,7 @@ public class Series implements Serializable {
      * 剧单id
      */
     @TableId(value = "series_id", type = IdType.AUTO)
-    private Integer seriesId;
+    private Long seriesId;
 
     /**
      * 剧单头图
@@ -33,8 +33,8 @@ public class Series implements Serializable {
     /**
      * 剧单描述
      */
-    @TableField(value = "series_descripe")
-    private String seriesDescripe;
+    @TableField(value = "series_describe")
+    private String seriesDescribe;
 
     /**
      * 创建时间
@@ -72,7 +72,7 @@ public class Series implements Serializable {
         return (this.getSeriesId() == null ? other.getSeriesId() == null : this.getSeriesId().equals(other.getSeriesId()))
             && (this.getSeriesImg() == null ? other.getSeriesImg() == null : this.getSeriesImg().equals(other.getSeriesImg()))
             && (this.getSeriesName() == null ? other.getSeriesName() == null : this.getSeriesName().equals(other.getSeriesName()))
-            && (this.getSeriesDescripe() == null ? other.getSeriesDescripe() == null : this.getSeriesDescripe().equals(other.getSeriesDescripe()))
+            && (this.getSeriesDescribe() == null ? other.getSeriesDescribe() == null : this.getSeriesDescribe().equals(other.getSeriesDescribe()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
             && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
             && (this.getSort() == null ? other.getSort() == null : this.getSort().equals(other.getSort()));
@@ -85,7 +85,7 @@ public class Series implements Serializable {
         result = prime * result + ((getSeriesId() == null) ? 0 : getSeriesId().hashCode());
         result = prime * result + ((getSeriesImg() == null) ? 0 : getSeriesImg().hashCode());
         result = prime * result + ((getSeriesName() == null) ? 0 : getSeriesName().hashCode());
-        result = prime * result + ((getSeriesDescripe() == null) ? 0 : getSeriesDescripe().hashCode());
+        result = prime * result + ((getSeriesDescribe() == null) ? 0 : getSeriesDescribe().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         result = prime * result + ((getSort() == null) ? 0 : getSort().hashCode());
@@ -101,7 +101,7 @@ public class Series implements Serializable {
         sb.append(", seriesId=").append(seriesId);
         sb.append(", seriesImg=").append(seriesImg);
         sb.append(", seriesName=").append(seriesName);
-        sb.append(", seriesDescripe=").append(seriesDescripe);
+        sb.append(", seriesDescribe=").append(seriesDescribe);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", sort=").append(sort);

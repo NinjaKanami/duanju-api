@@ -19,7 +19,7 @@ public class CourseArea implements Serializable {
      * 地区id
      */
     @TableId(value = "area_id", type = IdType.AUTO)
-    private Integer areaId;
+    private Long areaId;
 
     /**
      * 地区名称
