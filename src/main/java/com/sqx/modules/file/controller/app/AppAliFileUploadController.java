@@ -111,10 +111,12 @@ public class AppAliFileUploadController {
                 localFile = File.createTempFile("temp",null);
                 file.transferTo(localFile);
                 // 指定要上传到 COS 上的路径
-                String key = "/duanju/"+year+"/"+month+"/"+day+"/"+newFileName;
+                //String key = "/duanju/"+year+"/"+month+"/"+day+"/"+newFileName;
+                String key = "/uploadPath/"+year+"/"+month+"/"+day+"/"+newFileName;
                 PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, localFile);
                 PutObjectResult putObjectResult = cosclient.putObject(putObjectRequest);
-                return Result.success().put("data",path + putObjectRequest.getKey());
+                //return Result.success().put("data",path + putObjectRequest.getKey());
+                return Result.success().put("data","https://static.fanhuavideo.com" + putObjectRequest.getKey());
             } catch (IOException e) {
                 return Result.error(-100,"文件上传失败！");
             }finally {

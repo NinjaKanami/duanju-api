@@ -3,6 +3,7 @@ package com.sqx.modules.platform.dao;
 import java.util.List;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import com.sqx.modules.platform.entity.Series;
 
@@ -12,6 +13,7 @@ import com.sqx.modules.platform.entity.Series;
  * @author makejava
  * @since 2024-11-07 18:57:42
  */
+@Mapper
 public interface SeriesDao extends BaseMapper<Series> {
 
     /**
