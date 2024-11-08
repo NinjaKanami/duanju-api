@@ -67,5 +67,5 @@ public interface PerformerService extends IService<Performer> {
      * @param performerId 演员id
      * @return 演员详情
      */
-    AppPerformerVO userGetPerformerDetail(Long userId, Long performerId);
+    AppPerformerVO userGetPerformerDetail(Long userId, Long performerId, Long wxShow);
 }

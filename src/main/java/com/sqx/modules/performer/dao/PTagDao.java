@@ -18,7 +18,7 @@ import java.util.List;
 @Mapper
 public interface PTagDao extends BaseMapper<PTag> {
 
-    // 插入 performer_ptag 表关系，和创建接口相同
+    // 插入 performer_ptag 表关系
     @Insert("<script>" +
             "INSERT INTO performer_ptag (performer_id, ptag_id) VALUES " +
             "<foreach collection='tagIds' item='tagId' separator=','>" +
@@ -26,5 +26,9 @@ public interface PTagDao extends BaseMapper<PTag> {
             "</foreach>" +
             "</script>")
     int insertPerformerTags(@Param("performerId") Long performerId, @Param("tagIds") List<String> tagIds);
+
+    // 删除 performer_ptag 表关系(如果没有关联)
+    @Delete("DELETE FROM ptag WHERE id = #{tagId} AND ( SELECT COUNT( * ) FROM performer_ptag WHERE ptag_id = #{tagId} LIMIT 1 ) = 0")
+    int deletePerformerTagsIfNoRelation(@Param("tagId") Long tagId);
 
 }

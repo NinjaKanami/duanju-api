@@ -36,4 +36,9 @@ public class PTagServiceImpl extends ServiceImpl<PTagDao, PTag> implements PTagS
                         orderByAsc("page_index")
         );
     }
+
+    @Override
+    public boolean deletePTagIfNoRelation(Long id) {
+        return baseMapper.deletePerformerTagsIfNoRelation(id) > 0;
+    }
 }

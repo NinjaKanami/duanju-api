@@ -55,8 +55,8 @@ public class PTagController extends ApiController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{id}/delete")
-    @ApiOperation("删除演员类型")
+    @ApiOperation("删除演员类型,如果该类型还有关联的演员，则删除失败")
     public Result deleteTag(@PathVariable("id") Long id) {
-        return ptagService.removeById(id) ? Result.success("删除成功") : Result.error("删除失败,要删除的内容不存在");
+        return ptagService.deletePTagIfNoRelation(id) ? Result.success("删除成功") : Result.error("删除失败,请检查该类型是否还有关联的演员");
     }
 }

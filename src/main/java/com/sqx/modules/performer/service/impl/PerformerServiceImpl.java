@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.modules.app.entity.UserEntity;
+import com.sqx.modules.course.entity.Course;
 import com.sqx.modules.performer.dao.PTagDao;
 import com.sqx.modules.performer.dao.PerformerDao;
 import com.sqx.modules.performer.dao.PerformerPTagDao;
@@ -14,12 +15,15 @@ import com.sqx.modules.performer.entity.PerformerPTag;
 import com.sqx.modules.performer.entity.PerformerUser;
 import com.sqx.modules.performer.service.PerformerService;
 import com.sqx.modules.performer.vo.AppPerformerVO;
+import com.sqx.modules.platform.dao.CoursePerformerDao;
+import com.sqx.modules.platform.entity.CoursePerformer;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +48,8 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     private PTagDao ptagDao;
     @Autowired
     private PerformerPTagDao performerPTagDao;
+    @Autowired
+    private CoursePerformerDao coursePerformerDao;
 
     /**
      * 查询演员列表
@@ -81,6 +87,15 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         if (performer.getTags() != null) {
             ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTags().split(",")));
         }
+        // 3.插入 course_performer 表
+        if (performer.getCourseList() != null) {
+            String[] courseIds = performer.getCourseList().split(",");
+            List<CoursePerformer> cps = new ArrayList<>();
+            for (String courseId : courseIds) {
+                cps.add(new CoursePerformer(Long.parseLong(courseId), performer.getId()));
+            }
+            coursePerformerDao.insertBatch(cps);
+        }
     }
 
     @Transactional
@@ -91,12 +106,30 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
             return 0;
         }
 
-        // 2. 删除 performer_ptag 表中的旧标签关系
-        performerPTagDao.delete(new QueryWrapper<PerformerPTag>().eq("performer_id", performer.getId()));
+        // 2.演员类型(标签)的处理
+        {
+            // 2.1 删除 performer_ptag 表中的旧标签关系
+            performerPTagDao.delete(new QueryWrapper<PerformerPTag>().eq("performer_id", performer.getId()));
 
-        // 3. 插入新的标签关系（如果有标签）
-        if (performer.getTags() != null && !performer.getTags().isEmpty()) {
-            ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTags().split(",")));
+            // 2.2 插入新的标签关系（如果有标签）
+            if (performer.getTags() != null && !performer.getTags().isEmpty()) {
+                ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTags().split(",")));
+            }
+        }
+
+        // 3.演员关联短剧的处理
+        {
+            // 3.1 删除 course_performer 表中的旧关联关系
+            coursePerformerDao.delete(new QueryWrapper<CoursePerformer>().eq("performer_id", performer.getId()));
+            // 3.2 插入新的关联关系（如果有关联的短剧）
+            if (performer.getCourseList() != null && !performer.getCourseList().isEmpty()) {
+                String[] courseIds = performer.getCourseList().split(",");
+                List<CoursePerformer> cps = new ArrayList<>();
+                for (String courseId : courseIds) {
+                    cps.add(new CoursePerformer(Long.parseLong(courseId), performer.getId()));
+                }
+                coursePerformerDao.insertBatch(cps);
+            }
         }
 
         return rowsAffected;
@@ -145,7 +178,7 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     }
 
     @Override
-    public AppPerformerVO userGetPerformerDetail(Long userId, Long performerId) {
+    public AppPerformerVO userGetPerformerDetail(Long userId, Long performerId, Long wxShow) {
         // 1.查询演员详细信息
         Performer performer = performerDao.selectById(performerId);
 
@@ -160,6 +193,17 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         AppPerformerVO res = new AppPerformerVO(performer);
         if (isFollowed) {
             res.setIsFollowed(true);
+        }
+
+        /*
+        int isCollect = courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
+                                .eq("classify", 1).eq("course_id", courseId).eq("user_id", userId));
+                        map.put("isCollect", isCollect);
+        * */
+        // 查询演员参演的短剧并组装
+        List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performerId, wxShow, userId);
+        if (courses != null) {
+            res.setCourseList(courses);
         }
         return res;
     }

@@ -4,6 +4,7 @@ package com.sqx.modules.performer.controller.app;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
+import com.sqx.modules.performer.dao.PerformerUserDao;
 import com.sqx.modules.performer.entity.PTag;
 import com.sqx.modules.performer.entity.Performer;
 import com.sqx.modules.performer.service.PTagService;
@@ -84,11 +85,15 @@ public class AppPerformerController extends ApiController {
 
     @Login
     @GetMapping("/{performerId}/detail")
-    @ApiOperation("查询演员详情, 该接口会同时查出来用户是否已追该演员")
-    public Result queryPerformerDetail(@PathVariable Long performerId, @RequestAttribute Long userId) {
+    @ApiOperation("查询演员详情, 该接口会同时查出来用户是否已追该演员。该接口会带出来演员关联的短剧，但有些剧不能在微信小程序上显示，因此如果在微信小程序平台上，需要传wxShow参数")
+    public Result queryPerformerDetail(
+            @PathVariable Long performerId, // 演员ID
+            @RequestAttribute Long userId, // 用户ID
+            @RequestParam(required = false) Long wxShow // 是否只查询微信端显示的短剧，不传默认查询全部，传1则只展示微信小程序端显示的短剧
+    ) {
         // TODO(bootun): 查询演员详情，根据演员ID查询信息，要包括出演短剧的列表
-        // Tags和出演短剧
-        AppPerformerVO appPerformerVO = this.performerService.userGetPerformerDetail(userId, performerId);
+        // 出演短剧
+        AppPerformerVO appPerformerVO = this.performerService.userGetPerformerDetail(userId, performerId, wxShow);
         return Result.success().put("data", appPerformerVO);
     }
 
@@ -101,9 +106,5 @@ public class AppPerformerController extends ApiController {
         List<AppPTagVO> res = AppPTagVO.fromEntityList(allPTags);
         return Result.success().put("data", res);
     }
-
-
-
-
 
 }

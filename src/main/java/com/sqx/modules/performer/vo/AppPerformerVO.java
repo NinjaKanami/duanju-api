@@ -1,6 +1,7 @@
 package com.sqx.modules.performer.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sqx.modules.course.entity.Course;
 import com.sqx.modules.performer.entity.Performer;
 import lombok.Data;
 import org.bouncycastle.util.Strings;
@@ -28,6 +29,8 @@ public class AppPerformerVO implements Serializable {
     private String photo; // 照片URL
 
     private Map<Long, String> tags; // 标签名称列表, 使用","分隔
+
+    private List<Course> courseList; // 参演短剧
 
     public AppPerformerVO(Performer entity) {
         this.id = entity.getId();

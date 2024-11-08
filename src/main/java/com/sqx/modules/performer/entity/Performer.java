@@ -37,6 +37,9 @@ public class Performer implements Serializable {
     private String photo; // 照片URL
 
     @TableField(exist = false)
+    private String courseList; // 演员关联的短剧id, 以","分隔
+
+    @TableField(exist = false)
     private Long realFollower; // 真实粉丝数
 
     @TableField(exist = false)

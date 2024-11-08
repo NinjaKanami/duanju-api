@@ -9,10 +9,9 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
  * @TableName course_performer
  */
-@TableName(value ="course_performer")
+@TableName(value = "course_performer")
 @Data
 public class CoursePerformer implements Serializable {
     /**
@@ -36,6 +35,11 @@ public class CoursePerformer implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    public CoursePerformer(Long courseId, Long performerId) {
+        this.courseId = courseId;
+        this.performerId = performerId;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -49,8 +53,8 @@ public class CoursePerformer implements Serializable {
         }
         CoursePerformer other = (CoursePerformer) that;
         return (this.getCoursePerformerId() == null ? other.getCoursePerformerId() == null : this.getCoursePerformerId().equals(other.getCoursePerformerId()))
-            && (this.getCourseId() == null ? other.getCourseId() == null : this.getCourseId().equals(other.getCourseId()))
-            && (this.getPerformerId() == null ? other.getPerformerId() == null : this.getPerformerId().equals(other.getPerformerId()));
+                && (this.getCourseId() == null ? other.getCourseId() == null : this.getCourseId().equals(other.getCourseId()))
+                && (this.getPerformerId() == null ? other.getPerformerId() == null : this.getPerformerId().equals(other.getPerformerId()));
     }
 
     @Override

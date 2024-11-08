@@ -2,6 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sqx.modules.platform.dao.CoursePerformerDao">
 
+    <resultMap id="courseListMap" type="com.sqx.modules.course.entity.Course">
+        <id column="course_id" property="courseId"/>
+        <result column="title" property="title"/>
+        <result column="title_img" property="titleImg"/>
+        <result column="course_label" property="courseLabel"/>
+        <result column="is_collect" property="isCollect"/>
+    </resultMap>
+
     <resultMap type="com.sqx.modules.platform.entity.CoursePerformer" id="CoursePerformerMap">
         <result property="coursePerformerId" column="course_performer_id" jdbcType="INTEGER"/>
         <result property="courseId" column="course_id" jdbcType="INTEGER"/>
@@ -26,5 +34,19 @@
         on duplicate key update
         course_id = values(course_id) performer_id = values(performer_id)
     </insert>
+
+    <select id="selectCourseListByPerformerId" resultMap="courseListMap">
+        SELECT c.*,
+        SUM(CASE WHEN cc.classify = 1 THEN 1 ELSE 0 END) as is_collect
+        FROM duanju.course c
+        LEFT JOIN course_performer cp ON c.course_id = cp.course_id
+        LEFT JOIN course_collect cc ON c.course_id = cc.course_id AND cc.user_id = #{userId}
+        WHERE 1 = 1
+        <if test="wxShow != null">
+            AND c.wx_show = #{wxShow}
+        </if>
+        AND cp.performer_id = #{performerId}
+        GROUP BY cc.course_id
+    </select>
 
 </mapper>
