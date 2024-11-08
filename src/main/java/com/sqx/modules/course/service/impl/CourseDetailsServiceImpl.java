@@ -26,6 +26,12 @@ import com.sqx.modules.course.entity.CourseUser;
 import com.sqx.modules.course.service.CourseDetailsService;
 import com.sqx.modules.course.vo.CourseDetailsIn;
 import com.sqx.modules.orders.service.OrdersService;
+import com.sqx.modules.performer.entity.Performer;
+import com.sqx.modules.performer.service.PerformerService;
+import com.sqx.modules.platform.entity.CoursePerformer;
+import com.sqx.modules.platform.entity.CourseScore;
+import com.sqx.modules.platform.service.CoursePerformerService;
+import com.sqx.modules.platform.service.CourseScoreService;
 import com.sqx.modules.utils.EasyPoi.ExcelUtils;
 import com.sqx.modules.utils.HttpClientUtil;
 import com.sqx.modules.utils.SenInfoCheckUtil;
@@ -36,14 +42,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, CourseDetails> implements CourseDetailsService {
+public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, CourseDetails> implements CourseDetailsService {
 
     @Autowired
     private CourseDao courseDao;
@@ -61,11 +70,17 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
     private RedisUtils redisUtils;
     @Autowired
     private CommonInfoService commonInfoService;
+    @Resource
+    private CourseScoreService courseScoreService;
+    @Resource
+    private CoursePerformerService coursePerformerService;
+    @Resource
+    private PerformerService performerService;
 
 
     @Override
     public Result insert(CourseDetails courseDetails) {
-        if(courseDetails.getGoodNum()==null){
+        if (courseDetails.getGoodNum() == null) {
             courseDetails.setGoodNum(0);
         }
         baseMapper.insert(courseDetails);
@@ -98,21 +113,39 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
     /**
      * 根据ID查询短剧详情
      *
-     * @param id 短剧ID
-     * @param token 用户认证令牌
+     * @param id              短剧ID
+     * @param token           用户认证令牌
      * @param courseDetailsId 短剧详情ID
      * @return 返回短剧详情结果
      */
     @Override
-    public Result selectCourseDetailsById(Long id,String token,String courseDetailsId){
+    public Result selectCourseDetailsById(Long id, String token, String courseDetailsId) {
         // Redis缓存键名构造
-        String redisCourseDetailsName="selectCourseDetailsById_"+id;
+        String redisCourseDetailsName = "selectCourseDetailsById_" + id;
         // 尝试从Redis缓存中获取短剧详情字符串
         String s1 = redisUtils.get(redisCourseDetailsName);
         // 如果缓存中没有数据，则从数据库中查询
-        if(StringUtils.isEmpty(s1)){
+        if (StringUtils.isEmpty(s1)) {
             // 通过短剧ID从数据库中查询短剧信息
             Course bean = courseDao.selectById(id);
+
+            // 查询总分
+            if (bean.getScore() == null) {
+                List<CourseScore> scores = courseScoreService.list(new QueryWrapper<CourseScore>().eq("course_id", bean.getCourseId()));
+                // 计算平均分
+                if (!scores.isEmpty()) {
+                    bean.setScore(scores.stream().map(CourseScore::getScore).reduce(BigDecimal::add).orElse(new BigDecimal(0)).divide(new BigDecimal(scores.size()), 1, RoundingMode.HALF_UP));
+                }
+            }
+            // 查询演员
+            List<CoursePerformer> coursePerformerList = coursePerformerService.list(new QueryWrapper<CoursePerformer>().eq("course_id", bean.getCourseId()));
+            if (!coursePerformerList.isEmpty()) {
+
+                List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
+                bean.setPerformerList(performerList);
+            }
+
+
             /*
             // 以下为注释掉的代码，用于统计短剧的浏览量
             if(bean.getViewCounts()==null){
@@ -123,15 +156,15 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
             // 更新数据库中的浏览量信息
             courseDao.updateById(bean);*/
             // 初始化用户ID为null
-            Long userId=null;
+            Long userId = null;
             // 如果token非空，尝试解析token获取用户ID
-            if(StringUtils.isNotEmpty(token)){
+            if (StringUtils.isNotEmpty(token)) {
                 // 从token中获取用户信息
                 Claims claims = jwtUtils.getClaimByToken(token);
                 // 验证claims是否非空且token未过期
-                if(claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())){
+                if (claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())) {
                     // 将claims中的用户ID转换为Long类型
-                    userId=Long.parseLong(claims.getSubject());
+                    userId = Long.parseLong(claims.getSubject());
                 }
             }
             // 初始化短剧收藏状态为0
@@ -140,22 +173,29 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
             if (userId != null) {
                 // 查询用户是否收藏了该短剧
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
-                        .eq("user_id",userId).eq("classify",1).eq("course_id",bean.getCourseId())));
+                        .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
+
+                // 查询用户的评分
+                CourseScore courseScore = courseScoreService.getOne(new QueryWrapper<CourseScore>()
+                        .eq("user_id", userId).eq("course_id", bean.getCourseId()));
+
+                bean.setUserScore(courseScore != null ? courseScore.getScore() : null);
+
                 // 根据用户ID查询用户信息
                 UserEntity userEntity = userService.selectUserById(userId);
                 // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
 
                 // 使用Redis缓存短剧详情列表
-                String redisCourseDetailsListName="selectCourseDetailsList_"+id+"user_id"+userId;
+                String redisCourseDetailsListName = "selectCourseDetailsList_" + id + "user_id" + userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
                 List<CourseDetails> courseDetailsList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsList)){
+                if (StringUtils.isEmpty(redisCourseDetailsList)) {
                     // 如果Redis中没有缓存数据，则从数据库查询
                     courseDetailsList = baseMapper.findByCourseId(id, userId);
                     // 将查询结果转换为JSON字符串并存入Redis
-                    redisUtils.set(redisCourseDetailsListName,JSONObject.toJSONString(courseDetailsList));
-                }else{
+                    redisUtils.set(redisCourseDetailsListName, JSONObject.toJSONString(courseDetailsList));
+                } else {
                     // 如果Redis中有缓存数据，则直接读取并转换为对象列表
                     String s = redisUtils.get(redisCourseDetailsListName);
                     courseDetailsList = JSON.parseArray(s, CourseDetails.class);
@@ -179,7 +219,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 // 标记用户是否为特定会员类型
                 boolean flag = false;
 
-                //如果不是云短剧 根据会员类型选择性放行
+                // 如果不是云短剧 根据会员类型选择性放行
                 if (bean.getIsPrice() != 3) {
 
                     // 获取会员类型信息
@@ -292,6 +332,22 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
             String ss = redisUtils.get(redisCourseDetailsName);
             // 将JSON字符串转换为Course对象
             Course bean = JSONObject.parseObject(ss, Course.class);
+
+            // 查询总分
+            if (bean.getScore() == null) {
+                List<CourseScore> scores = courseScoreService.list(new QueryWrapper<CourseScore>().eq("course_id", bean.getCourseId()));
+                // 计算平均分
+                if (!scores.isEmpty()) {
+                    bean.setScore(scores.stream().map(CourseScore::getScore).reduce(BigDecimal::add).orElse(new BigDecimal(0)).divide(new BigDecimal(scores.size()), 1, RoundingMode.HALF_UP));
+                }
+            }
+            // 查询演员
+            List<CoursePerformer> coursePerformerList = coursePerformerService.list(new QueryWrapper<CoursePerformer>().eq("course_id", bean.getCourseId()));
+            if (!coursePerformerList.isEmpty()) {
+                List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
+                bean.setPerformerList(performerList);
+            }
+
             // 初始化用户ID为null
             Long userId = null;
             // 如果token存在且不为空
@@ -311,6 +367,13 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 // 查询用户是否收藏了短剧
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
+
+                // 查询用户的评分
+                CourseScore courseScore = courseScoreService.getOne(new QueryWrapper<CourseScore>()
+                        .eq("user_id", userId).eq("course_id", bean.getCourseId()));
+
+                bean.setUserScore(courseScore != null ? courseScore.getScore() : null);
+
                 // 查询用户信息
                 UserEntity userEntity = userService.selectUserById(userId);
                 // 查询用户是否购买了整集
@@ -347,7 +410,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 // 标记用户是否为特定会员类型
                 boolean flag = false;
 
-                //如果不是云短剧 根据会员类型选择性放行
+                // 如果不是云短剧 根据会员类型选择性放行
                 if (bean.getIsPrice() != 3) {
 
                     // 获取会员类型配置
@@ -463,6 +526,22 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
         String s1 = redisUtils.get(redisCourseDetailsName);
         if (StringUtils.isEmpty(s1)) {
             Course bean = courseDao.selectById(id);
+
+            // 查询总分
+            if (bean.getScore() == null) {
+                List<CourseScore> scores = courseScoreService.list(new QueryWrapper<CourseScore>().eq("course_id", bean.getCourseId()));
+                // 计算平均分
+                if (!scores.isEmpty()) {
+                    bean.setScore(scores.stream().map(CourseScore::getScore).reduce(BigDecimal::add).orElse(new BigDecimal(0)).divide(new BigDecimal(scores.size()), 1, RoundingMode.HALF_UP));
+                }
+            }
+            // 查询演员
+            List<CoursePerformer> coursePerformerList = coursePerformerService.list(new QueryWrapper<CoursePerformer>().eq("course_id", bean.getCourseId()));
+            if (!coursePerformerList.isEmpty()) {
+                List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
+                bean.setPerformerList(performerList);
+            }
+
             Long userId = null;
             if (StringUtils.isNotEmpty(token)) {
                 Claims claims = jwtUtils.getClaimByToken(token);
@@ -480,10 +559,17 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
                 UserEntity userEntity = userService.selectUserById(userId);
-                //查询用户是否购买了整集
+                // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
 
-                //直接直接通过redis缓存所有集
+                // 查询用户的评分
+                CourseScore courseScore = courseScoreService.getOne(new QueryWrapper<CourseScore>()
+                        .eq("user_id", userId).eq("course_id", bean.getCourseId()));
+
+                bean.setUserScore(courseScore != null ? courseScore.getScore() : null);
+
+
+                // 直接直接通过redis缓存所有集
                 String redisCourseDetailsListName = "selectCourseDetailsList_" + id + "user_id" + userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
                 List<CourseDetails> courseDetailsList = null;
@@ -507,7 +593,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
 
                 String value = commonInfoService.findOne(887).getValue();
-                //判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
+                // 判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
                 String[] split = value.split(",");
                 boolean flag = false;
 
@@ -532,11 +618,11 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
 
                 if (courseUser != null || (flag)) {
-                    //用户购买了整集
+                    // 用户购买了整集
                     bean.setListsDetail(courseDetailsList);
                 } else {
                     bean.setListsDetail(courseDetailsNotList);
-                    //查询用户是否单独购买了集
+                    // 查询用户是否单独购买了集
                     List<CourseUser> courseUsers = courseUserDao.selectCourseUserList(id, userId);
                     if (courseUsers.size() > 0) {
                         for (CourseUser courseUser1 : courseUsers) {
@@ -566,7 +652,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 if (bean.getListsDetail().size() > 0) {
                     for (CourseDetails courseDetails : bean.getListsDetail()) {
                         if (courseDetails.getCourseDetailsId().equals(courseDetailsId) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
-                            //微信内
+                            // 微信内
                             String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
                             JSONObject jsonObject = new JSONObject();
                             jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
@@ -590,6 +676,22 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
         } else {
             String ss = redisUtils.get(redisCourseDetailsName);
             Course bean = JSONObject.parseObject(ss, Course.class);
+
+            // 查询总分
+            if (bean.getScore() == null) {
+                List<CourseScore> scores = courseScoreService.list(new QueryWrapper<CourseScore>().eq("course_id", bean.getCourseId()));
+                // 计算平均分
+                if (!scores.isEmpty()) {
+                    bean.setScore(scores.stream().map(CourseScore::getScore).reduce(BigDecimal::add).orElse(new BigDecimal(0)).divide(new BigDecimal(scores.size()), 1, RoundingMode.HALF_UP));
+                }
+            }
+            // 查询演员
+            List<CoursePerformer> coursePerformerList = coursePerformerService.list(new QueryWrapper<CoursePerformer>().eq("course_id", bean.getCourseId()));
+            if (!coursePerformerList.isEmpty()) {
+                List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
+                bean.setPerformerList(performerList);
+            }
+
             Long userId = null;
             if (StringUtils.isNotEmpty(token)) {
                 Claims claims = jwtUtils.getClaimByToken(token);
@@ -607,10 +709,16 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
                 UserEntity userEntity = userService.selectUserById(userId);
-                //查询用户是否购买了整集
+                // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
 
-                //直接直接通过redis缓存所有集
+                // 查询用户的评分
+                CourseScore courseScore = courseScoreService.getOne(new QueryWrapper<CourseScore>()
+                        .eq("user_id", userId).eq("course_id", bean.getCourseId()));
+
+                bean.setUserScore(courseScore != null ? courseScore.getScore() : null);
+
+                // 直接直接通过redis缓存所有集
                 String redisCourseDetailsListName = "selectCourseDetailsList_" + id + "user_id" + userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
                 List<CourseDetails> courseDetailsList = null;
@@ -634,7 +742,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
 
                 String value = commonInfoService.findOne(887).getValue();
-                //判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
+                // 判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
                 String[] split = value.split(",");
                 boolean flag = false;
 
@@ -659,11 +767,11 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
 
                 if (courseUser != null || (flag)) {
-                    //用户购买了整集
+                    // 用户购买了整集
                     bean.setListsDetail(courseDetailsList);
                 } else {
                     bean.setListsDetail(courseDetailsNotList);
-                    //查询用户是否单独购买了集
+                    // 查询用户是否单独购买了集
                     List<CourseUser> courseUsers = courseUserDao.selectCourseUserList(id, userId);
                     if (courseUsers.size() > 0) {
                         for (CourseUser courseUser1 : courseUsers) {
@@ -693,7 +801,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 if (bean.getListsDetail().size() > 0) {
                     for (CourseDetails courseDetails : bean.getListsDetail()) {
                         if (courseDetails.getCourseDetailsId().equals(courseDetailsId) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
-                            //微信内
+                            // 微信内
                             String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
                             JSONObject jsonObject = new JSONObject();
                             jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
@@ -754,13 +862,13 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
         if (CollectionUtils.isEmpty(courseDetailsList)) {
             return Result.error("Excel数据为空，excel转化失败！");
         }
-        //当前行索引（Excel的数据从第几行开始,就填写几）
+        // 当前行索引（Excel的数据从第几行开始,就填写几）
         int index = 4;
-        //失败条数
+        // 失败条数
         int repeat = 0;
-        //成功条数
+        // 成功条数
         int successIndex = 0;
-        //空数据
+        // 空数据
         int emptyCount = 0;
         for (CourseDetailsIn courseDetailsIn : courseDetailsList) {
             if (courseDetailsIn.getCourseDetailsName() == null) {

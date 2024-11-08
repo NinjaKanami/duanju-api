@@ -2,6 +2,7 @@ package com.sqx.modules.course.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.sqx.modules.orders.entity.Orders;
+import com.sqx.modules.performer.entity.Performer;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -305,6 +306,13 @@ public class Course implements Serializable {
 
     @TableField(exist = false)
     private Integer isCollect;
+
+    @TableField(exist = false)
+    private BigDecimal userScore;
+
+    @TableField(exist = false)
+    private List<Performer> performerList;
+
 
     public Course() {}
 }
