@@ -19,7 +19,7 @@ public class CoursePlatform implements Serializable {
      * 平台id
      */
     @TableId(value = "platform_id", type = IdType.AUTO)
-    private Integer platformId;
+    private Long platformId;
 
     /**
      * 平台名称
