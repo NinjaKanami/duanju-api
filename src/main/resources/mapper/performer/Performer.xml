@@ -11,12 +11,14 @@
         <result column="photo" property="photo"/>
         <result column="tags" property="tags"/>
         <result column="real_follower" property="realFollower"/>
+        <result column="total_follower" property="totalFollower"/>
     </resultMap>
 
     <select id="selectPerformersWithCondition" resultMap="performerWithTags">
         SELECT
         p.*, GROUP_CONCAT(pt.ptag_id ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tags,
-        COUNT(DISTINCT pu.user_id) AS real_follower
+        COUNT(DISTINCT pu.user_id) AS real_follower,
+        ( COUNT( DISTINCT pu.user_id ) + p.fake_follower ) AS total_follower
         FROM performer p
         LEFT JOIN performer_ptag pt ON p.id = pt.performer_id
         LEFT JOIN ptag t ON pt.ptag_id = t.id
@@ -34,30 +36,61 @@
         <if test="tag != null">
             AND pt.ptag_id = #{tag}
         </if>
+        GROUP BY p.id
+        ORDER BY p.id
         <if test="sort != null">
             <choose>
-                <when test="sort == 'asc'">
-                    ORDER BY p.id ASC
+                <when test="sort == 'ASC'">
+                    ASC
                 </when>
-                <when test="sort == 'desc'">
-                    ORDER BY p.id DESC
+                <when test="sort == 'DESC'">
+                    DESC
                 </when>
             </choose>
         </if>
-        GROUP BY p.id
         LIMIT #{page}, #{limit}
     </select>
 
     <select id="selectUserFollowPerformerList" resultMap="performerWithTags">
         SELECT p.*,
-               GROUP_CONCAT(pt.ptag_id ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tags,
-               COUNT(DISTINCT fu.user_id)                                     AS real_follower
+               GROUP_CONCAT(CONCAT(pt.ptag_id, ":", t.name) ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tags,
+               COUNT(DISTINCT fu.user_id)                                                          AS real_follower,
+               (COUNT(DISTINCT fu.user_id) + p.fake_follower)                                      AS total_follower
         FROM performer p
                  LEFT JOIN performer_ptag pt ON p.id = pt.performer_id
                  LEFT JOIN ptag t ON pt.ptag_id = t.id
                  LEFT JOIN performer_user fu ON fu.performer_id = p.id
         WHERE fu.user_id = #{userId}
         GROUP BY p.id
+    </select>
+
+    <select id="selectPerformerRankOrderByFollower" resultMap="performerWithTags">
+        SELECT p.*,
+        GROUP_CONCAT( CONCAT(pt.ptag_id,':',t.name) ORDER BY pt.ptag_id ASC SEPARATOR ',' ) AS tags,
+        (COUNT(DISTINCT fu.user_id) + p.fake_follower) AS total_follower
+        FROM performer p
+        LEFT JOIN performer_ptag pt ON p.id = pt.performer_id
+        LEFT JOIN ptag t ON pt.ptag_id = t.id
+        LEFT JOIN performer_user fu ON fu.performer_id = p.id
+        WHERE 1 = 1
+        <if test="ptagId != null">
+            AND pt.ptag_id = #{ptagId}
+        </if>
+        <if test="sex != null">
+            AND p.sex = #{sex}
+        </if>
+        GROUP BY p.id
+        ORDER BY total_follower
+        <if test="sort != null">
+            <choose>
+                <when test="sort == 'ASC'">
+                    ASC
+                </when>
+                <when test="sort == 'DESC'">
+                    DESC
+                </when>
+            </choose>
+        </if>
     </select>
 
 </mapper>

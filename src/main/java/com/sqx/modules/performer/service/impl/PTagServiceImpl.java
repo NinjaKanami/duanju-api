@@ -27,4 +27,13 @@ public class PTagServiceImpl extends ServiceImpl<PTagDao, PTag> implements PTagS
     public List<PTag> getAllPTags() {
         return baseMapper.selectList(new QueryWrapper<PTag>().orderByDesc("id"));
     }
+
+    @Override
+    public List<PTag> getAllVisiblePTagsOrderByPageIndex() {
+        return baseMapper.selectList(
+                new QueryWrapper<PTag>().
+                        eq("is_visible", 1).
+                        orderByAsc("page_index")
+        );
+    }
 }

@@ -4,14 +4,18 @@ package com.sqx.modules.performer.controller.app;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
+import com.sqx.modules.performer.entity.PTag;
 import com.sqx.modules.performer.entity.Performer;
+import com.sqx.modules.performer.service.PTagService;
 import com.sqx.modules.performer.service.PerformerService;
+import com.sqx.modules.performer.vo.AppPTagVO;
 import com.sqx.modules.performer.vo.AppPerformerVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +34,9 @@ public class AppPerformerController extends ApiController {
      */
     @Resource
     private PerformerService performerService;
+    @Resource
+    private PTagService pTagService;
+
 
     @Login
     @PostMapping("/{performer_id}/follow")
@@ -55,11 +62,48 @@ public class AppPerformerController extends ApiController {
     @GetMapping("/my_follows")
     @ApiOperation("查询用户关注演员列表")
     public Result userFollowPerformers(@RequestAttribute Long userId) {
-        // TODO(bootun): 需要查到演员的真实粉丝数
         List<Performer> performers = this.performerService.userFollowPerformersList(userId);
         List<AppPerformerVO> performersVOs = AppPerformerVO.fromEntityList(performers);
         return Result.success().put("data", performersVOs);
     }
+
+    @Login
+    @GetMapping("/rank")
+    @ApiOperation("查询演员排行榜, " + "ptagId筛选指定标签类型，" + "order为0是降序(默认,follower从多到少)，order是1则是升序(follower从少到多), " + "sex为1是查询男性，sex为2是查询女性，不填则查询全部性别")
+    public Result performersRank(@RequestParam(required = false) Long ptagId,
+                                 @RequestParam(required = false) Integer sex,
+                                 @RequestParam(required = false) Integer order) {
+        String orderBy = "DESC";
+        if (order != null && order == 1) {
+            orderBy = "ASC";
+        }
+        List<Performer> performers = this.performerService.selectPerformerRankOrderByFollower(ptagId, sex, orderBy);
+        List<AppPerformerVO> performersVOs = AppPerformerVO.fromEntityList(performers);
+        return Result.success().put("data", performersVOs);
+    }
+
+    @Login
+    @GetMapping("/{performerId}/detail")
+    @ApiOperation("查询演员详情, 该接口会同时查出来用户是否已追该演员")
+    public Result queryPerformerDetail(@PathVariable Long performerId, @RequestAttribute Long userId) {
+        // TODO(bootun): 查询演员详情，根据演员ID查询信息，要包括出演短剧的列表
+        // Tags和出演短剧
+        AppPerformerVO appPerformerVO = this.performerService.userGetPerformerDetail(userId, performerId);
+        return Result.success().put("data", appPerformerVO);
+    }
+
+    @Login
+    @GetMapping("/tag/list")
+    @ApiOperation("类型列表")
+    public Result queryPerformerTags() {
+        // 类型列表不会很大，是常数级别
+        List<PTag> allPTags = this.pTagService.getAllVisiblePTagsOrderByPageIndex();
+        List<AppPTagVO> res = AppPTagVO.fromEntityList(allPTags);
+        return Result.success().put("data", res);
+    }
+
+
+
 
 
 }

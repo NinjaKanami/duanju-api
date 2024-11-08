@@ -13,7 +13,9 @@ import com.sqx.modules.performer.entity.Performer;
 import com.sqx.modules.performer.entity.PerformerPTag;
 import com.sqx.modules.performer.entity.PerformerUser;
 import com.sqx.modules.performer.service.PerformerService;
+import com.sqx.modules.performer.vo.AppPerformerVO;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +67,7 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         }
         int offset = (page - 1) * limit;
 
+        sort = sort == null ? null : Strings.toUpperCase(sort);
         return performerDao.selectPerformersWithCondition(offset, limit, name, sex, company, tag, sort);
     }
 
@@ -135,4 +138,29 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         return performerDao.selectUserFollowPerformerList(userId);
     }
 
+    @Override
+    public List<Performer> selectPerformerRankOrderByFollower(Long ptagId, Integer sex, String sort) {
+        sort = sort == null ? "DESC" : Strings.toUpperCase(sort);
+        return performerDao.selectPerformerRankOrderByFollower(ptagId, sex, sort);
+    }
+
+    @Override
+    public AppPerformerVO userGetPerformerDetail(Long userId, Long performerId) {
+        // 1.查询演员详细信息
+        Performer performer = performerDao.selectById(performerId);
+
+        // 2.查询用户是否已关注该演员
+        boolean isFollowed = performerUserDao.selectCount(
+                new QueryWrapper<PerformerUser>().
+                        eq("performer_id", performerId).
+                        eq("user_id", userId)
+        ) > 0;
+
+        // 3.组合返回
+        AppPerformerVO res = new AppPerformerVO(performer);
+        if (isFollowed) {
+            res.setIsFollowed(true);
+        }
+        return res;
+    }
 }

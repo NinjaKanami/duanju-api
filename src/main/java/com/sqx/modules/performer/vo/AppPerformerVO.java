@@ -1,13 +1,15 @@
 package com.sqx.modules.performer.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sqx.modules.performer.entity.Performer;
 import lombok.Data;
+import org.bouncycastle.util.Strings;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AppPerformerVO implements Serializable {
     private Long id;
 
@@ -21,9 +23,11 @@ public class AppPerformerVO implements Serializable {
 
     private Long followers; // 虚拟粉丝数
 
+    private Boolean isFollowed; // 是否已追
+
     private String photo; // 照片URL
 
-    private List<Long> tags; // 标签列表, 使用","分隔
+    private Map<Long, String> tags; // 标签名称列表, 使用","分隔
 
     public AppPerformerVO(Performer entity) {
         this.id = entity.getId();
@@ -34,28 +38,22 @@ public class AppPerformerVO implements Serializable {
         Long realFollowers = entity.getRealFollower() == null ? 0 : entity.getRealFollower();
         Long fakeFollowers = entity.getFakeFollower() == null ? 0 : entity.getFakeFollower();
         this.followers = realFollowers + fakeFollowers;
+        if (entity.getTotalFollower() != null) {
+            // 榜单排序的时候，是根据总粉丝数排序，会直接把totalFollower拿出来，所以这里直接赋值就好
+            this.followers = entity.getTotalFollower();
+        }
         this.photo = entity.getPhoto();
-        ArrayList<Long> newTags = new ArrayList<>();
-        for (String tag : entity.getTags().split(",")) {
-            newTags.add(Long.parseLong(tag));
+        // 标签列表转换
+        Map<Long, String> newTags = new HashMap<>();
+        if (entity.getTags() != null) {
+            for (String tag : entity.getTags().split(",")) {
+                String[] tagIdAndName = Strings.split(tag, ':');
+                if (tagIdAndName.length == 2) {
+                    newTags.put(Long.parseLong(tagIdAndName[0]), tagIdAndName[1]);
+                }
+            }
         }
         this.tags = newTags;
-    }
-
-    public Performer toEntity() {
-        Performer entity = new Performer();
-        entity.setId(this.id);
-        entity.setName(this.name);
-        entity.setSex(this.sex);
-        entity.setCompany(this.company);
-        entity.setProfile(this.profile);
-        entity.setPhoto(this.photo);
-        StringBuilder tags = new StringBuilder();
-        for (Long tag : this.tags) {
-            tags.append(tag).append(",");
-        }
-        entity.setTags(tags.toString());
-        return entity;
     }
 
     public static List<AppPerformerVO> fromEntityList(List<Performer> entities) {

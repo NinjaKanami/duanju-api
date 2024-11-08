@@ -19,4 +19,9 @@ public interface PTagService extends IService<PTag> {
      */
     List<PTag> getAllPTags();
 
+    /**
+     * 获取所有用户可以看到的演员类型，根据pageIndex升序排序
+     * @return
+     */
+    List<PTag> getAllVisiblePTagsOrderByPageIndex();
 }

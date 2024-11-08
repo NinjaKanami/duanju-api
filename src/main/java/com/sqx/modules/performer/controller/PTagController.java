@@ -1,6 +1,7 @@
 package com.sqx.modules.performer.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.performer.entity.PTag;
@@ -37,7 +38,20 @@ public class PTagController extends ApiController {
         if (ptag == null) {
             return Result.error("创建失败,参数错误");
         }
+        if (ptag.getName().contains(",") || ptag.getName().contains(":")) {
+            return Result.error("创建失败,类型名称不能包含逗号或冒号");
+        }
         return ptagService.save(ptag) ? Result.success("创建成功") : Result.error("创建失败");
+    }
+
+    @PostMapping(value = "/{id}/update")
+    @ApiOperation("修改演员类型")
+    public Result updateTag(@PathVariable Long id, @RequestBody PTag ptag) {
+        if (ptag == null) {
+            return Result.error("修改失败,参数错误");
+        }
+        ptag.setId(id);
+        return ptagService.update(ptag, new QueryWrapper<PTag>().eq("id", id)) ? Result.success("修改成功") : Result.error("修改失败");
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{id}/delete")
