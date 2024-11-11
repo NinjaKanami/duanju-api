@@ -319,7 +319,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     // 同步用户积分
                     boolean b = dataSync.syncUserCollection(collectLog.getPhone(), collectLog.getPlus(), 1, collectLog.getCollectLogId().toString());
                     if (!b) {
-                        log.error("同步用户积分失败!ID：{}", collectLog.getCollectLogId());
+                        log.warn("同步用户积分失败!ID：{}", collectLog.getCollectLogId());
                         return null; // 提前终止事务处理
                     }
 
@@ -353,7 +353,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     log.info("同步用户积分成功!ID：{}", collectLog.getCollectLogId());
                     return null; // 提前终止事务处理
                 } catch (Exception e) {
-                    log.error("同步用户积分异常", e);
+                    log.warn("同步用户积分异常", e);
                     status.setRollbackOnly(); // 标记事务回滚
                     return null; // 事务处理结束
                 }

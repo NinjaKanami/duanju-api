@@ -443,6 +443,7 @@ public class WxServiceImpl implements WxService {
                         .eq("orders_id", orders.getOrdersId())
                         .eq("status", 0));
                 if(!b){
+                    log.warn("订单信息已被更改！");
                     throw new RuntimeException("订单状态异常");
                 }
 
@@ -471,6 +472,7 @@ public class WxServiceImpl implements WxService {
                         .eq("orders_id", orders.getOrdersId())
                         .eq("status", 0));
                 if(!b){
+                    log.warn("订单信息已被更改！");
                     throw new RuntimeException("订单状态异常");
                 }
             }
