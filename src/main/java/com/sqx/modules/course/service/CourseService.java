@@ -22,15 +22,15 @@ public interface CourseService extends IService<Course> {
 
     Result selectCourse(Integer page, Integer limit, Long classifyId, String title, Integer isRecommend,
                         Integer status, Long bannerId, Integer sort, String token, Integer isPrice, Integer admin, Integer over,
-                        Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType);
+                        Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType);
 
-    Result selectCourseById(Integer page,Integer limit,Long id,Integer good);
+    Result selectCourseById(Integer page, Integer limit, Long id, Integer good);
 
     Result selectCourseTitle(Integer page, Integer limit, String title, Long userId);
 
     Result synCourse();
 
-    Result updateCourseDetails(String ids, BigDecimal price,String content,String titleImg);
+    Result updateCourseDetails(String ids, BigDecimal price, String content, String titleImg);
 
     Result updateCourseStatus(String ids, Integer status);
 
@@ -59,5 +59,7 @@ public interface CourseService extends IService<Course> {
     Result selectWxVideoUrl(String wxCourseDetailsIds);
 
     Result courseListExcelIn(MultipartFile file) throws IOException;
+
+    List<Course> selectCourseListByCourseIds(List<Integer> courseIds);
 
 }

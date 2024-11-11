@@ -1118,5 +1118,10 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
 
     }
 
+    @Override
+    public List<Course> selectCourseListByCourseIds(List<Integer> courseIds) {
+        return baseMapper.selectList(new QueryWrapper<Course>().in("course_id", courseIds));
+    }
+
 
 }

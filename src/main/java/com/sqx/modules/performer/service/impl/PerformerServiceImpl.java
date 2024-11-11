@@ -101,19 +101,27 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     public int updatePerformer(Performer performer) {
         // 先查询下当前演员关联的视频集合，如果上了新剧，给用户批量发送通知
         List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performer.getId(), null, null);
-        List<String> oldCourseIds = new ArrayList<>();
+        List<Integer> oldCourseIds = new ArrayList<>();
         for (Course course : courses) {
-            oldCourseIds.add(course.getCourseId().toString());
+            oldCourseIds.add(course.getCourseId().intValue());
         }
         // 管理员设置的新关联列表
         String[] newList = performer.getCourseStr().split(",");
+
+
         // 新加的短剧
-        List<String> newCourseIds = new ArrayList<>();
-        for (String courseId : newList) {
+        List<Integer> newCourseIds = new ArrayList<>();
+        for (String courseIdStr : newList) {
+            Integer courseId = Integer.parseInt(courseIdStr);
             // 如果新的关联列表里没有，说明这部剧是新加的，要记录下来，给用户发送通知
             if (!oldCourseIds.contains(courseId)) {
                 newCourseIds.add(courseId);
             }
+        }
+        Map<String, String> messageParams = new HashMap<>();
+        List<Course> newCourseInfo = courseService.selectCourseListByCourseIds(newCourseIds);
+        for (Course course : newCourseInfo) {
+            messageParams.put(course.getCourseId().toString(), course.getTitle());
         }
 
 
@@ -147,6 +155,9 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
                 }
                 coursePerformerDao.insertBatch(cps);
             }
+            messageParams.forEach((courseId, courseName) -> {
+                this.pushPerformerUpdateMessageToFollower(performer.getId(), performerName -> String.format("你关注的演员%s参演了新剧《%s》", performerName, courseName));
+            });
         }
 
         return rowsAffected;
