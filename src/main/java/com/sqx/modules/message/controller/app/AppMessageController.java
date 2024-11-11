@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqx.common.utils.PageUtils;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
+import com.sqx.modules.message.constant.MessageConstant;
 import com.sqx.modules.message.entity.MessageInfo;
 import com.sqx.modules.message.service.MessageService;
 import io.swagger.annotations.Api;
@@ -48,7 +49,7 @@ public class AppMessageController {
     @ApiOperation("查询未读消息总数")
     @ResponseBody
     public Result selectMessageCount(@RequestAttribute("userId") Long userId){
-        int count = messageService.count(new QueryWrapper<MessageInfo>().eq("user_id", userId).in("state", 4, 5).eq("is_see", 0));
+        int count = messageService.count(new QueryWrapper<MessageInfo>().eq("user_id", userId).in("state", 4, 5).eq("is_see", MessageConstant.IsSeeNo));
         return Result.success().put("data",count);
     }
 

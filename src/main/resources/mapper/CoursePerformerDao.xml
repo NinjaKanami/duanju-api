@@ -18,18 +18,18 @@
 
     <!-- 批量插入 -->
     <insert id="insertBatch" keyProperty="coursePerformerId" useGeneratedKeys="true">
-        insert into duanju.course_performer(course_idperformer_id)
+        insert into duanju.course_performer(course_id,performer_id)
         values
         <foreach collection="entities" item="entity" separator=",">
-            (#{entity.courseId}#{entity.performerId})
+            (#{entity.courseId},#{entity.performerId})
         </foreach>
     </insert>
     <!-- 批量插入或按主键更新 -->
     <insert id="insertOrUpdateBatch" keyProperty="coursePerformerId" useGeneratedKeys="true">
-        insert into duanju.course_performer(course_idperformer_id)
+        insert into duanju.course_performer(course_id,performer_id)
         values
         <foreach collection="entities" item="entity" separator=",">
-            (#{entity.courseId}#{entity.performerId})
+            (#{entity.courseId},#{entity.performerId})
         </foreach>
         on duplicate key update
         course_id = values(course_id) performer_id = values(performer_id)
@@ -40,7 +40,8 @@
         SUM(CASE WHEN cc.classify = 1 THEN 1 ELSE 0 END) as is_collect
         FROM duanju.course c
         LEFT JOIN course_performer cp ON c.course_id = cp.course_id
-        LEFT JOIN course_collect cc ON c.course_id = cc.course_id AND cc.user_id = #{userId}
+        LEFT JOIN course_collect cc ON c.course_id = cc.course_id
+        <if test="userId != null">AND cc.user_id = #{userId}</if>
         WHERE 1 = 1
         <if test="wxShow != null">
             AND c.wx_show = #{wxShow}

@@ -9,20 +9,27 @@
         <result column="profile" property="profile"/>
         <result column="fake_follower" property="fakeFollower"/>
         <result column="photo" property="photo"/>
-        <result column="tags" property="tags"/>
+        <result column="tagsStr" property="tagsStr"/>
+        <result column="courseStr" property="courseStr"/>
         <result column="real_follower" property="realFollower"/>
         <result column="total_follower" property="totalFollower"/>
     </resultMap>
 
     <select id="selectPerformersWithCondition" resultMap="performerWithTags">
         SELECT
-        p.*, GROUP_CONCAT(pt.ptag_id ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tags,
-        COUNT(DISTINCT pu.user_id) AS real_follower,
-        ( COUNT( DISTINCT pu.user_id ) + p.fake_follower ) AS total_follower
-        FROM performer p
-        LEFT JOIN performer_ptag pt ON p.id = pt.performer_id
-        LEFT JOIN ptag t ON pt.ptag_id = t.id
-        LEFT JOIN performer_user pu ON p.id = pu.performer_id
+        p.*,
+        ptags.tagsStr,
+        courses.courseStr,
+        IFNULL( pu.real_follower, 0 ) AS real_follower,
+        ( IFNULL( pu.real_follower, 0 ) + p.fake_follower ) AS total_follower
+        FROM
+        performer p
+        LEFT JOIN ( SELECT performer_id, GROUP_CONCAT( DISTINCT ptag_id ORDER BY ptag_id ASC SEPARATOR ',' ) AS tagsStr
+        FROM performer_ptag GROUP BY performer_id ) ptags ON p.id = ptags.performer_id
+        LEFT JOIN ( SELECT performer_id, GROUP_CONCAT( DISTINCT course_id ORDER BY course_id ASC SEPARATOR ',' ) AS
+        courseStr FROM course_performer GROUP BY performer_id ) courses ON p.id = courses.performer_id
+        LEFT JOIN ( SELECT performer_id, COUNT( DISTINCT user_id ) AS real_follower FROM performer_user GROUP BY
+        performer_id ) pu ON p.id = pu.performer_id
         WHERE 1=1
         <if test="name != null">
             AND p.name LIKE CONCAT('%',#{name},'%')
@@ -36,7 +43,6 @@
         <if test="tag != null">
             AND pt.ptag_id = #{tag}
         </if>
-        GROUP BY p.id
         ORDER BY p.id
         <if test="sort != null">
             <choose>
@@ -48,12 +54,11 @@
                 </when>
             </choose>
         </if>
-        LIMIT #{page}, #{limit}
     </select>
 
     <select id="selectUserFollowPerformerList" resultMap="performerWithTags">
         SELECT p.*,
-               GROUP_CONCAT(CONCAT(pt.ptag_id, ":", t.name) ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tags,
+               GROUP_CONCAT(CONCAT(pt.ptag_id, ":", t.name) ORDER BY pt.ptag_id ASC SEPARATOR ',') AS tagsStr,
                COUNT(DISTINCT fu.user_id)                                                          AS real_follower,
                (COUNT(DISTINCT fu.user_id) + p.fake_follower)                                      AS total_follower
         FROM performer p
@@ -66,7 +71,7 @@
 
     <select id="selectPerformerRankOrderByFollower" resultMap="performerWithTags">
         SELECT p.*,
-        GROUP_CONCAT( CONCAT(pt.ptag_id,':',t.name) ORDER BY pt.ptag_id ASC SEPARATOR ',' ) AS tags,
+        GROUP_CONCAT( CONCAT(pt.ptag_id,':',t.name) ORDER BY pt.ptag_id ASC SEPARATOR ',' ) AS tagsStr,
         (COUNT(DISTINCT fu.user_id) + p.fake_follower) AS total_follower
         FROM performer p
         LEFT JOIN performer_ptag pt ON p.id = pt.performer_id

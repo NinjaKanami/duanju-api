@@ -48,8 +48,8 @@ public class AppPerformerVO implements Serializable {
         this.photo = entity.getPhoto();
         // 标签列表转换
         Map<Long, String> newTags = new HashMap<>();
-        if (entity.getTags() != null) {
-            for (String tag : entity.getTags().split(",")) {
+        if (entity.getTagsStr() != null) {
+            for (String tag : entity.getTagsStr().split(",")) {
                 String[] tagIdAndName = Strings.split(tag, ':');
                 if (tagIdAndName.length == 2) {
                     newTags.put(Long.parseLong(tagIdAndName[0]), tagIdAndName[1]);

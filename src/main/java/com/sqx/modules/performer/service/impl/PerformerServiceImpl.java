@@ -1,15 +1,18 @@
 package com.sqx.modules.performer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.sqx.modules.app.entity.UserEntity;
+import com.sqx.common.utils.DateUtils;
 import com.sqx.modules.course.entity.Course;
+import com.sqx.modules.course.service.CourseService;
+import com.sqx.modules.message.constant.MessageConstant;
+import com.sqx.modules.message.entity.MessageInfo;
+import com.sqx.modules.message.service.MessageService;
 import com.sqx.modules.performer.dao.PTagDao;
 import com.sqx.modules.performer.dao.PerformerDao;
 import com.sqx.modules.performer.dao.PerformerPTagDao;
 import com.sqx.modules.performer.dao.PerformerUserDao;
-import com.sqx.modules.performer.entity.PTag;
 import com.sqx.modules.performer.entity.Performer;
 import com.sqx.modules.performer.entity.PerformerPTag;
 import com.sqx.modules.performer.entity.PerformerUser;
@@ -23,11 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 
 /**
@@ -50,6 +49,10 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     private PerformerPTagDao performerPTagDao;
     @Autowired
     private CoursePerformerDao coursePerformerDao;
+    @Autowired
+    private MessageService messageService;
+    @Autowired
+    private CourseService courseService;
 
     /**
      * 查询演员列表
@@ -64,17 +67,13 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
      * @return List<Performer>
      */
     @Override
-    public List<Performer> selectPerformers(Integer page, Integer limit, String name, Integer sex, String company, Integer tag, String sort) {
-        if (limit == null) {
-            limit = 10;
-        }
-        if (page == null) {
-            page = 1;
-        }
-        int offset = (page - 1) * limit;
+    public Page<Performer> selectPerformers(Integer page, Integer limit, String name, Integer sex, String company, Integer tag, String sort) {
+        page = page == null ? 1 : page;
+        limit = limit == null ? 10 : limit;
+        Page<Performer> pages = new Page<>(page, limit);
 
         sort = sort == null ? null : Strings.toUpperCase(sort);
-        return performerDao.selectPerformersWithCondition(offset, limit, name, sex, company, tag, sort);
+        return performerDao.selectPerformersWithCondition(pages, name, sex, company, tag, sort);
     }
 
 
@@ -84,12 +83,12 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         performerDao.insert(performer);
 
         // 2. 插入 performer_ptag 表
-        if (performer.getTags() != null) {
-            ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTags().split(",")));
+        if (performer.getTagsStr() != null) {
+            ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTagsStr().split(",")));
         }
         // 3.插入 course_performer 表
-        if (performer.getCourseList() != null) {
-            String[] courseIds = performer.getCourseList().split(",");
+        if (performer.getCourseStr() != null) {
+            String[] courseIds = performer.getCourseStr().split(",");
             List<CoursePerformer> cps = new ArrayList<>();
             for (String courseId : courseIds) {
                 cps.add(new CoursePerformer(Long.parseLong(courseId), performer.getId()));
@@ -100,6 +99,24 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
 
     @Transactional
     public int updatePerformer(Performer performer) {
+        // 先查询下当前演员关联的视频集合，如果上了新剧，给用户批量发送通知
+        List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performer.getId(), null, null);
+        List<String> oldCourseIds = new ArrayList<>();
+        for (Course course : courses) {
+            oldCourseIds.add(course.getCourseId().toString());
+        }
+        // 管理员设置的新关联列表
+        String[] newList = performer.getCourseStr().split(",");
+        // 新加的短剧
+        List<String> newCourseIds = new ArrayList<>();
+        for (String courseId : newList) {
+            // 如果新的关联列表里没有，说明这部剧是新加的，要记录下来，给用户发送通知
+            if (!oldCourseIds.contains(courseId)) {
+                newCourseIds.add(courseId);
+            }
+        }
+
+
         // 1. 更新 performer 表中的信息
         int rowsAffected = performerDao.update(performer, new QueryWrapper<Performer>().eq("id", performer.getId()));
         if (rowsAffected < 1) {
@@ -112,8 +129,8 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
             performerPTagDao.delete(new QueryWrapper<PerformerPTag>().eq("performer_id", performer.getId()));
 
             // 2.2 插入新的标签关系（如果有标签）
-            if (performer.getTags() != null && !performer.getTags().isEmpty()) {
-                ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTags().split(",")));
+            if (performer.getTagsStr() != null && !performer.getTagsStr().isEmpty()) {
+                ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTagsStr().split(",")));
             }
         }
 
@@ -122,8 +139,8 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
             // 3.1 删除 course_performer 表中的旧关联关系
             coursePerformerDao.delete(new QueryWrapper<CoursePerformer>().eq("performer_id", performer.getId()));
             // 3.2 插入新的关联关系（如果有关联的短剧）
-            if (performer.getCourseList() != null && !performer.getCourseList().isEmpty()) {
-                String[] courseIds = performer.getCourseList().split(",");
+            if (performer.getCourseStr() != null && !performer.getCourseStr().isEmpty()) {
+                String[] courseIds = performer.getCourseStr().split(",");
                 List<CoursePerformer> cps = new ArrayList<>();
                 for (String courseId : courseIds) {
                     cps.add(new CoursePerformer(Long.parseLong(courseId), performer.getId()));
@@ -213,4 +230,42 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         List<Performer> performers = performerDao.selectList(new QueryWrapper<Performer>().like("name", name));
         return AppPerformerVO.fromEntityList(performers);
     }
+
+    @Override
+    public int pushPerformerUpdateMessageToFollower(Long performerId, MessageBuilder messageBuilder) {
+        // 订阅列表
+        List<PerformerUser> users = performerUserDao.selectList(new QueryWrapper<PerformerUser>().eq("performer_id", performerId));
+
+        // 演员信息
+        Performer performer = performerDao.selectById(performerId);
+        List<MessageInfo> messages = new ArrayList<>(users.size());
+        for (PerformerUser user : users) {
+            MessageInfo msg = new MessageInfo();
+            // 发送时间
+            String now = DateUtils.format(new Date());
+            msg.setSendTime(now);
+            msg.setCreateAt(now);
+            // 消息接收人
+            msg.setUserId(String.valueOf(user.getUser_id()));
+            // 消息内容
+            String msgContent = messageBuilder.messageBuildMethod(performer.getName());
+            msg.setContent(msgContent);
+            // 消息标题
+            msg.setTitle("你关注的演员有更新");
+            // 消息类型
+            msg.setState(String.valueOf(MessageConstant.StateUser));
+            // 未读
+            msg.setIsSee(String.valueOf(MessageConstant.IsSeeNo));
+            messages.add(msg);
+        }
+        return messageService.batchSaveBodyWithTx(messages);
+    }
+
+    @Override
+    public int pushPerformerMessageToFollowerByCourse(Long courseId, MessageBuilder messageBuilder) {
+        // TODO: 产品需求暂无该需求，可以参考 pushPerformerUpdateMessageToFollower 方法进行实现
+        return 0;
+    }
+
 }
+

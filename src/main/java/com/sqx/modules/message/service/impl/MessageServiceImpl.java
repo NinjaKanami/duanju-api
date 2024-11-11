@@ -10,6 +10,7 @@ import com.sqx.common.utils.Result;
 import com.sqx.modules.app.service.UserService;
 import com.sqx.modules.common.entity.CommonInfo;
 import com.sqx.modules.common.service.CommonInfoService;
+import com.sqx.modules.message.constant.MessageConstant;
 import com.sqx.modules.message.dao.MessageInfoDao;
 import com.sqx.modules.message.entity.MessageInfo;
 import com.sqx.modules.message.service.MessageService;
@@ -126,7 +127,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageInfoDao, MessageInfo>
      */
     @Override
     public int userReadMessage(Long userId, Long messageId) {
-        return messageInfoDao.updateUserMessageIsSee(messageId, String.valueOf(userId), String.valueOf(2));
+        return messageInfoDao.updateUserMessageIsSee(messageId, String.valueOf(userId), String.valueOf(MessageConstant.IsSeeYes));
     }
 
 

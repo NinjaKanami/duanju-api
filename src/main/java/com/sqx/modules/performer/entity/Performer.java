@@ -4,12 +4,10 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.List;
 
 @TableName(value = "performer")
 @Data
@@ -37,18 +35,14 @@ public class Performer implements Serializable {
     private String photo; // 照片URL
 
     @TableField(exist = false)
-    private String courseList; // 演员关联的短剧id, 以","分隔
-
-    @TableField(exist = false)
     private Long realFollower; // 真实粉丝数
 
     @TableField(exist = false)
     private Long totalFollower; // 真实粉丝数
 
     @TableField(exist = false)
-    private String tags; // 标签id列表, 使用","分隔
+    private String tagsStr; // 标签id列表, 使用","分隔, 出参格式: "id:类型名, id:类型名"
 
     @TableField(exist = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String tagNames; // 标签名称列表, 使用","分隔
+    private String courseStr; // 标签名称列表, 使用","分隔, 出参格式: "id:剧名, id:剧名"
 }

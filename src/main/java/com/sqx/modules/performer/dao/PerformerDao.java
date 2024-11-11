@@ -1,6 +1,8 @@
 package com.sqx.modules.performer.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sqx.modules.app.entity.UserEntity;
 import com.sqx.modules.performer.entity.Performer;
 import org.apache.ibatis.annotations.*;
 
@@ -26,8 +28,7 @@ public interface PerformerDao extends BaseMapper<Performer> {
      * @param sort    ID排序
      * @return 演员列表
      */
-    List<Performer> selectPerformersWithCondition(@Param("page") Integer page,
-                                                  @Param("limit") Integer limit,
+    Page<Performer> selectPerformersWithCondition(@Param("page") Page<Performer> page,
                                                   @Param("name") String name,
                                                   @Param("sex") Integer sex,
                                                   @Param("company") String company,
