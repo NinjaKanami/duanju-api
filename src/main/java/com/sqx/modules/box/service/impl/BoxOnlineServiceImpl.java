@@ -99,8 +99,21 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             CommonInfo commonInfo = commonInfoService.findOne(2006);
             int maxReward = Integer.parseInt(commonInfo.getValue());
 
+            // 设置积分范围
+            CommonInfo range = commonInfoService.findOne(2010);
+            String[] split1 = range.getValue().split("-");
+            if (split1.length != 2) {
+                log.warn("所需在线时间配置错误，请联系管理人员");
+                return Result.error("请求参数错误").put("encrypt", newStr);
+            }
+            int range1 = Integer.parseInt(split1[0]);
+            int range2 = Integer.parseInt(split1[1]);
+
+            // 随机数 range1-range2
+            int random = (int) ((Math.random() * (range2 - range1)) + range1);
+
             // 随机数 5-10
-            int random = (int) ((Math.random() * 6) + 5);
+            //int random = (int) ((Math.random() * 6) + 5);
 
             // 当前时间
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

@@ -56,6 +56,16 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
             // 设置最大积分
             CommonInfo one2 = commonInfoService.findOne(2007);
             int maxPoint = Integer.parseInt(one2.getValue());
+            // 设置积分范围
+            CommonInfo range = commonInfoService.findOne(2008);
+            String[] split = range.getValue().split("-");
+            if (split.length != 2) {
+                log.warn("积分配置错误，请联系管理人员");
+                return 0;
+            }
+            int range1 = Integer.parseInt(split[0]);
+            int range2 = Integer.parseInt(split[1]);
+
             // 获得盲盒
             int reward = 0;
             // 获得积分
@@ -81,12 +91,14 @@ public class BoxPointServiceImpl extends ServiceImpl<BoxPointDao, BoxPoint> impl
 
             // 获得积分
             if (n == 1) {
-                // 随机获得积分 1-6
-                point = (int) (Math.random() * 6 + 1);
+                // 随机获得积分 range1-range2
+                point = (int) (Math.random() * (range2 - range1 + 1) + range1);
+                // point = (int) (Math.random() * 6 + 1);
             } else {
                 // 随机获得size次积分1-6的和
                 for (int i = 0; i < n; i++) {
-                    point += (int) (Math.random() * 6 + 1);
+                    point += (int) (Math.random() * (range2 - range1 + 1) + range1);
+                    // point += (int) (Math.random() * 6 + 1);
                 }
             }
             // 获得积分log
