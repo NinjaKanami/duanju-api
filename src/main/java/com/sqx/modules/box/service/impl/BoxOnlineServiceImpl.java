@@ -110,10 +110,10 @@ public class BoxOnlineServiceImpl extends ServiceImpl<BoxOnlineDao, BoxOnline> i
             int range2 = Integer.parseInt(split1[1]);
 
             // 随机数 range1-range2
-            int random = (int) ((Math.random() * (range2 - range1)) + range1);
+            int random = (int) ((Math.random() * (range2 - range1) + 1) + range1);
 
             // 随机数 5-10
-            //int random = (int) ((Math.random() * 6) + 5);
+            // int random = (int) ((Math.random() * 6) + 5);
 
             // 当前时间
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
