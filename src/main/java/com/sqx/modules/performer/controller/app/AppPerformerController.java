@@ -91,7 +91,6 @@ public class AppPerformerController extends ApiController {
             @RequestAttribute Long userId, // 用户ID
             @RequestParam(required = false) Long wxShow // 是否只查询微信端显示的短剧，不传默认查询全部，传1则只展示微信小程序端显示的短剧
     ) {
-        // TODO(bootun): 查询演员详情，根据演员ID查询信息，要包括出演短剧的列表
         // 出演短剧
         AppPerformerVO appPerformerVO = this.performerService.userGetPerformerDetail(userId, performerId, wxShow);
         return Result.success().put("data", appPerformerVO);
@@ -104,6 +103,13 @@ public class AppPerformerController extends ApiController {
         // 类型列表不会很大，是常数级别
         List<PTag> allPTags = this.pTagService.getAllVisiblePTagsOrderByPageIndex();
         List<AppPTagVO> res = AppPTagVO.fromEntityList(allPTags);
+        return Result.success().put("data", res);
+    }
+
+    @GetMapping("/search")
+    @ApiOperation("搜索演员")
+    public Result searchPerformer(@RequestParam String name) {
+        List<AppPerformerVO> res = this.performerService.userSearchPerformer(name);
         return Result.success().put("data", res);
     }
 

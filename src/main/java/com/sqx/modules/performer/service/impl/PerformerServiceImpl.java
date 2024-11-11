@@ -207,4 +207,10 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         }
         return res;
     }
+
+    @Override
+    public List<AppPerformerVO> userSearchPerformer(String name) {
+        List<Performer> performers = performerDao.selectList(new QueryWrapper<Performer>().like("name", name));
+        return AppPerformerVO.fromEntityList(performers);
+    }
 }

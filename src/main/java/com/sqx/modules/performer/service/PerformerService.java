@@ -68,4 +68,12 @@ public interface PerformerService extends IService<Performer> {
      * @return 演员详情
      */
     AppPerformerVO userGetPerformerDetail(Long userId, Long performerId, Long wxShow);
+
+    /**
+     * 用户根据演员名称，模糊查询演员列表
+     *
+     * @param name 演员名称模糊查询
+     * @return 演员列表
+     */
+    List<AppPerformerVO> userSearchPerformer(String name);
 }
