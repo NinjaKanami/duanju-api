@@ -1,7 +1,7 @@
 #!/bin/bash
-action=$1
-app_name=duanju
-app_home=/home/ubuntu/duanju-api
+env=$1
+app_name=duanju-api
+app_home=/home/www
 
 
 PID=$(ps -ef | grep ${app_name}.jar | grep -v grep | awk '{ print $2}')
@@ -39,9 +39,19 @@ function app_stop()
 function app_start()
 {
         java_opts="-Xms1024m -Xmx1024m \
-                      -Djava.security.egd=/dev/urandom "
-        cd ${app_home}/
-        nohup java ${java_opts} -javaagent:${app_home}/opentelemetry-javaagent.jar -Dotel.resource.attributes=service.name=duanju,token=vchZEkGkDVEJRKQjIYre -Dotel.exporter.otlp.endpoint=http://pl.ap-shanghai.apm.tencentcs.com:4317 -jar ${app_name}.jar --spring.profiles.active=prod --spring.redis.host=10.10.5.8 > start.log 2>&1 &
+                      -XX:+UseG1GC \
+                      -XX:+HeapDumpOnOutOfMemoryError \
+                      -XX:HeapDumpPath=dump.hprof \
+                      -XX:+PrintGCDetails \
+                      -XX:+PrintGCTimeStamps \
+                      -XX:+PrintHeapAtGC \
+                      -XX:+PrintGCApplicationStoppedTime \
+                      -XX:+PrintReferenceGC \
+                      -Dcom.sun.management.jmxremote.authenticate=false \
+                      -Dcom.sun.management.jmxremote.ssl=false \
+                      -Dfastjson.parser.safeMode=true "
+        cd ${app_home}/${app_name}
+        nohup java  -jar ${app_name}.jar --spring.profiles.active=prod ${java_opts}  >/dev/null 2>&1 &
         echo start application success
 }
 
@@ -51,9 +61,5 @@ then
 else
     app_stop
 fi
-
-if [ "x${action}" != "xstop" ];then
-  sleep 3
-  app_start $env
-fi
-
+sleep 3
+app_start $env
