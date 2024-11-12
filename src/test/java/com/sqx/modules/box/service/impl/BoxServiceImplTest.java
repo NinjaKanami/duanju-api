@@ -36,13 +36,13 @@ class BoxServiceImplTest {
 
     @Test
     void selectBoxCollection() {
-        Result result = boxService.selectBoxCollection(10086L);
+        Result result = boxService.selectBoxCollection(14965L);
         System.out.println(result);
     }
 
     @Test
     void openBox() {
-        Result result = boxService.openBox(10086L, 10);
+        Result result = boxService.openBox(14965L, 10);
         System.out.println(result);
     }
 

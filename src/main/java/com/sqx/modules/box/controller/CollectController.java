@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.modules.box.entity.Collect;
 import com.sqx.modules.box.service.CollectService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("collect")
+@Profile("!prod")
 public class CollectController extends ApiController {
     /**
      * 服务对象

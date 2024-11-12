@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.modules.box.entity.BoxLog;
 import com.sqx.modules.box.service.BoxLogService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("boxLog")
+@Profile("!prod")
 public class BoxLogController extends ApiController {
     /**
      * 服务对象

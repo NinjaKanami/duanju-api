@@ -20,5 +20,5 @@ public interface BoxOnlineService extends IService<BoxOnline> {
      * @param minute 时间
      * @return 结果
      */
-    Result updateOnline(Long userId, int minute);
+    Result updateOnline(Long userId, int minute,String encrypt);
 }

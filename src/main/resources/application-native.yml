@@ -40,3 +40,9 @@ mybatis-plus:
         log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 isDevWxAccessToken: true
+
+DataSync:
+    APP_ID: 07ce409fcefc452196481618fbe40acd
+    APP_SECRET: E760D5B0-6A12-4A5F-9B56-D1D9D45DCD48
+    API_URL1: http://feifanapitest.feifan.art/out/garonne/v1/dragon/donation
+    API_URL2: http://feifanapitest.feifan.art/out/garonne/v1/user

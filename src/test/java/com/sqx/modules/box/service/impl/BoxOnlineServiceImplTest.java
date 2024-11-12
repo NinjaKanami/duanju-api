@@ -1,5 +1,6 @@
 package com.sqx.modules.box.service.impl;
 
+import com.sqx.common.utils.Result;
 import com.sqx.modules.box.service.BoxOnlineService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ class BoxOnlineServiceImplTest {
 
     @Test
     void updateOnline() {
-        boxOnlineService.updateOnline(10086L, 5);
+        Result result = boxOnlineService.updateOnline(10089L, 5, "589119569a95889fec12f71c85af0da9:1730900259");
+        System.out.println(result);
     }
 }

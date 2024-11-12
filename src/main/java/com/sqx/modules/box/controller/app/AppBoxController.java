@@ -11,6 +11,7 @@ import com.sqx.modules.box.entity.Box;
 import com.sqx.modules.box.service.BoxService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -40,6 +41,8 @@ public class AppBoxController extends ApiController {
      * @param box  查询实体
      * @return 所有数据
      */
+    @Profile("!prod")
+    @Login
     @GetMapping
     public R selectAll(Page<Box> page, Box box) {
         return success(this.boxService.page(page, new QueryWrapper<>(box)));
@@ -51,6 +54,7 @@ public class AppBoxController extends ApiController {
      * @param id 主键
      * @return 单条数据
      */
+    @Profile("!prod")
     @Login
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
@@ -63,6 +67,7 @@ public class AppBoxController extends ApiController {
      * @param box 实体对象
      * @return 新增结果
      */
+    @Profile("!prod")
     @Login
     @PostMapping
     public R insert(@RequestBody Box box) {
@@ -75,6 +80,7 @@ public class AppBoxController extends ApiController {
      * @param box 实体对象
      * @return 修改结果
      */
+    @Profile("!prod")
     @Login
     @PutMapping
     public R update(@RequestBody Box box) {
@@ -87,6 +93,7 @@ public class AppBoxController extends ApiController {
      * @param idList 主键结合
      * @return 删除结果
      */
+    @Profile("!prod")
     @Login
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
@@ -102,9 +109,9 @@ public class AppBoxController extends ApiController {
 
 
     @Login
-    @GetMapping("/openBox")
+    @PostMapping("/openBox")
     @ApiOperation("开盒")
-    public Result openBox(@RequestAttribute Long userId, @RequestParam int count) {
+    public Result openBox(@RequestAttribute Long userId, Integer count) {
         return this.boxService.openBox(userId, count);
     }
 }

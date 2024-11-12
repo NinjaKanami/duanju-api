@@ -1,5 +1,6 @@
 package com.sqx.modules.message.controller;
 
+import com.sqx.common.utils.DateUtils;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.message.entity.MessageInfo;
 import com.sqx.modules.message.service.MessageService;
@@ -10,7 +11,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,6 +81,23 @@ public class MessageController extends AbstractController {
     @ResponseBody
     public Result insertMessage(MessageInfo messageInfo){
         return Result.success().put("data",messageService.saveBody(messageInfo));
+    }
+
+    @RequestMapping(value = "/batchInsertMessage", method = RequestMethod.POST)
+    @ApiOperation("批量添加消息,通过该接口添加的消息，要么全部成功，要么全部失败")
+    @ResponseBody
+    public Result batchInsertMessage(@RequestBody List<MessageInfo> messageInfos){
+        for (MessageInfo messageInfo : messageInfos) {
+            if (messageInfo.getSendTime() == null ) {
+                // 客户端如果没有设置时间，默认为当前时间
+                messageInfo.setSendTime(DateUtils.format(new Date()));
+            }
+            if (messageInfo.getCreateAt() == null) {
+                messageInfo.setCreateAt(DateUtils.format(new Date()));
+            }
+
+        }
+        return Result.success().put("data",messageService.batchSaveBodyWithTx(messageInfos));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
