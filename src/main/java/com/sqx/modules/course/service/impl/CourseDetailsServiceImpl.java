@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -68,29 +69,35 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
             courseDetails.setGoodNum(0);
         }
         baseMapper.insert(courseDetails);
-        redisUtils.flushdb();
+        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
         return Result.success();
     }
 
     @Override
     public Result updateCourseDetails(CourseDetails courseDetails) {
+        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
         baseMapper.updateById(courseDetails);
-        redisUtils.flushdb();
         return Result.success();
     }
 
     @Override
     public Result deleteCourseDetails(String ids) {
         String[] split = ids.split(",");
+        List<CourseDetails> courseDetails = baseMapper.selectBatchIds(Arrays.asList(split));
+        for (CourseDetails courseDetail : courseDetails) {
+            redisUtils.deleteByPattern(String.format("*%d*", courseDetail.getCourseId()));
+        }
+        redisUtils.deleteByPattern("page*");
         baseMapper.deleteCourseDetails(split);
-        redisUtils.flushdb();
         return Result.success();
     }
 
 
     /**
      * 根据ID查询短剧详情
-     * 
+     *
      * @param id 短剧ID
      * @param token 用户认证令牌
      * @param courseDetailsId 短剧详情ID
@@ -155,25 +162,25 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
 
                 // 使用Redis缓存未包含视频URL的短剧详情列表
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id+"user_id"+userId;
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id + "user_id" + userId;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
                     // 如果Redis中没有缓存数据，则从数据库查询
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
                     // 将查询结果转换为JSON字符串并存入Redis
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
                     // 如果Redis中有缓存数据，则直接读取并转换为对象列表
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
                     courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
                 }
 
                 // 标记用户是否为特定会员类型
-                boolean flag=false;
+                boolean flag = false;
 
                 //如果不是云短剧 根据会员类型选择性放行
-                if(bean.getIsPrice()!=3){
+                if (bean.getIsPrice() != 3) {
 
                     // 获取会员类型信息
                     String value = commonInfoService.findOne(887).getValue();
@@ -181,22 +188,22 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                     String[] split = value.split(",");
 
                     // 根据会员类型判断用户是否享有特权
-                    for (String member:split){
-                        if("1".equals(member)){
-                            if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==1){
-                                flag=true;
+                    for (String member : split) {
+                        if ("1".equals(member)) {
+                            if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 1) {
+                                flag = true;
                             }
-                        }else if("2".equals(member)){
-                            if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==2){
-                                flag=true;
+                        } else if ("2".equals(member)) {
+                            if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 2) {
+                                flag = true;
                             }
-                        }else if("3".equals(member)){
-                            if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
-                                flag=true;
+                        } else if ("3".equals(member)) {
+                            if (userEntity.getIsChannel() != null && userEntity.getIsChannel() == 1) {
+                                flag = true;
                             }
-                        }else if("4".equals(member)){
-                            if(userEntity.getIsRecommend()!=null && userEntity.getIsRecommend()==1){
-                                flag=true;
+                        } else if ("4".equals(member)) {
+                            if (userEntity.getIsRecommend() != null && userEntity.getIsRecommend() == 1) {
+                                flag = true;
                             }
                         }
                     }
@@ -206,16 +213,16 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 if (courseUser != null || (flag)) {
                     // 用户购买了整集，设置包含全部详情的列表
                     bean.setListsDetail(courseDetailsList);
-                }else{
+                } else {
                     // 用户未购买整集，设置不包含视频URL的详情列表
                     bean.setListsDetail(courseDetailsNotList);
                     // 查询用户是否单独购买了集
                     List<CourseUser> courseUsers = courseUserDao.selectCourseUserList(id, userId);
                     // 如果用户单独购买了某些集，则更新这些集的视频URL
-                    if(courseUsers.size()>0){
-                        for (CourseUser courseUser1:courseUsers){
-                            for (CourseDetails courseDetails:bean.getListsDetail()) {
-                                if(courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())){
+                    if (courseUsers.size() > 0) {
+                        for (CourseUser courseUser1 : courseUsers) {
+                            for (CourseDetails courseDetails : bean.getListsDetail()) {
+                                if (courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())) {
                                     CourseDetails courseDetails1 = baseMapper.selectById(courseDetails.getCourseDetailsId());
                                     courseDetails.setVideoUrl(courseDetails1.getVideoUrl());
                                 }
@@ -223,21 +230,21 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                         }
                     }
                 }
-            // 如果短剧详情未在缓存中找到
+                // 如果短剧详情未在缓存中找到
             } else {
                 // 构造Redis中短剧详情列表的键名
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id;
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id;
                 // 从Redis中获取短剧详情列表字符串
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 // 初始化未包含URL的短剧详情列表
                 List<CourseDetails> courseDetailsNotList = null;
                 // 如果Redis中没有短剧详情列表缓存数据
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
                     // 通过数据库查询短剧详情列表，排除已收藏的URL
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
                     // 将查询结果转为JSON字符串并存入Redis
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
                     // 从Redis中获取短剧详情列表字符串
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
                     // 将JSON字符串解析为短剧详情列表
@@ -248,24 +255,24 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
             }
 
             // 如果短剧详情ID不为空
-            if(courseDetailsId!=null){
+            if (courseDetailsId != null) {
                 // 如果短剧详情列表存在且不为空
-                if (bean.getListsDetail().size()>0){
+                if (bean.getListsDetail().size() > 0) {
                     // 遍历短剧详情列表
-                    for (CourseDetails courseDetails:bean.getListsDetail()){
+                    for (CourseDetails courseDetails : bean.getListsDetail()) {
                         // 在列表中查找与给定短剧详情ID匹配的项
-                        if(courseDetails.getCourseDetailsId().equals(Long.parseLong(courseDetailsId)) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())){
+                        if (courseDetails.getCourseDetailsId().equals(Long.parseLong(courseDetailsId)) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
                             // 获取微信内部的视频链接
-                            String url="https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token="+ SenInfoCheckUtil.getMpToken();
-                            JSONObject jsonObject=new JSONObject();
-                            jsonObject.put("media_id",courseDetails.getWxCourseDetailsId());
-                            jsonObject.put("t",(System.currentTimeMillis()/1000)+7200);
+                            String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
+                            jsonObject.put("t", (System.currentTimeMillis() / 1000) + 7200);
                             String s = HttpClientUtil.doPostJson(url, jsonObject.toJSONString());
                             JSONObject jsonObject1 = JSONObject.parseObject(s);
                             String errcode = jsonObject1.getString("errcode");
                             // 检查是否成功获取视频链接
-                            if(!"0".equals(errcode)){
-                                return Result.error("获取微信播放链接失败："+jsonObject1.getString("errmsg"));
+                            if (!"0".equals(errcode)) {
+                                return Result.error("获取微信播放链接失败：" + jsonObject1.getString("errmsg"));
                             }
                             JSONObject media_info = jsonObject1.getJSONObject("media_info");
                             String mp4_url = media_info.getString("mp4_url");
@@ -277,10 +284,10 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
             }
             // 将更新后的短剧详情列表存储到Redis中
-            redisUtils.set(redisCourseDetailsName,bean);
+            redisUtils.set(redisCourseDetailsName, bean);
             // 返回成功结果，包含更新后的短剧详情列表
-            return Result.success().put("data",bean);
-        }else{
+            return Result.success().put("data", bean);
+        } else {
             // 从Redis中获取短剧详情数据
             String ss = redisUtils.get(redisCourseDetailsName);
             // 将JSON字符串转换为Course对象
@@ -308,7 +315,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 UserEntity userEntity = userService.selectUserById(userId);
                 // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
-            
+
                 // 缓存所有集的详情到Redis
                 String redisCourseDetailsListName = "selectCourseDetailsList_" + id + "user_id" + userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
@@ -322,7 +329,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                     // 如果Redis中有缓存数据，则直接获取
                     courseDetailsList = JSON.parseArray(redisCourseDetailsList, CourseDetails.class);
                 }
-            
+
                 // 缓存没有视频URL的短剧详情到Redis
                 String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id + "user_id" + userId;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
@@ -338,10 +345,10 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
 
                 // 标记用户是否为特定会员类型
-                boolean flag=false;
+                boolean flag = false;
 
                 //如果不是云短剧 根据会员类型选择性放行
-                if(bean.getIsPrice()!=3){
+                if (bean.getIsPrice() != 3) {
 
                     // 获取会员类型配置
                     String value = commonInfoService.findOne(887).getValue();
@@ -369,7 +376,7 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                         }
                     }
                 }
-            
+
                 // 根据用户是否购买整集或是否为特定会员类型，设置短剧详情列表
                 if (courseUser != null || flag) {
                     bean.setListsDetail(courseDetailsList);
@@ -402,20 +409,20 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 bean.setListsDetail(courseDetailsNotList);
             }
             // 如果短剧详情ID不为空
-            if(courseDetailsId!=null){
+            if (courseDetailsId != null) {
                 // 如果短剧详情列表大于0
-                if (bean.getListsDetail().size()>0){
+                if (bean.getListsDetail().size() > 0) {
                     // 遍历短剧详情列表
-                    for (CourseDetails courseDetails:bean.getListsDetail()){
+                    for (CourseDetails courseDetails : bean.getListsDetail()) {
                         // 如果当前短剧详情的ID与给定的短剧详情ID相等且微信短剧详情ID不为空
-                        if(courseDetails.getCourseDetailsId().equals(Long.parseLong(courseDetailsId)) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())){
+                        if (courseDetails.getCourseDetailsId().equals(Long.parseLong(courseDetailsId)) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
                             // 在微信环境内获取视频链接
-                            String url="https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token="+ SenInfoCheckUtil.getMpToken();
-                            JSONObject jsonObject=new JSONObject();
+                            String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
+                            JSONObject jsonObject = new JSONObject();
                             // 将微信短剧详情ID放入JSON对象
-                            jsonObject.put("media_id",courseDetails.getWxCourseDetailsId());
+                            jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
                             // 设置过期时间戳
-                            jsonObject.put("t",(System.currentTimeMillis()/1000)+7200);
+                            jsonObject.put("t", (System.currentTimeMillis() / 1000) + 7200);
                             // 发起HTTP请求获取视频链接
                             String s = HttpClientUtil.doPostJson(url, jsonObject.toJSONString());
                             // 解析返回的JSON对象
@@ -423,8 +430,8 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                             // 获取错误码
                             String errcode = jsonObject1.getString("errcode");
                             // 如果错误码不为0，则获取视频链接失败
-                            if(!"0".equals(errcode)){
-                                return Result.error("获取微信播放链接失败："+jsonObject1.getString("errmsg"));
+                            if (!"0".equals(errcode)) {
+                                return Result.error("获取微信播放链接失败：" + jsonObject1.getString("errmsg"));
                             }
                             // 获取媒体信息
                             JSONObject media_info = jsonObject1.getJSONObject("media_info");
@@ -439,62 +446,62 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 }
             }
             // 返回包含短剧详情列表的结果对象
-            return Result.success().put("data",bean);
+            return Result.success().put("data", bean);
         }
 
     }
 
     @Override
-    public Result selectCourseDetailsByTitle(String token,String title){
-        Course course = courseDao.selectOne(new QueryWrapper<Course>().eq("title",title).eq("is_delete",0));
-        if(course==null){
+    public Result selectCourseDetailsByTitle(String token, String title) {
+        Course course = courseDao.selectOne(new QueryWrapper<Course>().eq("title", title).eq("is_delete", 0));
+        if (course == null) {
             return Result.success();
         }
-        Long courseDetailsId=null;
-        Long id=course.getCourseId();
-        String redisCourseDetailsName="selectCourseDetailsById_"+id;
+        Long courseDetailsId = null;
+        Long id = course.getCourseId();
+        String redisCourseDetailsName = "selectCourseDetailsById_" + id;
         String s1 = redisUtils.get(redisCourseDetailsName);
-        if(StringUtils.isEmpty(s1)){
+        if (StringUtils.isEmpty(s1)) {
             Course bean = courseDao.selectById(id);
-            Long userId=null;
-            if(StringUtils.isNotEmpty(token)){
+            Long userId = null;
+            if (StringUtils.isNotEmpty(token)) {
                 Claims claims = jwtUtils.getClaimByToken(token);
-                if(claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())){
-                    userId=Long.parseLong(claims.getSubject());
+                if (claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())) {
+                    userId = Long.parseLong(claims.getSubject());
                 }
             }
             bean.setIsCollect(0);
             if (userId != null) {
                 CourseCollect courseCollect = courseCollectDao.selectOne(new QueryWrapper<CourseCollect>().eq("classify", 3).eq("user_id", userId).last(" order by update_time desc limit 1 "));
-                if(courseCollect!=null){
-                    courseDetailsId=courseCollect.getCourseDetailsId();
+                if (courseCollect != null) {
+                    courseDetailsId = courseCollect.getCourseDetailsId();
                 }
                 bean.setCourseDetailsId(courseDetailsId);
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
-                        .eq("user_id",userId).eq("classify",1).eq("course_id",bean.getCourseId())));
+                        .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
                 UserEntity userEntity = userService.selectUserById(userId);
                 //查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
 
                 //直接直接通过redis缓存所有集
-                String redisCourseDetailsListName="selectCourseDetailsList_"+id+"user_id"+userId;
+                String redisCourseDetailsListName = "selectCourseDetailsList_" + id + "user_id" + userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
                 List<CourseDetails> courseDetailsList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsList)){
+                if (StringUtils.isEmpty(redisCourseDetailsList)) {
                     courseDetailsList = baseMapper.findByCourseId(id, userId);
-                    redisUtils.set(redisCourseDetailsListName,JSONObject.toJSONString(courseDetailsList));
-                }else{
+                    redisUtils.set(redisCourseDetailsListName, JSONObject.toJSONString(courseDetailsList));
+                } else {
                     String s = redisUtils.get(redisCourseDetailsListName);
                     courseDetailsList = JSON.parseArray(s, CourseDetails.class);
                 }
 
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id+"user_id"+userId;
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id + "user_id" + userId;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
                     courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
                 }
@@ -502,24 +509,24 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 String value = commonInfoService.findOne(887).getValue();
                 //判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
                 String[] split = value.split(",");
-                boolean flag=false;
+                boolean flag = false;
 
-                for (String member:split){
-                    if("1".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==1){
-                            flag=true;
+                for (String member : split) {
+                    if ("1".equals(member)) {
+                        if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 1) {
+                            flag = true;
                         }
-                    }else if("2".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==2){
-                            flag=true;
+                    } else if ("2".equals(member)) {
+                        if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 2) {
+                            flag = true;
                         }
-                    }else if("3".equals(member)){
-                        if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
-                            flag=true;
+                    } else if ("3".equals(member)) {
+                        if (userEntity.getIsChannel() != null && userEntity.getIsChannel() == 1) {
+                            flag = true;
                         }
-                    }else if("4".equals(member)){
-                        if(userEntity.getIsRecommend()!=null && userEntity.getIsRecommend()==1){
-                            flag=true;
+                    } else if ("4".equals(member)) {
+                        if (userEntity.getIsRecommend() != null && userEntity.getIsRecommend() == 1) {
+                            flag = true;
                         }
                     }
                 }
@@ -527,14 +534,14 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 if (courseUser != null || (flag)) {
                     //用户购买了整集
                     bean.setListsDetail(courseDetailsList);
-                }else{
+                } else {
                     bean.setListsDetail(courseDetailsNotList);
                     //查询用户是否单独购买了集
                     List<CourseUser> courseUsers = courseUserDao.selectCourseUserList(id, userId);
-                    if(courseUsers.size()>0){
-                        for (CourseUser courseUser1:courseUsers){
-                            for (CourseDetails courseDetails:bean.getListsDetail()) {
-                                if(courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())){
+                    if (courseUsers.size() > 0) {
+                        for (CourseUser courseUser1 : courseUsers) {
+                            for (CourseDetails courseDetails : bean.getListsDetail()) {
+                                if (courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())) {
                                     CourseDetails courseDetails1 = baseMapper.selectById(courseDetails.getCourseDetailsId());
                                     courseDetails.setVideoUrl(courseDetails1.getVideoUrl());
                                 }
@@ -543,32 +550,32 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                     }
                 }
             } else {
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id;
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
                     courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
                 }
                 bean.setListsDetail(courseDetailsNotList);
             }
-            if(courseDetailsId!=null){
-                if (bean.getListsDetail().size()>0){
-                    for (CourseDetails courseDetails:bean.getListsDetail()){
-                        if(courseDetails.getCourseDetailsId().equals(courseDetailsId) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())){
+            if (courseDetailsId != null) {
+                if (bean.getListsDetail().size() > 0) {
+                    for (CourseDetails courseDetails : bean.getListsDetail()) {
+                        if (courseDetails.getCourseDetailsId().equals(courseDetailsId) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
                             //微信内
-                            String url="https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token="+ SenInfoCheckUtil.getMpToken();
-                            JSONObject jsonObject=new JSONObject();
-                            jsonObject.put("media_id",courseDetails.getWxCourseDetailsId());
-                            jsonObject.put("t",(System.currentTimeMillis()/1000)+7200);
+                            String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
+                            jsonObject.put("t", (System.currentTimeMillis() / 1000) + 7200);
                             String s = HttpClientUtil.doPostJson(url, jsonObject.toJSONString());
                             JSONObject jsonObject1 = JSONObject.parseObject(s);
                             String errcode = jsonObject1.getString("errcode");
-                            if(!"0".equals(errcode)){
-                                return Result.error("获取微信播放链接失败："+jsonObject1.getString("errmsg"));
+                            if (!"0".equals(errcode)) {
+                                return Result.error("获取微信播放链接失败：" + jsonObject1.getString("errmsg"));
                             }
                             JSONObject media_info = jsonObject1.getJSONObject("media_info");
                             String mp4_url = media_info.getString("mp4_url");
@@ -578,50 +585,50 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                     }
                 }
             }
-            redisUtils.set(redisCourseDetailsName,bean);
-            return Result.success().put("data",bean);
-        }else{
+            redisUtils.set(redisCourseDetailsName, bean);
+            return Result.success().put("data", bean);
+        } else {
             String ss = redisUtils.get(redisCourseDetailsName);
             Course bean = JSONObject.parseObject(ss, Course.class);
-            Long userId=null;
-            if(StringUtils.isNotEmpty(token)){
+            Long userId = null;
+            if (StringUtils.isNotEmpty(token)) {
                 Claims claims = jwtUtils.getClaimByToken(token);
-                if(claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())){
-                    userId=Long.parseLong(claims.getSubject());
+                if (claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())) {
+                    userId = Long.parseLong(claims.getSubject());
                 }
             }
             bean.setIsCollect(0);
             if (userId != null) {
                 CourseCollect courseCollect = courseCollectDao.selectOne(new QueryWrapper<CourseCollect>().eq("classify", 3).eq("user_id", userId).last(" order by update_time desc limit 1 "));
-                if(courseCollect!=null){
-                    courseDetailsId=courseCollect.getCourseDetailsId();
+                if (courseCollect != null) {
+                    courseDetailsId = courseCollect.getCourseDetailsId();
                 }
                 bean.setCourseDetailsId(courseDetailsId);
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
-                        .eq("user_id",userId).eq("classify",1).eq("course_id",bean.getCourseId())));
+                        .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
                 UserEntity userEntity = userService.selectUserById(userId);
                 //查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
 
                 //直接直接通过redis缓存所有集
-                String redisCourseDetailsListName="selectCourseDetailsList_"+id+"user_id"+userId;
+                String redisCourseDetailsListName = "selectCourseDetailsList_" + id + "user_id" + userId;
                 String redisCourseDetailsList = redisUtils.get(redisCourseDetailsListName);
                 List<CourseDetails> courseDetailsList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsList)){
+                if (StringUtils.isEmpty(redisCourseDetailsList)) {
                     courseDetailsList = baseMapper.findByCourseId(id, userId);
-                    redisUtils.set(redisCourseDetailsListName,JSONObject.toJSONString(courseDetailsList));
-                }else{
+                    redisUtils.set(redisCourseDetailsListName, JSONObject.toJSONString(courseDetailsList));
+                } else {
                     String s = redisUtils.get(redisCourseDetailsListName);
                     courseDetailsList = JSON.parseArray(s, CourseDetails.class);
                 }
 
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id+"user_id"+userId;
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id + "user_id" + userId;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
                     courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
                 }
@@ -629,24 +636,24 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 String value = commonInfoService.findOne(887).getValue();
                 //判断角色 1是梵会员  2是剧达人  3剧荐官   4推荐人
                 String[] split = value.split(",");
-                boolean flag=false;
+                boolean flag = false;
 
-                for (String member:split){
-                    if("1".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==1){
-                            flag=true;
+                for (String member : split) {
+                    if ("1".equals(member)) {
+                        if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 1) {
+                            flag = true;
                         }
-                    }else if("2".equals(member)){
-                        if(userEntity.getAgencyIndex()!=null && userEntity.getAgencyIndex()==2){
-                            flag=true;
+                    } else if ("2".equals(member)) {
+                        if (userEntity.getAgencyIndex() != null && userEntity.getAgencyIndex() == 2) {
+                            flag = true;
                         }
-                    }else if("3".equals(member)){
-                        if(userEntity.getIsChannel()!=null && userEntity.getIsChannel()==1){
-                            flag=true;
+                    } else if ("3".equals(member)) {
+                        if (userEntity.getIsChannel() != null && userEntity.getIsChannel() == 1) {
+                            flag = true;
                         }
-                    }else if("4".equals(member)){
-                        if(userEntity.getIsRecommend()!=null && userEntity.getIsRecommend()==1){
-                            flag=true;
+                    } else if ("4".equals(member)) {
+                        if (userEntity.getIsRecommend() != null && userEntity.getIsRecommend() == 1) {
+                            flag = true;
                         }
                     }
                 }
@@ -654,14 +661,14 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 if (courseUser != null || (flag)) {
                     //用户购买了整集
                     bean.setListsDetail(courseDetailsList);
-                }else{
+                } else {
                     bean.setListsDetail(courseDetailsNotList);
                     //查询用户是否单独购买了集
                     List<CourseUser> courseUsers = courseUserDao.selectCourseUserList(id, userId);
-                    if(courseUsers.size()>0){
-                        for (CourseUser courseUser1:courseUsers){
-                            for (CourseDetails courseDetails:bean.getListsDetail()) {
-                                if(courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())){
+                    if (courseUsers.size() > 0) {
+                        for (CourseUser courseUser1 : courseUsers) {
+                            for (CourseDetails courseDetails : bean.getListsDetail()) {
+                                if (courseUser1.getCourseDetailsId().equals(courseDetails.getCourseDetailsId())) {
                                     CourseDetails courseDetails1 = baseMapper.selectById(courseDetails.getCourseDetailsId());
                                     courseDetails.setVideoUrl(courseDetails1.getVideoUrl());
                                 }
@@ -670,32 +677,32 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                     }
                 }
             } else {
-                String redisCourseDetailsNoUrlListName="selectCourseDetailsNoUrlList_"+id;
+                String redisCourseDetailsNoUrlListName = "selectCourseDetailsNoUrlList_" + id;
                 String redisCourseDetailsNoUrlList = redisUtils.get(redisCourseDetailsNoUrlListName);
                 List<CourseDetails> courseDetailsNotList = null;
-                if(StringUtils.isEmpty(redisCourseDetailsNoUrlList)){
+                if (StringUtils.isEmpty(redisCourseDetailsNoUrlList)) {
                     courseDetailsNotList = baseMapper.findByCourseIdNotUrl(id, userId);
-                    redisUtils.set(redisCourseDetailsNoUrlListName,JSONObject.toJSONString(courseDetailsNotList));
-                }else{
+                    redisUtils.set(redisCourseDetailsNoUrlListName, JSONObject.toJSONString(courseDetailsNotList));
+                } else {
                     String s = redisUtils.get(redisCourseDetailsNoUrlListName);
                     courseDetailsNotList = JSON.parseArray(s, CourseDetails.class);
                 }
                 bean.setListsDetail(courseDetailsNotList);
             }
-            if(courseDetailsId!=null){
-                if (bean.getListsDetail().size()>0){
-                    for (CourseDetails courseDetails:bean.getListsDetail()){
-                        if(courseDetails.getCourseDetailsId().equals(courseDetailsId) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())){
+            if (courseDetailsId != null) {
+                if (bean.getListsDetail().size() > 0) {
+                    for (CourseDetails courseDetails : bean.getListsDetail()) {
+                        if (courseDetails.getCourseDetailsId().equals(courseDetailsId) && StringUtils.isNotEmpty(courseDetails.getWxCourseDetailsId())) {
                             //微信内
-                            String url="https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token="+ SenInfoCheckUtil.getMpToken();
-                            JSONObject jsonObject=new JSONObject();
-                            jsonObject.put("media_id",courseDetails.getWxCourseDetailsId());
-                            jsonObject.put("t",(System.currentTimeMillis()/1000)+7200);
+                            String url = "https://api.weixin.qq.com/wxa/sec/vod/getmedialink?access_token=" + SenInfoCheckUtil.getMpToken();
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("media_id", courseDetails.getWxCourseDetailsId());
+                            jsonObject.put("t", (System.currentTimeMillis() / 1000) + 7200);
                             String s = HttpClientUtil.doPostJson(url, jsonObject.toJSONString());
                             JSONObject jsonObject1 = JSONObject.parseObject(s);
                             String errcode = jsonObject1.getString("errcode");
-                            if(!"0".equals(errcode)){
-                                return Result.error("获取微信播放链接失败："+jsonObject1.getString("errmsg"));
+                            if (!"0".equals(errcode)) {
+                                return Result.error("获取微信播放链接失败：" + jsonObject1.getString("errmsg"));
                             }
                             JSONObject media_info = jsonObject1.getJSONObject("media_info");
                             String mp4_url = media_info.getString("mp4_url");
@@ -705,43 +712,42 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                     }
                 }
             }
-            return Result.success().put("data",bean);
+            return Result.success().put("data", bean);
         }
 
     }
 
 
-
     @Override
-    public Result selectCourseDetailsList(Integer page,Integer limit,String token,String randomNum){
-        Long userId=null;
-        if(StringUtils.isNotEmpty(token)){
+    public Result selectCourseDetailsList(Integer page, Integer limit, String token, String randomNum) {
+        Long userId = null;
+        if (StringUtils.isNotEmpty(token)) {
             Claims claims = jwtUtils.getClaimByToken(token);
-            if(claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())){
-                userId=Long.parseLong(claims.getSubject());
+            if (claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())) {
+                userId = Long.parseLong(claims.getSubject());
             }
         }
-        IPage<CourseDetails> courseDetailsIPage = baseMapper.selectCourseDetailsList(new Page<>(page, limit),randomNum);
+        IPage<CourseDetails> courseDetailsIPage = baseMapper.selectCourseDetailsList(new Page<>(page, limit), randomNum);
 
         if (userId != null) {
             List<CourseDetails> records = courseDetailsIPage.getRecords();
-            for (CourseDetails courseDetails:records){
+            for (CourseDetails courseDetails : records) {
                 courseDetails.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
-                        .eq("user_id", userId).eq("course_details_id", courseDetails.getCourseDetailsId()).eq("classify",1)));
+                        .eq("user_id", userId).eq("course_details_id", courseDetails.getCourseDetailsId()).eq("classify", 1)));
                 courseDetails.setIsGood(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
-                        .eq("user_id", userId).eq("course_details_id", courseDetails.getCourseDetailsId()).eq("classify",2)));
+                        .eq("user_id", userId).eq("course_details_id", courseDetails.getCourseDetailsId()).eq("classify", 2)));
                 courseDetails.setCourse(courseDao.selectById(courseDetails.getCourseId()));
                 courseDetails.setTitle(courseDetails.getCourse().getTitle());
-                courseDetails.setCourseDetailsCount(baseMapper.selectCount(new QueryWrapper<CourseDetails>().eq("course_id",courseDetails.getCourseId())));
+                courseDetails.setCourseDetailsCount(baseMapper.selectCount(new QueryWrapper<CourseDetails>().eq("course_id", courseDetails.getCourseId())));
             }
         }
-        return Result.success().put("data",new PageUtils(courseDetailsIPage));
+        return Result.success().put("data", new PageUtils(courseDetailsIPage));
     }
 
     @Override
     public Result courseDetailsListExcelIn(MultipartFile file, Long courseId) throws IOException {
         Course course = courseDao.selectById(courseId);
-        if (course==null){
+        if (course == null) {
             return Result.error("所选剧不存在");
         }
         List<CourseDetailsIn> courseDetailsList = ExcelUtils.importExcel(file, 2, 1, CourseDetailsIn.class);
@@ -755,13 +761,13 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
         //成功条数
         int successIndex = 0;
         //空数据
-        int emptyCount=0;
+        int emptyCount = 0;
         for (CourseDetailsIn courseDetailsIn : courseDetailsList) {
-            if(courseDetailsIn.getCourseDetailsName()==null){
+            if (courseDetailsIn.getCourseDetailsName() == null) {
                 emptyCount++;
                 continue;
             }
-            if (courseDetailsIn.getIsPrice()!=2){
+            if (courseDetailsIn.getIsPrice() != 2) {
                 if (courseDetailsIn.getPrice() == null || courseDetailsIn.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
                     return Result.error("第【" + index + "】行数据为收费,但并没有设置价格");
                 }
@@ -773,10 +779,10 @@ public class CourseDetailsServiceImpl  extends ServiceImpl<CourseDetailsDao, Cou
                 courseDetails.setCourseId(courseId);
                 courseDetails.setCreateTime(DateUtils.format(new Date()));
                 BeanUtils.copyProperties(courseDetailsIn, courseDetails);
-                int result =  baseMapper.insert(courseDetails);
+                int result = baseMapper.insert(courseDetails);
                 if (result > 0) {
                     successIndex++;
-                }else {
+                } else {
                     repeat++;
                 }
             }

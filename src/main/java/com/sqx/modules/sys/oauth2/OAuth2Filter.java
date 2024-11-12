@@ -1,12 +1,20 @@
 package com.sqx.modules.sys.oauth2;
 
 import com.google.gson.Gson;
+import com.sqx.common.annotation.SysLog;
+import com.sqx.common.context.RequestContext;
 import com.sqx.common.utils.HttpContextUtils;
+import com.sqx.common.utils.IPUtils;
 import com.sqx.common.utils.Result;
+import com.sqx.modules.app.entity.UserEntity;
+import com.sqx.modules.sys.entity.SysUserEntity;
+
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -15,12 +23,36 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * oauth2过滤器
  *
  */
+@Slf4j
 public class OAuth2Filter extends AuthenticatingFilter {
+
+    /**
+    *
+     */
+    @Override
+    protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
+        if (request instanceof HttpServletRequest) {
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            //上下文初始化
+            RequestContext.init(SysUserEntity.class)
+                    .setRemoteAddress(IPUtils.getIpAddr(httpRequest)).setUrl(httpRequest.getRequestURI());
+        }
+        return super.preHandle(request, response);
+    }
+
+    @Override
+    protected boolean onLoginSuccess(AuthenticationToken token, Subject subject, ServletRequest request, ServletResponse response) throws Exception {
+        RequestContext.Base<SysUserEntity> base = RequestContext.base();
+        SysUserEntity userEntity = Optional.ofNullable(base.getUser()).orElse(new SysUserEntity());
+        log.info("url:{},userId:{},mobile:{},ip:{},token:{}", base.getUrl(), userEntity.getUserId(), userEntity.getMobile(), base.getRemoteAddress(), base.getToken());
+        return super.onLoginSuccess(token, subject, request, response);
+    }
 
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {

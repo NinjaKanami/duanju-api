@@ -20,6 +20,17 @@ public class BoxCollection {
     private BigDecimal collectPoint;
     private int collectMax;
     private int collectRemain;
+    private BigDecimal collectPointMax;
+    private BigDecimal collectPointRemain;
     private boolean registered;
     private List<CollectLog> collectLogs;
+
+    public BoxCollection() {
+    }
+
+    public BoxCollection(int collect, BigDecimal collectPoint, boolean registered) {
+        this.collect = collect;
+        this.collectPoint = collectPoint;
+        this.registered = registered;
+    }
 }

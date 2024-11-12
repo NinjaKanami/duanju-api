@@ -11,6 +11,7 @@ import com.sqx.modules.box.entity.Box;
 import com.sqx.modules.box.service.BoxService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -26,6 +27,7 @@ import java.util.List;
 @Api(value = "用户盲盒", tags = {"用户盲盒"})
 @RestController
 @RequestMapping("box")
+@Profile("!prod")
 public class BoxController extends ApiController {
     /**
      * 服务对象

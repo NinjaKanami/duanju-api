@@ -4,7 +4,7 @@ spring:
         druid:
             driver-class-name: com.p6spy.engine.spy.P6SpyDriver
             #url: jdbc:mysql://101.35.215.228:3306/duanjuv2?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
-            url: jdbc:p6spy:mysql://192.168.241.4:3306/duanju?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
+            url: jdbc:p6spy:mysql://sh-cdb-87ppqvr8.sql.tencentcdb.com:63816/duanju?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=CTT
             username: arttest
             password: artcfgHkxvevvmbGRdfjeEc8@
             initial-size: 10
@@ -46,7 +46,3 @@ DataSync:
     APP_SECRET: E760D5B0-6A12-4A5F-9B56-D1D9D45DCD48
     API_URL1: http://feifanapitest.feifan.art/out/garonne/v1/dragon/donation
     API_URL2: http://feifanapitest.feifan.art/out/garonne/v1/user
-
-logging:
-    file:
-        path: /data/opt/logs/${spring.application.name}/${spring.application.name}.log

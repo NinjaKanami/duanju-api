@@ -8,5 +8,19 @@
         update message_info s set s.is_see=2 where s.user_id=#{userId} and s.state=#{state} and s.is_see=0
     </update>
 
+    <update id="updateUserMessageIsSee">
+        update message_info s set s.is_see=#{isSee} where s.id = #{id} and s.user_id=#{userId}
+    </update>
+
+    <!-- 批量插入消息 -->
+    <insert id="batchSaveBodyWithTx" useGeneratedKeys="true">
+        insert into
+        message_info(create_at,image,title,url,content,type,user_id,user_name,platform,state,is_see,send_state,send_time)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.createAt},#{item.image},#{item.title},#{item.url},#{item.content},#{item.type},#{item.userId},#{item.userName},#{item.platform},#{item.state},#{item.isSee},#{item.sendState},#{item.sendTime})
+        </foreach>
+    </insert>
+
 
 </mapper>

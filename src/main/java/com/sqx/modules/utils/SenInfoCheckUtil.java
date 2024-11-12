@@ -31,6 +31,8 @@ public class SenInfoCheckUtil {
 
     private static String MpAccessToken;
     private static long lastMpTokenFetchTime = 0;
+    private static int WX_EXPIRES_IN = 0;
+
 
     private static String DyAccessToken;
     private static long lastDyTokenFetchTime = 0;
@@ -75,9 +77,9 @@ public class SenInfoCheckUtil {
     } */
     public static String getMpToken() {
         long currentTime = System.currentTimeMillis();
-        if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > 2 * 30 * 60 * 1000)) {
+        if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > WX_EXPIRES_IN * 1000L)) {
             synchronized (SenInfoCheckUtil.class) {
-                if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > 2 * 30 * 60 * 1000)) {
+                if (MpAccessToken == null || (currentTime - lastMpTokenFetchTime > WX_EXPIRES_IN * 1000L)) {
                     logger.info("Fetching new MpAccessToken...");
                     MpAccessToken = getMpAccessToken();
                     lastMpTokenFetchTime = currentTime;
@@ -278,13 +280,13 @@ public class SenInfoCheckUtil {
                 // 构建请求头
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
-                //Map<String, String> jsonObject = new HashMap<>(); Map 需要手动转换为JSON字符串，否则直接调用 toString 方法可能会导致格式不正确。
+                // Map<String, String> jsonObject = new HashMap<>(); Map 需要手动转换为JSON字符串，否则直接调用 toString 方法可能会导致格式不正确。
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("appid", appid);
                 jsonObject.put("secret", secret);
                 jsonObject.put("grant_type", "client_credential");
-                //jsonResult = HttpClientUtil.sendPostRequest("https://api.weixin.qq.com/cgi-bin/stable_token", headers, jsonObject.toJSONString());
-                jsonResult = HttpClientUtil.doPostJson("https://api.weixin.qq.com/cgi-bin/stable_token",  jsonObject.toString());
+                // jsonResult = HttpClientUtil.sendPostRequest("https://api.weixin.qq.com/cgi-bin/stable_token", headers, jsonObject.toJSONString());
+                jsonResult = HttpClientUtil.doPostJson("https://api.weixin.qq.com/cgi-bin/stable_token", jsonObject.toString());
             } catch (Exception e) {
                 logger.error("获取access_token失败：{}", e.getMessage());
                 return "";
@@ -297,6 +299,9 @@ public class SenInfoCheckUtil {
         String errcode = parseObject.getString("errcode");
         String accessToken = parseObject.getString("access_token");
         String expiresIn = parseObject.getString("expires_in");
+        if (expiresIn != null) {
+            WX_EXPIRES_IN = Integer.parseInt(expiresIn);
+        }
         return accessToken;
     }
 

@@ -9,6 +9,7 @@ import com.sqx.modules.message.service.MessageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -37,8 +38,9 @@ public class AppMessageController {
         map.put("userId",userId);
         map.put("state",state);
         PageUtils pageUtils = messageService.selectMessageList(map);
-        messageService.updateSendState(userId,state);
-        return Result.success().put("data",pageUtils);
+        // NOTE(bootun): 2024/11/06日需求更新, 只有点进某个消息才更新这条消息的已读状态
+        // messageService.updateSendState(userId,state);
+        return Result.success().put("data", pageUtils);
     }
 
     @Login
@@ -53,23 +55,35 @@ public class AppMessageController {
     @RequestMapping(value = "/selectMessage", method = RequestMethod.GET)
     @ApiOperation("查询用户消息")
     @ResponseBody
-    public Result selectMessage(int page, int limit,Integer state){
-        Map<String,Object> map=new HashMap<>();
-        map.put("page",page);
-        map.put("limit",limit);
-        map.put("state",state);
-        return Result.success().put("data",messageService.selectMessageList(map));
+    public Result selectMessage(int page, int limit, Integer state) {
+        // WARNING: 该接口允许任何用户查询所有消息(包括不是自己的消息)
+        return Result.error(HttpStatus.FORBIDDEN.value(), "系统繁忙，请稍后再试");
+        // Map<String,Object> map=new HashMap<>();
+        // map.put("page",page);
+        // map.put("limit",limit);
+        // map.put("state",state);
+        // return Result.success().put("data",messageService.selectMessageList(map));
     }
 
     @Login
     @PostMapping("/insertMessage")
     @ApiOperation("添加投诉")
-    public Result insertMessage(@RequestBody MessageInfo messageInfo){
-        messageService.saveBody(messageInfo);
-        return Result.success();
+    public Result insertMessage(@RequestBody MessageInfo messageInfo) {
+        // WARNING: 该接口允许任何用户创建任意类型的消息
+        // messageService.saveBody(messageInfo);
+        return Result.error(HttpStatus.FORBIDDEN.value(), "系统繁忙，请稍后再试");
     }
 
-
+    @Login
+    @PostMapping("/{id}/read")
+    @ApiOperation("将用户消息标记为已读")
+    @ResponseBody
+    public Result userReadMessage(@PathVariable Long id, @RequestAttribute("userId") Long userId) {
+        if (messageService.userReadMessage(userId, id) > 0) {
+            return Result.success();
+        }
+        return Result.error("消息不存在");
+    }
 
 
 }
