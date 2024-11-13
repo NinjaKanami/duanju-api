@@ -328,7 +328,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
                 // 非云短剧无法获得积分
                 int i = 0;
                 if (orders.getOrdersType() == 11) {
-                    //i = boxPointService.getPoints(orders.getUserId(), orders.getCourseId(), n);
+                    i = boxPointService.getPoints(orders.getUserId(), orders.getCourseId(), n);
                 }
                 return Result.success().put("boxCount", i);
             }
