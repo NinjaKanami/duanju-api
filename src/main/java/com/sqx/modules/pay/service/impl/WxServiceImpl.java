@@ -1,5 +1,6 @@
 package com.sqx.modules.pay.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.wxpay.sdk.WXPay;
 import com.github.wxpay.sdk.WXPayConstants;
 import com.github.wxpay.sdk.WXPayUtil;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -400,6 +402,7 @@ public class WxServiceImpl implements WxService {
         return xmlBack;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public String notifyXPay(String out_trade_no) {
         // 注意特殊情况：订单已经退款，但收到了支付结果成功的通知，不应把商户的订单状态从退款改成支付成功
@@ -434,7 +437,16 @@ public class WxServiceImpl implements WxService {
                 if(pingMoney!=null){
                     orders.setPingMoney(new BigDecimal(String.valueOf(map.get("pingMoney"))));
                 }
-                ordersService.updateById(orders);
+
+                // 乐观锁
+                boolean b = ordersService.update(orders, new QueryWrapper<Orders>()
+                        .eq("orders_id", orders.getOrdersId())
+                        .eq("status", 0));
+                if(!b){
+                    log.warn("订单信息已被更改！");
+                    throw new RuntimeException("订单状态异常");
+                }
+
                 ordersService.insertOrders(orders);
             }else{
                 String remark = payDetails.getRemark();
@@ -455,7 +467,14 @@ public class WxServiceImpl implements WxService {
                 orders.setPayTime(DateUtils.format(new Date()));
                 orders.setPayWay(3);
                 orders.setStatus(1);
-                ordersService.updateById(orders);
+                // 乐观锁
+                boolean b = ordersService.update(orders, new QueryWrapper<Orders>()
+                        .eq("orders_id", orders.getOrdersId())
+                        .eq("status", 0));
+                if(!b){
+                    log.warn("订单信息已被更改！");
+                    throw new RuntimeException("订单状态异常");
+                }
             }
 
         }

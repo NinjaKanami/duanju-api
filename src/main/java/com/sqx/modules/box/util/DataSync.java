@@ -87,35 +87,35 @@ public class DataSync {
                     return data;
                 case 501000:
                     // 验签参数错误
-                    log.error("验签参数错误: {}", emessage);
+                    log.warn("验签参数错误: {}", emessage);
                     throw new Exception("验签参数错误: " + emessage);
                 case 501001:
                     // 签名已失效
-                    log.error("签名已失效: {}", emessage);
+                    log.warn("签名已失效: {}", emessage);
                     throw new Exception("签名已失效: " + emessage);
                 case 501002:
                     // 签名密钥未配置
-                    log.error("签名密钥未配置: {}", emessage);
+                    log.warn("签名密钥未配置: {}", emessage);
                     throw new Exception("签名密钥未配置: " + emessage);
                 case 501003:
                     // 签名商户不存在
-                    log.error("签名商户不存在: {}", emessage);
+                    log.warn("签名商户不存在: {}", emessage);
                     throw new Exception("签名商户不存在: " + emessage);
                 case 501004:
                     // 签名非法
-                    log.error("签名非法: {}", emessage);
+                    log.warn("签名非法: {}", emessage);
                     throw new Exception("签名非法: " + emessage);
                 case 501005:
                     // 签名过期
-                    log.error("签名过期: {}", emessage);
+                    log.warn("签名过期: {}", emessage);
                     throw new Exception("签名过期: " + emessage);
                 default:
                     // 其他非0码
-                    log.error("未知错误: {}", emessage);
+                    log.warn("未知错误: {}", emessage);
                     throw new Exception("未知错误: " + emessage);
             }
         } catch (Exception e) {
-            log.error("获取用户收藏失败: {}", e.getMessage());
+            log.warn("获取用户收藏失败: {}", e.getMessage());
             return data;
         }
     }
@@ -170,36 +170,36 @@ public class DataSync {
                     break;
                 case 501000:
                     // 验签参数错误
-                    log.error("验签参数错误: {}", emessage);
+                    log.warn("验签参数错误: {}", emessage);
                     throw new Exception("验签参数错误: " + emessage);
                 case 501001:
                     // 签名已失效
-                    log.error("签名已失效: {}", emessage);
+                    log.warn("签名已失效: {}", emessage);
                     throw new Exception("签名已失效: " + emessage);
                 case 501002:
                     // 签名密钥未配置
-                    log.error("签名密钥未配置: {}", emessage);
+                    log.warn("签名密钥未配置: {}", emessage);
                     throw new Exception("签名密钥未配置: " + emessage);
                 case 501003:
                     // 签名商户不存在
-                    log.error("签名商户不存在: {}", emessage);
+                    log.warn("签名商户不存在: {}", emessage);
                     throw new Exception("签名商户不存在: " + emessage);
                 case 501004:
                     // 签名非法
-                    log.error("签名非法: {}", emessage);
+                    log.warn("签名非法: {}", emessage);
                     throw new Exception("签名非法: " + emessage);
                 case 501005:
                     // 签名过期
-                    log.error("签名过期: {}", emessage);
+                    log.warn("签名过期: {}", emessage);
                     throw new Exception("签名过期: " + emessage);
                 default:
                     // 其他非0码
-                    log.error("未知错误: {}", emessage);
+                    log.warn("未知错误: {}", emessage);
                     throw new Exception("未知错误: " + emessage);
             }
             return data;
         } catch (Exception e) {
-            log.error("兑换失败: {}", e.getMessage());
+            log.warn("兑换失败: {}", e.getMessage());
             return false;
         }
     }

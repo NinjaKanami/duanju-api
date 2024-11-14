@@ -34,40 +34,6 @@ public class AppCourseCutInviteController extends ApiController {
     @Resource
     private CourseCutInviteService courseCutInviteService;
 
-    /**
-     * 分页查询所有数据
-     *
-     * @param page            分页对象
-     * @param courseCutInvite 查询实体
-     * @return 所有数据
-     */
-    @GetMapping
-    public R selectAll(Page<CourseCutInvite> page, CourseCutInvite courseCutInvite) {
-        return success(this.courseCutInviteService.page(page, new QueryWrapper<>(courseCutInvite)));
-    }
-
-    /**
-     * 通过主键查询单条数据
-     *
-     * @param id 主键
-     * @return 单条数据
-     */
-    @GetMapping("{id}")
-    public R selectOne(@PathVariable Serializable id) {
-        return success(this.courseCutInviteService.getById(id));
-    }
-
-    /**
-     * 新增数据
-     *
-     * @param courseCutInvite 实体对象
-     * @return 新增结果
-     */
-    @PostMapping
-    public R insert(@RequestBody CourseCutInvite courseCutInvite) {
-        return success(this.courseCutInviteService.save(courseCutInvite));
-    }
-
     @Login
     @PostMapping("/insertCourseCutInvite")
     @ApiOperation("新增砍剧短剧邀请信息")
@@ -76,25 +42,4 @@ public class AppCourseCutInviteController extends ApiController {
         return courseCutInviteService.insertCourseCutInvite(cutId, userId);
     }
 
-    /**
-     * 修改数据
-     *
-     * @param courseCutInvite 实体对象
-     * @return 修改结果
-     */
-    @PutMapping
-    public R update(@RequestBody CourseCutInvite courseCutInvite) {
-        return success(this.courseCutInviteService.updateById(courseCutInvite));
-    }
-
-    /**
-     * 删除数据
-     *
-     * @param idList 主键结合
-     * @return 删除结果
-     */
-    @DeleteMapping
-    public R delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.courseCutInviteService.removeByIds(idList));
-    }
 }
