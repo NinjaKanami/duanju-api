@@ -134,7 +134,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
      */
     @Override
     public Result insertCourseOrders(Long courseId, Long courseDetailsId, Long userId) {
-        log.info("生成商品订单信息接口入参为：{},{}", courseId, userId);
+        log.info("生成商品订单信息接口入参为:{},{}", courseId, userId);
         reentrantReadWriteLock.writeLock().lock();
         try {
             /*CourseUser courseUser1 = courseUserDao.selectCourseUser(courseId, userId);
