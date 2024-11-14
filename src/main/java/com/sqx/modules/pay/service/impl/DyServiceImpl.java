@@ -346,7 +346,7 @@ public class DyServiceImpl implements DyService {
             out.close();
             in.close();
             String responseJson = new String(out.toByteArray(),"utf-8");
-            log.info("responseJson：{}",responseJson);
+            log.info("responseJson:{}",responseJson);
             JSONObject jsonObject = JSONObject.parseObject(responseJson);
             JSONObject msgJson = jsonObject.getJSONObject("msg");
             String resultCode = jsonObject.getString("type");
@@ -365,7 +365,7 @@ public class DyServiceImpl implements DyService {
                 sortedString.forEach(sb::append);
                 String msg_signature = jsonObject.getString("msg_signature");
                 String sign = DouYinSign.callbackSign(sortedString);
-                log.info("支付回调接口密钥签名：{}",sign);
+                log.info("支付回调接口密钥签名:{}",sign);
                 if(!sign.equals(msg_signature)) {//判断签名，此处验签有问题
                     JSONObject resultJson = new JSONObject();
                     resultJson.put("err_no",8);

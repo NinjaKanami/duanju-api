@@ -82,13 +82,13 @@ public class AppLoginController {
     @ApiOperation("苹果登陆获取appleUserId")
     public Result loginVerify(@RequestParam("identityToken") String identityToken) {
         try {
-            log.info("苹果token：{}", identityToken);
+            log.info("苹果token:{}", identityToken);
             JSONObject jsonObject = JSON.parseObject(identityToken);
             JSONObject userInfo = jsonObject.getJSONObject("userInfo");
             String identityTokens = userInfo.getString("identityToken");
             return appleService.getAppleUserInfo(identityTokens);
         } catch (Exception e) {
-            log.error("苹果token校验失败：{}", identityToken, e);
+            log.error("苹果token校验失败:{}", identityToken, e);
             return Result.error("苹果账号验证失败，请退出重试！");
         }
     }

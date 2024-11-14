@@ -319,7 +319,7 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     // 同步用户积分
                     boolean b = dataSync.syncUserCollection(collectLog.getPhone(), collectLog.getPlus(), 1, collectLog.getCollectLogId().toString());
                     if (!b) {
-                        log.error("同步用户积分失败!ID：{}", collectLog.getCollectLogId());
+                        log.error("同步用户积分失败!ID:{}", collectLog.getCollectLogId());
                         return null; // 提前终止事务处理
                     }
 
@@ -332,11 +332,11 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                                 .eq("collect_point_id", one.getCollectPointId())
                                 .eq("count", localCount));
                         if (!b1) {
-                            log.warn("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新)：{}", one.getCollectPointId());
+                            log.warn("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新):{}", one.getCollectPointId());
                             throw new RuntimeException("更新用户积分失败(不存在符合条件的数据，可能已被其他线程更新)");
                         }
                     } else {
-                        log.warn("用户积分不存在：{}", collectLog.getUserId());
+                        log.warn("用户积分不存在:{}", collectLog.getUserId());
                         return null; // 提前终止事务处理
                     }
 
@@ -346,11 +346,11 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                             .eq("collect_log_id", collectLog.getCollectLogId())
                             .ne("is_sync", 1));
                     if (!update) {
-                        log.warn("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)：{}", collectLog.getCollectLogId());
+                        log.warn("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新):{}", collectLog.getCollectLogId());
                         throw new RuntimeException("更新用户积分log失败(不存在符合条件的数据，可能已被其他线程更新)");
                     }
 
-                    log.info("同步用户积分成功!ID：{}", collectLog.getCollectLogId());
+                    log.info("同步用户积分成功!ID:{}", collectLog.getCollectLogId());
                     return null; // 提前终止事务处理
                 } catch (Exception e) {
                     log.error("同步用户积分异常", e);
