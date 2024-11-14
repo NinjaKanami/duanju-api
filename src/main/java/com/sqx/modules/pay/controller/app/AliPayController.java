@@ -13,6 +13,7 @@ import com.alipay.api.request.AlipayTradeRefundRequest;
 import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.alipay.api.response.AlipayTradeAppPayResponse;
 import com.alipay.api.response.AlipayTradeRefundResponse;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqx.common.utils.DateUtils;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
@@ -141,7 +142,14 @@ public class AliPayController {
                             if(pingMoney!=null){
                                 orders.setPingMoney(new BigDecimal(String.valueOf(map.get("pingMoney"))));
                             }
-                            ordersService.updateById(orders);
+                            // 乐观锁
+                            boolean b = ordersService.update(orders, new QueryWrapper<Orders>()
+                                    .eq("orders_id", orders.getOrdersId())
+                                    .eq("status", 0));
+                            if(!b){
+                                log.warn("订单信息已被更改！");
+                                throw new RuntimeException("订单状态异常");
+                            }
                             ordersService.insertOrders(orders);
                         }else{
                             String remark = payDetails.getRemark();
@@ -179,7 +187,14 @@ public class AliPayController {
                             if(pingMoney!=null){
                                 orders.setPingMoney(new BigDecimal(String.valueOf(map.get("pingMoney"))));
                             }
-                            ordersService.updateById(orders);
+                            // 乐观锁
+                            boolean b = ordersService.update(orders, new QueryWrapper<Orders>()
+                                    .eq("orders_id", orders.getOrdersId())
+                                    .eq("status", 0));
+                            if(!b){
+                                log.warn("订单信息已被更改！");
+                                throw new RuntimeException("订单状态异常");
+                            }
                         }
 
                     } else {

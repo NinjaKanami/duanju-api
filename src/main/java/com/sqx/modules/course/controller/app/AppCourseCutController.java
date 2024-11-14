@@ -38,30 +38,6 @@ public class AppCourseCutController extends ApiController {
     @Resource
     private CourseCutService courseCutService;
 
-
-    /**
-     * 分页查询所有数据
-     *
-     * @param page      分页对象
-     * @param courseCut 查询实体
-     * @return 所有数据
-     */
-    @GetMapping
-    public R selectAll(Page<CourseCut> page, CourseCut courseCut) {
-        return success(this.courseCutService.page(page, new QueryWrapper<>(courseCut)));
-    }
-
-    /**
-     * 通过主键查询单条数据
-     *
-     * @param id 主键
-     * @return 单条数据
-     */
-    @GetMapping("{id}")
-    public R selectOne(@PathVariable Serializable id) {
-        return success(this.courseCutService.getById(id));
-    }
-
     @Login
     @GetMapping("/selectCourseCut")
     @ApiOperation("查询用户砍剧短剧信息")
@@ -82,17 +58,6 @@ public class AppCourseCutController extends ApiController {
         ));
     }
 
-    /**
-     * 新增数据
-     *
-     * @param courseCut 实体对象
-     * @return 新增结果
-     */
-    @PostMapping
-    public R insert(@RequestBody CourseCut courseCut) {
-        return success(this.courseCutService.save(courseCut));
-    }
-
     @Login
     @PostMapping("/insertCourseCut")
     @ApiOperation("新增砍剧短剧信息")
@@ -101,25 +66,4 @@ public class AppCourseCutController extends ApiController {
         return courseCutService.insertCourseCut(courseId, userId);
     }
 
-    /**
-     * 修改数据
-     *
-     * @param courseCut 实体对象
-     * @return 修改结果
-     */
-    @PutMapping
-    public R update(@RequestBody CourseCut courseCut) {
-        return success(this.courseCutService.updateById(courseCut));
-    }
-
-    /**
-     * 删除数据
-     *
-     * @param idList 主键结合
-     * @return 删除结果
-     */
-    @DeleteMapping
-    public R delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.courseCutService.removeByIds(idList));
-    }
 }
