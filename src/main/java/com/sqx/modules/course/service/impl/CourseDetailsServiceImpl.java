@@ -169,11 +169,16 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
             }
             // 初始化短剧收藏状态为0
             bean.setIsCollect(0);
+            bean.setIsView(0);
             // 如果用户ID非空，进一步处理用户相关逻辑
             if (userId != null) {
                 // 查询用户是否收藏了该短剧
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
+
+                // 查询用户是否看过了该短剧
+                bean.setIsView(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
+                        .eq("user_id", userId).eq("classify", 3).eq("course_id", bean.getCourseId())));
 
                 // 查询用户的评分
                 CourseScore courseScore = courseScoreService.getOne(new QueryWrapper<CourseScore>()
@@ -360,13 +365,19 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
                     userId = Long.parseLong(claims.getSubject());
                 }
             }
-            // 初始化是否收藏状态为0
+            // 初始化短剧收藏状态为0
             bean.setIsCollect(0);
-            // 如果用户ID存在
+            bean.setIsView(0);
+            // 如果用户ID非空，进一步处理用户相关逻辑
             if (userId != null) {
-                // 查询用户是否收藏了短剧
+                // 查询用户是否收藏了该短剧
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
+
+                // 查询用户是否看过了该短剧
+                bean.setIsView(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
+                        .eq("user_id", userId).eq("classify", 3).eq("course_id", bean.getCourseId())));
+
 
                 // 查询用户的评分
                 CourseScore courseScore = courseScoreService.getOne(new QueryWrapper<CourseScore>()
@@ -550,6 +561,7 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
                 }
             }
             bean.setIsCollect(0);
+            bean.setIsView(0);
             if (userId != null) {
                 CourseCollect courseCollect = courseCollectDao.selectOne(new QueryWrapper<CourseCollect>().eq("classify", 3).eq("user_id", userId).last(" order by update_time desc limit 1 "));
                 if (courseCollect != null) {
@@ -558,6 +570,11 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
                 bean.setCourseDetailsId(courseDetailsId);
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
+
+                // 查询用户是否看过了该短剧
+                bean.setIsView(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
+                        .eq("user_id", userId).eq("classify", 3).eq("course_id", bean.getCourseId())));
+
                 UserEntity userEntity = userService.selectUserById(userId);
                 // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);
@@ -700,6 +717,7 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
                 }
             }
             bean.setIsCollect(0);
+            bean.setIsView(0);
             if (userId != null) {
                 CourseCollect courseCollect = courseCollectDao.selectOne(new QueryWrapper<CourseCollect>().eq("classify", 3).eq("user_id", userId).last(" order by update_time desc limit 1 "));
                 if (courseCollect != null) {
@@ -708,6 +726,11 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
                 bean.setCourseDetailsId(courseDetailsId);
                 bean.setIsCollect(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
                         .eq("user_id", userId).eq("classify", 1).eq("course_id", bean.getCourseId())));
+
+                // 查询用户是否看过了该短剧
+                bean.setIsView(courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
+                        .eq("user_id", userId).eq("classify", 3).eq("course_id", bean.getCourseId())));
+
                 UserEntity userEntity = userService.selectUserById(userId);
                 // 查询用户是否购买了整集
                 CourseUser courseUser = courseUserDao.selectCourseUser(id, userId);

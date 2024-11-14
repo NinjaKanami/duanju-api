@@ -308,6 +308,9 @@ public class Course implements Serializable {
     private Integer isCollect;
 
     @TableField(exist = false)
+    private Integer isView;
+
+    @TableField(exist = false)
     private BigDecimal userScore;
 
     @TableField(exist = false)
