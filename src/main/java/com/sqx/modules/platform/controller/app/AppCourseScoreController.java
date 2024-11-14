@@ -30,30 +30,24 @@ public class AppCourseScoreController extends ApiController {
     private CourseScoreService courseScoreService;
 
     /**
-     * 新增数据
+     * 打分
      *
      * @param courseScore 实体对象
-     * @return 新增结果
+     * @return 打分结果
      */
     @PostMapping
     @Login
-    public R insert(@RequestAttribute Long userId, @RequestBody CourseScore courseScore) {
-        courseScore.setUserId(userId);
-        return success(this.courseScoreService.save(courseScore));
+    public R upset(@RequestAttribute Long userId, @RequestBody CourseScore courseScore) {
+        CourseScore score = this.courseScoreService.getOne(new QueryWrapper<CourseScore>()
+                .eq("user_id", userId)
+                .eq("course_id", courseScore.getCourseId()));
+        if (score == null) {
+            score = courseScore;
+            score.setUserId(userId);
+        } else {
+            score.setScore(courseScore.getScore());
+        }
+        return success(this.courseScoreService.saveOrUpdate(score));
     }
-
-    /**
-     * 修改数据
-     *
-     * @param courseScore 实体对象
-     * @return 修改结果
-     */
-    @PutMapping
-    @Login
-    public R update(@RequestAttribute Long userId, @RequestBody CourseScore courseScore) {
-        courseScore.setUserId(userId);
-        return success(this.courseScoreService.updateById(courseScore));
-    }
-
 
 }
