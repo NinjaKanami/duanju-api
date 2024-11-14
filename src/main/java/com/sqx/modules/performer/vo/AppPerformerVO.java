@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.util.*;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AppPerformerVO implements Serializable {
     private Long id;
 
