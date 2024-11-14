@@ -309,7 +309,8 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
     }
 
 
-    @Scheduled(cron = "0/3 * * * * *")
+//    @Scheduled(cron = "0/3 * * * * *")
+    @Scheduled(cron = "0/30 * * * * *")
     public void syncUserCollectionJob() {
         // 查询未同步的记录
         List<CollectLog> list = collectLogService.selectSyncCollectLog();

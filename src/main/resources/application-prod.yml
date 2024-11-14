@@ -49,5 +49,5 @@ isDevWxAccessToken: false
 DataSync:
     APP_ID: d4bf0e9781d443d8bf2bb2bb20b90970
     APP_SECRET: 1AB85A88-1285-405A-8783-C5D6B66CD423
-    API_URL1: http://feifanapi.feifan.art/out/garonne/v1/dragon/donation
-    API_URL2: http://feifanapi.feifan.art/out/garonne/v1/user
+    API_URL1: http://feifanapi.feifan.art/inner/garonne/v1/dragon/donation
+    API_URL2: http://feifanapi.feifan.art/inner/garonne/v1/user
