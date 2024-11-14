@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.modules.platform.entity.Series;
 import com.sqx.modules.platform.service.SeriesService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -19,6 +21,7 @@ import java.util.List;
  * @author makejava
  * @since 2024-11-07 18:57:42
  */
+@Api(value = "剧单管理", tags = {"剧单管理"})
 @RestController
 @RequestMapping("series")
 public class SeriesController extends ApiController {
@@ -35,9 +38,10 @@ public class SeriesController extends ApiController {
      * @param series 查询实体
      * @return 所有数据
      */
+    @ApiOperation("分页查询所有数据")
     @GetMapping
     public R selectAll(Page<Series> page, Series series) {
-        return success(this.seriesService.page(page, new QueryWrapper<>(series)));
+        return success(this.seriesService.page(page, new QueryWrapper<>(series).orderByAsc("sort")));
     }
 
     /**
@@ -46,6 +50,7 @@ public class SeriesController extends ApiController {
      * @param id 主键
      * @return 单条数据
      */
+    @ApiOperation("通过主键查询单条数据")
     @GetMapping("{id}")
     public R selectOne(@PathVariable Serializable id) {
         return success(this.seriesService.getById(id));
@@ -57,6 +62,7 @@ public class SeriesController extends ApiController {
      * @param series 实体对象
      * @return 新增结果
      */
+    @ApiOperation("新增数据")
     @PostMapping
     public R insert(@RequestBody Series series) {
         return success(this.seriesService.save(series));
@@ -79,6 +85,7 @@ public class SeriesController extends ApiController {
      * @param idList 主键结合
      * @return 删除结果
      */
+    @ApiOperation("删除数据")
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
         return success(this.seriesService.removeByIds(idList));

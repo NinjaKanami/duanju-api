@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.modules.platform.entity.SeriesCourse;
 import com.sqx.modules.platform.service.SeriesCourseService;
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -19,6 +20,7 @@ import java.util.List;
  * @author makejava
  * @since 2024-11-07 18:57:42
  */
+@Api(value = "短剧剧单管理", tags = {"短剧剧单管理"})
 @RestController
 @RequestMapping("seriesCourse")
 public class SeriesCourseController extends ApiController {
