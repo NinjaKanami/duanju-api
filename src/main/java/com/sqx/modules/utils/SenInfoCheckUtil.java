@@ -288,7 +288,7 @@ public class SenInfoCheckUtil {
                 // jsonResult = HttpClientUtil.sendPostRequest("https://api.weixin.qq.com/cgi-bin/stable_token", headers, jsonObject.toJSONString());
                 jsonResult = HttpClientUtil.doPostJson("https://api.weixin.qq.com/cgi-bin/stable_token", jsonObject.toString());
             } catch (Exception e) {
-                logger.error("获取access_token失败：{}", e.getMessage());
+                logger.error("获取access_token失败:{}", e.getMessage());
                 return "";
             }
         }

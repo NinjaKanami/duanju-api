@@ -41,7 +41,7 @@ public interface CollectLogDao extends BaseMapper<CollectLog> {
      */
     @Select("select c.*,u.phone from collect_log c " +
             "left join tb_user u on c.user_id = u.user_id " +
-            "where is_sync = 0 and type = 0 order by create_time asc limit 100")
+            "where is_sync = 0 and type = 0 order by update_time asc limit 100")
     List<CollectLog> selectSyncCollectLog();
 
 }
