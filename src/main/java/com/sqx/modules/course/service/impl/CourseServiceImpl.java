@@ -113,18 +113,20 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Result updateCourse(Course course) {
-        baseMapper.updateById(course);
-        // 修改演员关系
-        if (!course.getPerformerIds().isEmpty()) {
-            coursePerformerService.remove(new QueryWrapper<CoursePerformer>().eq("course_id", course.getCourseId()));
-            for (Long performerId : course.getPerformerIds()) {
-                CoursePerformer coursePerformer = new CoursePerformer(course.getCourseId(), performerId);
-                coursePerformerService.save(coursePerformer);
+        if (baseMapper.updateById(course) > 0) {
+            // 修改演员关系
+            if (!course.getPerformerIds().isEmpty()) {
+                coursePerformerService.remove(new QueryWrapper<CoursePerformer>().eq("course_id", course.getCourseId()));
+                for (Long performerId : course.getPerformerIds()) {
+                    CoursePerformer coursePerformer = new CoursePerformer(course.getCourseId(), performerId);
+                    coursePerformerService.save(coursePerformer);
+                }
             }
+            redisUtils.deleteByPattern("page*");
+            redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
+            return Result.success("操作成功！");
         }
-        redisUtils.deleteByPattern("page*");
-        redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
-        return Result.success("操作成功！");
+        return Result.error("操作失败！");
     }
 
     @Override
