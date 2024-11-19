@@ -26,6 +26,8 @@ import com.sqx.modules.course.service.CourseService;
 import com.sqx.modules.course.service.CourseUserService;
 import com.sqx.modules.course.vo.CourseIn;
 import com.sqx.modules.orders.service.OrdersService;
+import com.sqx.modules.performer.entity.Performer;
+import com.sqx.modules.performer.service.PerformerService;
 import com.sqx.modules.platform.entity.CoursePerformer;
 import com.sqx.modules.platform.service.CoursePerformerService;
 import com.sqx.modules.search.service.AppSearchService;
@@ -47,6 +49,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -70,6 +73,8 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     @Autowired
     private CoursePerformerService coursePerformerService;
     @Autowired
+    private PerformerService performerService;
+    @Autowired
     private RedisUtils redisUtils;
 
     /**
@@ -85,12 +90,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
 
     @Override
     public Result insertCourse(Course course) {
-        //设置删除标识
+        // 设置删除标识
         course.setIsDelete(0);
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        //设置创建时间
+        // 设置创建时间
         course.setCreateTime(df.format(new Date()));
-        //设置更新时间
+        // 设置更新时间
         course.setUpdateTime(df.format(new Date()));
         if (course.getCourseType().equals(2) || course.getCourseType().equals(3)) {
             baseMapper.insert(course);
@@ -110,7 +115,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     public Result updateCourse(Course course) {
         baseMapper.updateById(course);
         // 修改演员关系
-        if(!course.getPerformerIds().isEmpty()){
+        if (!course.getPerformerIds().isEmpty()) {
             coursePerformerService.remove(new QueryWrapper<CoursePerformer>().eq("course_id", course.getCourseId()));
             for (Long performerId : course.getPerformerIds()) {
                 CoursePerformer coursePerformer = new CoursePerformer(course.getCourseId(), performerId);
@@ -182,7 +187,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                     }
                     Object courseDetailsId = map.get("courseDetailsId");
                     if (courseDetailsId == null) {
-                        //默认取第一集
+                        // 默认取第一集
                         CourseDetails courseDetails = courseDetailsDao.selectOne(new QueryWrapper<CourseDetails>().eq("course_id", courseId)
                                 .orderByAsc("course_id").last(" limit 1"));
                         if (courseDetails != null) {
@@ -192,6 +197,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                             map.put("wxCourseDetailsId", courseDetails.getWxCourseDetailsId());
                             map.put("isCollect", 0);
                         }
+                    }
+                    // 查询演员
+                    List<CoursePerformer> coursePerformerList = coursePerformerService.list(new QueryWrapper<CoursePerformer>().eq("course_id", courseId));
+                    if (!coursePerformerList.isEmpty()) {
+                        List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
+                        map.put("performerList", performerList);
                     }
                 }
                 redisUtils.set(redisCourseName, JSONObject.toJSONString(mapIPage));
@@ -223,7 +234,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                     }
                     Object courseDetailsId = map.get("courseDetailsId");
                     if (courseDetailsId == null) {
-                        //默认取第一集
+                        // 默认取第一集
                         CourseDetails courseDetails = courseDetailsDao.selectOne(new QueryWrapper<CourseDetails>().eq("course_id", courseId)
                                 .orderByAsc("course_id").last(" limit 1"));
                         if (courseDetails != null) {
@@ -234,6 +245,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                             map.put("isCollect", 0);
                         }
                     }
+                    // 查询演员
+                    List<CoursePerformer> coursePerformerList = coursePerformerService.list(new QueryWrapper<CoursePerformer>().eq("course_id", courseId));
+                    if (!coursePerformerList.isEmpty()) {
+                        List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
+                        map.put("performerList", performerList);
+                    }
                 }
                 return Result.success().put("data", new PageUtils(records, total, size, current));
             }
@@ -243,7 +260,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         List<Map<String, Object>> records = mapIPage.getRecords();
         for (Map<String, Object> map : records) {
             Object courseId = map.get("courseId");
-            //默认取第一集
+            // 默认取第一集
             CourseDetails courseDetails = courseDetailsDao.selectOne(new QueryWrapper<CourseDetails>().eq("course_id", courseId)
                     .orderByAsc("course_id").last(" limit 1"));
             if (courseDetails != null) {
@@ -251,6 +268,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 map.put("courseDetailsName", courseDetails.getCourseDetailsName());
                 map.put("dyEpisodeId", courseDetails.getDyEpisodeId());
                 map.put("wxCourseDetailsId", courseDetails.getWxCourseDetailsId());
+            }
+            // 查询演员
+            List<CoursePerformer> coursePerformerList = coursePerformerService.list(new QueryWrapper<CoursePerformer>().eq("course_id", courseId));
+            if (!coursePerformerList.isEmpty()) {
+                List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
+                map.put("performerList", performerList);
             }
         }
         return Result.success().put("data", new PageUtils(mapIPage));
@@ -292,13 +315,13 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
 
     @Override
     public Result selectCourseTitle(Integer page, Integer limit, String title, Long userId) {
-        //分页
+        // 分页
         Page<Map<String, Object>> pages = new Page<>(page, limit);
         if (userId != null) {
-            //记录或更新搜索内容
+            // 记录或更新搜索内容
             appSearchService.insetAppSearch(title, userId);
         }
-        //拼接模糊查询
+        // 拼接模糊查询
         String title1 = null;
         if (StringUtils.isNotBlank(title)) {
             title1 = "%" + title + "%";
@@ -448,14 +471,14 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     @Override
     public Result courseNotify(Long userId, Long courseId, Long courseDetailsId) {
         CourseUser courseUser = new CourseUser();
-        //设置短剧id
+        // 设置短剧id
         courseUser.setCourseId(courseId);
         courseUser.setCourseDetailsId(courseDetailsId);
         courseUser.setClassify(2);
-        //设置用户id
+        // 设置用户id
         courseUser.setUserId(userId);
 
-        //加入我的列表
+        // 加入我的列表
         courseUserService.insertCourseUser(courseUser);
         return Result.success();
     }
@@ -473,7 +496,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             Course course = baseMapper.selectById(courseId);
             List<CourseDetails> courseDetailsList = courseDetailsDao.selectList(new QueryWrapper<CourseDetails>().eq("course_id", courseId));
             if (StringUtils.isEmpty(course.getDyImgId())) {
-                //上传短剧封面图
+                // 上传短剧封面图
                 String imgUrl = "https://open.douyin.com/api/playlet/v2/resource/upload/";
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("resource_type", 2);
@@ -493,7 +516,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 }
             }
             if (StringUtils.isEmpty(course.getDyCourseId())) {
-                //创建短剧
+                // 创建短剧
                 String url = "https://open.douyin.com/api/playlet/v2/video/create/";
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("ma_app_id", appid);
@@ -548,7 +571,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 }
 
             }
-            //上传视频
+            // 上传视频
             for (CourseDetails courseDetails : courseDetailsList) {
 
                 if (StringUtils.isEmpty(courseDetails.getDyCourseDetailsId()) || courseDetails.getDyUrlStatus() == 3) {
@@ -580,7 +603,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                     courseDetailsDao.updateById(courseDetails);
                 }
                 if (StringUtils.isEmpty(courseDetails.getDyImgId())) {
-                    //上传短剧封面图
+                    // 上传短剧封面图
                     String imgUrl = "https://open.douyin.com/api/playlet/v2/resource/upload/";
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("resource_type", 2);
@@ -706,7 +729,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 courseDetailsDao.updateById(courseDetails);
                 redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
                 redisUtils.deleteByPattern("page*");
-                //获取是否所有的集都上传成功 如果成功 则添加集
+                // 获取是否所有的集都上传成功 如果成功 则添加集
                 Integer count = courseDetailsDao.selectCount(new QueryWrapper<CourseDetails>()
                         .eq("course_id", courseDetails.getCourseId()).in("dy_url_status", 1, 3));
                 if (count == 0) {
@@ -755,13 +778,13 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
 
     @Async
     public void videoEdit(CourseDetails courseDetails) {
-        //这里进行延迟操作 抖音不允许并发操作
+        // 这里进行延迟操作 抖音不允许并发操作
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //没有待审核和审核失败的 吧所有的集进行上传
+        // 没有待审核和审核失败的 吧所有的集进行上传
         List<CourseDetails> courseDetailsList = courseDetailsDao.selectList(new QueryWrapper<CourseDetails>()
                 .eq("course_id", courseDetails.getCourseId()).orderByAsc("create_time"));
         String appid = commonInfoService.findOne(805).getValue();
@@ -817,7 +840,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             }
             num++;
         }
-        //对页面进行绑定 这里同样进行延迟操作
+        // 对页面进行绑定 这里同样进行延迟操作
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
@@ -880,7 +903,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         courseDetails.setDyCourseDetailsId(open_video_id);
         courseDetails.setDyUrlStatus(1);
         courseDetailsDao.updateById(courseDetails);
-        //上传短剧封面图
+        // 上传短剧封面图
         imgUrl = "https://open.douyin.com/api/playlet/v2/resource/upload/";
         jsonObject = new JSONObject();
         jsonObject.put("resource_type", 2);
@@ -908,7 +931,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     public Result updateDyCourse(Course course) {
         baseMapper.updateById(course);
         if (course.getDyCourseId() != null) {
-            //已经提交抖音 同步抖音
+            // 已经提交抖音 同步抖音
             String appid = commonInfoService.findOne(805).getValue();
             String url = "https://open.douyin.com/api/playlet/v2/video/edit/";
             JSONObject jsonObject1 = new JSONObject();
@@ -1007,7 +1030,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             }
             offset = offset + 100;
         }
-        //同步集
+        // 同步集
         List<Course> courseList = baseMapper.selectList(new QueryWrapper<Course>().isNotNull("wx_course_id"));
         for (Course course : courseList) {
             offset = 0;
@@ -1094,13 +1117,13 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         if (CollectionUtils.isEmpty(courseList)) {
             return Result.error("Excel数据为空，excel转化失败！");
         }
-        //当前行索引（Excel的数据从第几行开始,就填写几）
+        // 当前行索引（Excel的数据从第几行开始,就填写几）
         int index = 4;
-        //失败条数
+        // 失败条数
         int repeat = 0;
-        //成功条数
+        // 成功条数
         int successIndex = 0;
-        //空数据
+        // 空数据
         int emptyCount = 0;
         for (CourseIn courseIn : courseList) {
             if (courseIn.getTitle() == null) {

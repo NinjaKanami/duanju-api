@@ -314,6 +314,9 @@ public class Course implements Serializable {
     private BigDecimal userScore;
 
     @TableField(exist = false)
+    private BigDecimal realScore;
+
+    @TableField(exist = false)
     private List<Performer> performerList;
 
     @TableField(exist = false)
