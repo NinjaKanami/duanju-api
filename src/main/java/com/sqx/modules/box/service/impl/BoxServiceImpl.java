@@ -23,6 +23,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -321,6 +323,10 @@ public class BoxServiceImpl extends ServiceImpl<BoxDao, Box> implements BoxServi
                     boolean b = dataSync.syncUserCollection(collectLog.getPhone(), collectLog.getPlus(), 1, collectLog.getCollectLogId().toString());
                     if (!b) {
                         log.warn("同步用户积分失败!ID:{}", collectLog.getCollectLogId());
+                        //一个小时后重试
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        String laterTime = LocalDateTime.now().plusHours(1).format(formatter);
+                        collectLog.setRetryTime(laterTime);
                         boolean update = collectLogService.update(collectLog, new UpdateWrapper<CollectLog>()
                                 .eq("collect_log_id", collectLog.getCollectLogId())
                                 .eq("is_sync", collectLog.getIsSync()));

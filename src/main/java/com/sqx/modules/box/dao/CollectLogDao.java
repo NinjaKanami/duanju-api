@@ -39,9 +39,8 @@ public interface CollectLogDao extends BaseMapper<CollectLog> {
      *
      * @return List<CollectLog>
      */
-    @Select("select c.*,u.phone from collect_log c " +
-            "left join tb_user u on c.user_id = u.user_id " +
-            "where is_sync = 0 and type = 0 order by update_time asc limit 100")
+    @Select("select c.*,u.phone from collect_log c left join tb_user u on c.user_id = u.user_id where is_sync = 0 and type = 0 " +
+            "AND (c.retry_time < DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') or c.retry_time is null) order by retry_time asc limit 100")
     List<CollectLog> selectSyncCollectLog();
 
 }
