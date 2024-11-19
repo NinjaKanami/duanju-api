@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sqx.common.utils.Result;
 import com.sqx.modules.platform.entity.Series;
 import com.sqx.modules.platform.service.SeriesService;
 import io.swagger.annotations.Api;
@@ -21,7 +22,7 @@ import java.util.List;
  * @author makejava
  * @since 2024-11-07 18:57:42
  */
-@Api(value = "剧单管理", tags = {"剧单管理"})
+@Api(value = "剧单后台管理", tags = {"剧单后台管理"})
 @RestController
 @RequestMapping("series")
 public class SeriesController extends ApiController {
@@ -40,8 +41,8 @@ public class SeriesController extends ApiController {
      */
     @ApiOperation("分页查询所有数据")
     @GetMapping
-    public R selectAll(Page<Series> page, Series series) {
-        return success(this.seriesService.page(page, new QueryWrapper<>(series).orderByAsc("sort")));
+    public Result selectAll(Page<Series> page, Series series) {
+        return seriesService.selectSeriesPage(page, series);
     }
 
     /**
@@ -52,8 +53,8 @@ public class SeriesController extends ApiController {
      */
     @ApiOperation("通过主键查询单条数据")
     @GetMapping("{id}")
-    public R selectOne(@PathVariable Serializable id) {
-        return success(this.seriesService.getById(id));
+    public Result selectOne(@PathVariable Serializable id) {
+        return seriesService.selectSeriesById(id);
     }
 
     /**
@@ -64,8 +65,8 @@ public class SeriesController extends ApiController {
      */
     @ApiOperation("新增数据")
     @PostMapping
-    public R insert(@RequestBody Series series) {
-        return success(this.seriesService.save(series));
+    public Result insert(@RequestBody Series series) {
+        return seriesService.insertSeries(series);
     }
 
     /**
@@ -74,9 +75,10 @@ public class SeriesController extends ApiController {
      * @param series 实体对象
      * @return 修改结果
      */
+    @ApiOperation("修改数据")
     @PutMapping
-    public R update(@RequestBody Series series) {
-        return success(this.seriesService.updateById(series));
+    public Result update(@RequestBody Series series) {
+        return seriesService.updateSeries(series);
     }
 
     /**
@@ -87,7 +89,7 @@ public class SeriesController extends ApiController {
      */
     @ApiOperation("删除数据")
     @DeleteMapping
-    public R delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.seriesService.removeByIds(idList));
+    public Result delete(@RequestParam("idList") List<Long> idList) {
+        return seriesService.deleteSeries(idList);
     }
 }

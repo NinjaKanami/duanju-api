@@ -36,3 +36,4 @@ build/
 ### Others ###
 /.RestfulApiTool/RestfulApiTool-SavedRequest-Cache.xml
 /logs
+.fastRequest

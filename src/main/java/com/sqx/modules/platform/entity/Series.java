@@ -1,15 +1,16 @@
 package com.sqx.modules.platform.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.sqx.modules.course.entity.Course;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
- * 
  * @TableName series
  */
-@TableName(value ="series")
+@TableName(value = "series")
 @Data
 public class Series implements Serializable {
     /**
@@ -57,6 +58,12 @@ public class Series implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    @TableField(exist = false)
+    private List<Course> courseList;
+
+    @TableField(exist = false)
+    private List<Long> courseIds;
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -70,12 +77,12 @@ public class Series implements Serializable {
         }
         Series other = (Series) that;
         return (this.getSeriesId() == null ? other.getSeriesId() == null : this.getSeriesId().equals(other.getSeriesId()))
-            && (this.getSeriesImg() == null ? other.getSeriesImg() == null : this.getSeriesImg().equals(other.getSeriesImg()))
-            && (this.getSeriesName() == null ? other.getSeriesName() == null : this.getSeriesName().equals(other.getSeriesName()))
-            && (this.getSeriesDescribe() == null ? other.getSeriesDescribe() == null : this.getSeriesDescribe().equals(other.getSeriesDescribe()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getSort() == null ? other.getSort() == null : this.getSort().equals(other.getSort()));
+                && (this.getSeriesImg() == null ? other.getSeriesImg() == null : this.getSeriesImg().equals(other.getSeriesImg()))
+                && (this.getSeriesName() == null ? other.getSeriesName() == null : this.getSeriesName().equals(other.getSeriesName()))
+                && (this.getSeriesDescribe() == null ? other.getSeriesDescribe() == null : this.getSeriesDescribe().equals(other.getSeriesDescribe()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getSort() == null ? other.getSort() == null : this.getSort().equals(other.getSort()));
     }
 
     @Override

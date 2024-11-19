@@ -36,6 +36,14 @@ public class SeriesCourse implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    public SeriesCourse() {
+    }
+
+    public SeriesCourse(Long seriesId, Long courseId) {
+        this.seriesId = seriesId;
+        this.courseId = courseId;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
