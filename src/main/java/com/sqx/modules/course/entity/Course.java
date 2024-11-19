@@ -316,6 +316,9 @@ public class Course implements Serializable {
     @TableField(exist = false)
     private List<Performer> performerList;
 
+    @TableField(exist = false)
+    private List<Long> performerIds;
+
 
     public Course() {}
 }

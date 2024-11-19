@@ -26,6 +26,8 @@ import com.sqx.modules.course.service.CourseService;
 import com.sqx.modules.course.service.CourseUserService;
 import com.sqx.modules.course.vo.CourseIn;
 import com.sqx.modules.orders.service.OrdersService;
+import com.sqx.modules.platform.entity.CoursePerformer;
+import com.sqx.modules.platform.service.CoursePerformerService;
 import com.sqx.modules.search.service.AppSearchService;
 import com.sqx.modules.utils.EasyPoi.ExcelUtils;
 import com.sqx.modules.utils.HttpClientUtil;
@@ -37,6 +39,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -64,6 +67,8 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     private JwtUtils jwtUtils;
     @Autowired
     private CourseUserService courseUserService;
+    @Autowired
+    private CoursePerformerService coursePerformerService;
     @Autowired
     private RedisUtils redisUtils;
 
@@ -100,9 +105,18 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         return Result.success("操作成功！");
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result updateCourse(Course course) {
         baseMapper.updateById(course);
+        // 修改演员关系
+        if(!course.getPerformerIds().isEmpty()){
+            coursePerformerService.remove(new QueryWrapper<CoursePerformer>().eq("course_id", course.getCourseId()));
+            for (Long performerId : course.getPerformerIds()) {
+                CoursePerformer coursePerformer = new CoursePerformer(course.getCourseId(), performerId);
+                coursePerformerService.save(coursePerformer);
+            }
+        }
         redisUtils.deleteByPattern("page*");
         redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
         return Result.success("操作成功！");
