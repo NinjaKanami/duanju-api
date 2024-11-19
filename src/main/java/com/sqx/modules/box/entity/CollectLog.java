@@ -67,6 +67,12 @@ public class CollectLog implements Serializable {
     @TableField(value = "update_time", fill = FieldFill.UPDATE)
     private String updateTime;
 
+    /**
+     * 更新时间
+     */
+    @TableField(value = "retry_time", fill = FieldFill.UPDATE)
+    private String retryTime;
+
     @TableField(exist = false)
     private String phone;
 
@@ -94,6 +100,7 @@ public class CollectLog implements Serializable {
                 && (this.getIsSync() == null ? other.getIsSync() == null : this.getIsSync().equals(other.getIsSync()))
                 && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
                 && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getRetryTime() == null ? other.getRetryTime() == null : this.getRetryTime().equals(other.getRetryTime()))
                 && (this.getPhone() == null ? other.getPhone() == null : this.getPhone().equals(other.getPhone()));
     }
 
@@ -110,6 +117,7 @@ public class CollectLog implements Serializable {
         result = prime * result + ((getIsSync() == null) ? 0 : getIsSync().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
+        result = prime * result + ((getRetryTime() == null) ? 0 : getRetryTime().hashCode());
         result = prime * result + ((getPhone() == null) ? 0 : getPhone().hashCode());
         return result;
     }
@@ -129,6 +137,7 @@ public class CollectLog implements Serializable {
         sb.append(", isSync=").append(isSync);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
+        sb.append(", retryTime=").append(retryTime);
         sb.append(", phone=").append(phone);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
