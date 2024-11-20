@@ -2,65 +2,80 @@ package com.sqx.modules.platform.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.sqx.modules.course.entity.Course;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
+ * @author Zbc
  * @TableName series
  */
+@ApiModel(description = "剧单")
 @TableName(value = "series")
 @Data
 public class Series implements Serializable {
     /**
      * 剧单id
      */
+    @ApiModelProperty("剧单id")
     @TableId(value = "series_id", type = IdType.AUTO)
     private Long seriesId;
 
     /**
      * 剧单头图
      */
+    @ApiModelProperty("剧单头图")
     @TableField(value = "series_img")
     private String seriesImg;
 
     /**
      * 剧单名
      */
+    @ApiModelProperty("剧单名")
     @TableField(value = "series_name")
     private String seriesName;
 
     /**
      * 剧单描述
      */
+    @ApiModelProperty("剧单描述")
     @TableField(value = "series_describe")
     private String seriesDescribe;
 
     /**
      * 创建时间
      */
+    @ApiModelProperty("创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private String createTime;
 
     /**
      * 更新时间
      */
+    @ApiModelProperty("更新时间")
     @TableField(value = "update_time", fill = FieldFill.UPDATE)
     private String updateTime;
 
     /**
      * 排序
      */
+    @ApiModelProperty("排序")
     @TableField(value = "sort")
     private Integer sort;
 
+    @ApiModelProperty(hidden = true)
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty("短剧列表")
     @TableField(exist = false)
     private List<Course> courseList;
 
+
+    @ApiModelProperty("短剧IDs")
     @TableField(exist = false)
     private List<Long> courseIds;
 
