@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sqx.modules.course.entity.Course;
+import com.sqx.modules.course.service.CourseService;
 import com.sqx.modules.platform.entity.CoursePerformer;
 import com.sqx.modules.platform.service.CoursePerformerService;
 import io.swagger.annotations.Api;
@@ -29,6 +31,8 @@ public class CoursePerformerController extends ApiController {
      */
     @Resource
     private CoursePerformerService coursePerformerService;
+    @Resource
+    private CourseService courseService;
 
     /**
      * 分页查询所有数据
@@ -83,6 +87,10 @@ public class CoursePerformerController extends ApiController {
      */
     @DeleteMapping
     public R delete(@RequestParam("idList") List<Long> idList) {
+        int count = courseService.count(new QueryWrapper<Course>().in("performer_id", idList));
+        if (count > 0) {
+            return failed("该平台下有短剧，无法删除");
+        }
         return success(this.coursePerformerService.removeByIds(idList));
     }
 }
