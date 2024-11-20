@@ -88,6 +88,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
 
     private static boolean sys = false;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result insertCourse(Course course) {
         // 设置删除标识
@@ -104,7 +105,16 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             courseDetails.setVideoUrl(course.getRemark());
             courseDetailsDao.insert(courseDetails);
         } else {
-            baseMapper.insert(course);
+            if (baseMapper.insert(course) > 0) {
+                // 修改演员关系
+                if (!course.getPerformerIds().isEmpty()) {
+                    coursePerformerService.remove(new QueryWrapper<CoursePerformer>().eq("course_id", course.getCourseId()));
+                    for (Long performerId : course.getPerformerIds()) {
+                        CoursePerformer coursePerformer = new CoursePerformer(course.getCourseId(), performerId);
+                        coursePerformerService.save(coursePerformer);
+                    }
+                }
+            }
         }
         redisUtils.deleteByPattern("page*");
         return Result.success("操作成功！");
