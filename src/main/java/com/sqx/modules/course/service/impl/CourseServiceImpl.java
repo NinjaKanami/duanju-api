@@ -462,12 +462,15 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     }
 
 
+    @Transactional
     @Override
     public Result deleteCourseByIds(String ids) {
         for (String id : ids.split(",")) {
-            baseMapper.deleteById(Long.parseLong(id));
-            courseDetailsDao.delete(new QueryWrapper<CourseDetails>().eq("course_id", Long.parseLong(id)));
-            redisUtils.deleteByPattern(String.format("*%s*", id));
+            if (baseMapper.deleteById(Long.parseLong(id)) > 0) {
+                coursePerformerService.remove(new QueryWrapper<CoursePerformer>().eq("course_id", Long.parseLong(id)));
+                courseDetailsDao.delete(new QueryWrapper<CourseDetails>().eq("course_id", Long.parseLong(id)));
+                redisUtils.deleteByPattern(String.format("*%s*", id));
+            }
         }
         redisUtils.deleteByPattern("page*");
         return Result.success();
