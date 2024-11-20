@@ -61,9 +61,9 @@ public class SeriesServiceImpl extends ServiceImpl<SeriesDao, Series> implements
                 List<SeriesCourse> seriesCourseList = seriesCourseService.list(new QueryWrapper<SeriesCourse>().eq("series_id", series1.getSeriesId()));
                 if (!seriesCourseList.isEmpty()) {
                     List<Long> courseIdList = seriesCourseList.stream().map(SeriesCourse::getCourseId).collect(Collectors.toList());
-                    // List<Course> courseList = courseService.list(new QueryWrapper<Course>().in("course_id", courseIdList));
+                    List<Course> courseList = courseService.list(new QueryWrapper<Course>().in("course_id", courseIdList));
                     series1.setCourseIds(courseIdList);
-                    // series1.setCourseList(courseList);
+                    series1.setCourseList(courseList);
 
                 }
             }
