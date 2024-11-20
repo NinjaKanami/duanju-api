@@ -1,23 +1,18 @@
 package com.sqx.modules.platform.controller.app;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.api.ApiController;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.common.utils.Result;
-import com.sqx.modules.app.annotation.Login;
 import com.sqx.modules.course.entity.Course;
 import com.sqx.modules.performer.service.PerformerService;
 import com.sqx.modules.performer.vo.AppPerformerVO;
-import com.sqx.modules.platform.entity.CourseScore;
-import com.sqx.modules.platform.entity.Series;
-import com.sqx.modules.platform.service.CourseScoreService;
 import com.sqx.modules.platform.service.CourseSearchService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -60,7 +55,7 @@ public class AppCourseSearchController extends ApiController {
      * @return 返回搜索结果，包含课程列表和分页信息
      */
     @ApiOperation(value = "搜索短剧接口", notes = "搜索短剧接口", httpMethod = "GET")
-    @GetMapping
+    @GetMapping("/searchCourse")
     public Result searchCourse(Page<Course> page, String keyword, Long areaId, Long classifyId, Long platformId, Long isPrice, String sortField, Integer sort) {
         return courseSearchService.searchCourse(page, keyword, areaId, classifyId, platformId, isPrice, sortField, sort);
     }
@@ -82,7 +77,7 @@ public class AppCourseSearchController extends ApiController {
      * @return 返回搜索结果，包含短句列表（data）和分页信息 以及演员信息（performerList）
      */
     @ApiOperation(value = "搜索短剧&演员接口", notes = "搜索短剧&演员接口", httpMethod = "GET")
-    @GetMapping
+    @GetMapping("/searchCourseAndPerformer")
     public Result searchCourseAndPerformer(Page<Course> page, String keyword, Long areaId, Long classifyId, Long platformId, Long isPrice, String sortField, Integer sort) {
         Result result = courseSearchService.searchCourse(page, keyword, areaId, classifyId, platformId, isPrice, sortField, sort);
         List<AppPerformerVO> appPerformerVOList = performerService.userSearchPerformer(keyword);
