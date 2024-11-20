@@ -369,4 +369,39 @@
         order by create_time desc
     </select>
 
+    <select id="searchCourse" resultType="com.sqx.modules.course.entity.Course">
+        select c.* ,
+        (select avg(score) from course_score d where d.course_id=c.course_id ) as realScore,
+        (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount
+        from course c
+        WHERE
+        c.is_delete = 0 and c.status=1
+        <if test='null != keyword'>
+            and c.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test='null != areaId'>
+            and c.area_Id = #{areaId}
+        </if>
+        <if test='null != classifyId'>
+            and c.classify_Id = #{classifyId}
+        </if>
+        <if test='null != platformId'>
+            and c.platform_Id = #{platformId}
+        </if>
+        <if test='null != isPrice'>
+            and c.isPrice = #{isPrice}
+        </if>
+        <if test='null != sortField and ("create_time" == sortField or "realScore" == sortField or "collectCount" == sortField)'>
+            order by ${sortField}
+            <if test='null != sort and (0 == sort or 1 == sort)'>
+                <if test='0 == sort'>
+                    asc
+                </if>
+                <if test='1 == sort'>
+                    desc
+                </if>
+            </if>
+        </if>
+    </select>
+
 </mapper>
