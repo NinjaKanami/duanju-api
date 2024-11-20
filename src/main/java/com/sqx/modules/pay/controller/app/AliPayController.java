@@ -319,7 +319,7 @@ public class AliPayController {
     @Transactional(rollbackFor = Exception.class)
     public Result payOrder(Long orderId,Integer classify) {
         //通知页面地址
-        CommonInfo one = commonInfoService.findOne(19);
+        CommonInfo one = commonInfoService.findOne(18);
         String returnUrl = one.getValue() + "/#/pages/task/recharge";
         CommonInfo one3 = commonInfoService.findOne(12);
         String name = one3.getValue();
@@ -355,7 +355,7 @@ public class AliPayController {
     @Transactional(rollbackFor = Exception.class)
     public Result payMoney(Long payClassifyId, Integer classify,@RequestAttribute Long userId) {
         //通知页面地址
-        CommonInfo one = commonInfoService.findOne(19);
+        CommonInfo one = commonInfoService.findOne(18);
         String returnUrl = one.getValue() + "/#/pages/task/recharge";
         CommonInfo one3 = commonInfoService.findOne(12);
         String name = one3.getValue();
@@ -440,7 +440,7 @@ public class AliPayController {
 
 
     public Result payApp(String name, String generalOrder, Double money) {
-        CommonInfo one = commonInfoService.findOne(19);
+        CommonInfo one = commonInfoService.findOne(18);
         String url = one.getValue() + "/sqx_fast/app/aliPay/notifyApp";
         String result = "";
         CommonInfo payWay = commonInfoService.findOne(201);
@@ -525,7 +525,7 @@ public class AliPayController {
 
     public Result payH5(String name, String generalOrder, Double money, String returnUrl) {
         CommonInfo payWay = commonInfoService.findOne(201);
-        CommonInfo one = commonInfoService.findOne(19);
+        CommonInfo one = commonInfoService.findOne(18);
         String url = one.getValue() + "/sqx_fast/app/aliPay/notifyApp";
         try {
             if ("1".equals(payWay.getValue())) {

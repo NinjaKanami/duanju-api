@@ -124,7 +124,7 @@ public class DyServiceImpl implements DyService {
             payDetails.setType(1);
             payDetailsDao.insert(payDetails);
         }
-        CommonInfo oneu = commonInfoService.findOne(19);
+        CommonInfo oneu = commonInfoService.findOne(18);
         String url;
         url=oneu.getValue()+"/sqx_fast/app/dyPay/virtualNotify";
         Double mul = AmountCalUtils.mul(bean.getPayMoney().doubleValue(), 100);
@@ -197,7 +197,7 @@ public class DyServiceImpl implements DyService {
         payDetails.setType(2);
         payDetails.setRemark(String.valueOf(payClassifyId));
         payDetailsDao.insert(payDetails);
-        CommonInfo oneu = commonInfoService.findOne(19);
+        CommonInfo oneu = commonInfoService.findOne(18);
         String url;
         url=oneu.getValue()+"/sqx_fast/app/dyPay/virtualNotify";
         Double mul = AmountCalUtils.mul(money.doubleValue(), 100);
@@ -290,7 +290,7 @@ public class DyServiceImpl implements DyService {
      * @throws Exception
      */
     private Result pay(Double moneys,String outTradeNo) throws Exception {
-        CommonInfo oneu = commonInfoService.findOne(19);
+        CommonInfo oneu = commonInfoService.findOne(18);
         String url;
         url=oneu.getValue()+"/sqx_fast/app/dyPay/notify";
         CommonInfo one = commonInfoService.findOne(12);

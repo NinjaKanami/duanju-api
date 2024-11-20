@@ -179,7 +179,7 @@ public class WxServiceImpl implements WxService {
      * @throws Exception
      */
     private Result pay(Double moneys,Integer type,Long userId,String outTradeNo) throws Exception {
-        CommonInfo oneu = commonInfoService.findOne(19);
+        CommonInfo oneu = commonInfoService.findOne(18);
         String url;
         if(type==3){
             url=oneu.getValue()+"/sqx_fast/app/wxPay/notifyJsApi";

@@ -348,7 +348,7 @@ public class CashController {
                     //查询用户
                     UserEntity userInfo=userService.queryByUserId(one.getUserId());
                     if(userInfo!=null && StringUtils.isNotEmpty(userInfo.getWxId())){
-                        cashOutService.cashOutSuccess(userInfo.getOpenId(), one.getOutAt(), one.getMoney(), one.getZhifubao(),  commonInfoService.findOne(19).getValue());
+                        cashOutService.cashOutSuccess(userInfo.getOpenId(), one.getOutAt(), one.getMoney(), one.getZhifubao(),  commonInfoService.findOne(18).getValue());
                     }
                     return Result.success(one.getZhifubaoName() + "转账成功");
                 } else {
@@ -388,7 +388,7 @@ public class CashController {
                     //查询用户
                     UserEntity userInfo=userService.queryByUserId(one.getUserId());
                     if(userInfo!=null && StringUtils.isNotEmpty(userInfo.getWxId())){
-                        cashOutService.cashOutSuccess(userInfo.getOpenId(), one.getOutAt(), one.getMoney(), one.getZhifubao(),  commonInfoService.findOne(19).getValue());
+                        cashOutService.cashOutSuccess(userInfo.getOpenId(), one.getOutAt(), one.getMoney(), one.getZhifubao(),  commonInfoService.findOne(18).getValue());
                     }
                     return Result.success(one.getZhifubaoName() + "转账成功");
                 } else {
@@ -409,7 +409,7 @@ public class CashController {
             cashOutService.update(one);
             UserEntity userInfo=userService.queryByUserId(one.getUserId());
             if(userInfo!=null && StringUtils.isNotEmpty(userInfo.getWxId())){
-                cashOutService.cashOutSuccess(userInfo.getOpenId(), one.getOutAt(), one.getMoney(), one.getZhifubao(),  commonInfoService.findOne(19).getValue());
+                cashOutService.cashOutSuccess(userInfo.getOpenId(), one.getOutAt(), one.getMoney(), one.getZhifubao(),  commonInfoService.findOne(18).getValue());
             }
             return Result.success(one.getZhifubaoName() + "转账成功");
         }
@@ -561,7 +561,7 @@ public class CashController {
             inviteMoneyDao.updateInviteMoneyCashOut(1,v,userId);
             if (userInfo.getOpenId() != null) {
                 //推送提现通知消息
-                cashOutService.refundSuccess(userInfo, one.getOutAt(), one.getMoney(),  commonInfoService.findOne(19).getValue(),content);
+                cashOutService.refundSuccess(userInfo, one.getOutAt(), one.getMoney(),  commonInfoService.findOne(18).getValue(),content);
             }
         }
         return Result.success();

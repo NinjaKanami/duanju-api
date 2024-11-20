@@ -117,7 +117,7 @@ public class KsServiceImpl implements KsService {
      * @throws Exception
      */
     private Result pay(Double moneys,String outTradeNo,String openId) throws Exception {
-        CommonInfo oneu = commonInfoService.findOne(19);
+        CommonInfo oneu = commonInfoService.findOne(18);
         String url;
         url=oneu.getValue()+"/sqx_fast/app/ksPay/notify";
         CommonInfo one = commonInfoService.findOne(12);
