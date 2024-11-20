@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Api(value = "App短剧平台", tags = {"App短剧平台"})
 @RestController
-@RequestMapping("coursePlatform")
+@RequestMapping("app/coursePlatform")
 public class AppCoursePlatformController extends ApiController {
     /**
      * 服务对象

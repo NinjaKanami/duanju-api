@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Api(value = "App短剧地区", tags = {"App短剧地区"})
 @RestController
-@RequestMapping("courseArea")
+@RequestMapping("app/courseArea")
 public class AppCourseAreaController extends ApiController {
     /**
      * 服务对象
