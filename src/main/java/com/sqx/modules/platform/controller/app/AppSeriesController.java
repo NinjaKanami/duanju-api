@@ -18,7 +18,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * (Series)表控制层
+ * App剧单
  *
  * @author makejava
  * @since 2024-11-07 18:57:42
@@ -59,8 +59,8 @@ public class AppSeriesController extends ApiController {
     @ApiOperation(value = "通过主键查询单条数据", notes = "通过主键查询单条数据", httpMethod = "GET")
     @Login
     @GetMapping("{id}")
-    public Result selectOne(@PathVariable Serializable id) {
-        return seriesService.selectSeriesById(id);
+    public Result selectOne(@RequestAttribute Long userId, @PathVariable Serializable id) {
+        return seriesService.selectSeriesById(userId, id);
     }
 
 }
