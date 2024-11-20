@@ -215,6 +215,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                     if (!coursePerformerList.isEmpty()) {
                         List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
                         map.put("performerList", performerList);
+                        map.put("performerIds", performerList.stream().mapToLong(Performer::getId).toArray());
                     }
                 }
                 redisUtils.set(redisCourseName, JSONObject.toJSONString(mapIPage));
@@ -262,6 +263,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                     if (!coursePerformerList.isEmpty()) {
                         List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
                         map.put("performerList", performerList);
+                        map.put("performerIds", performerList.stream().mapToLong(Performer::getId).toArray());
                     }
                 }
                 return Result.success().put("data", new PageUtils(records, total, size, current));
@@ -286,6 +288,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             if (!coursePerformerList.isEmpty()) {
                 List<Performer> performerList = performerService.list(new QueryWrapper<Performer>().in("id", coursePerformerList.stream().map(CoursePerformer::getPerformerId).collect(Collectors.toList())));
                 map.put("performerList", performerList);
+                map.put("performerIds", performerList.stream().mapToLong(Performer::getId).toArray());
             }
         }
         return Result.success().put("data", new PageUtils(mapIPage));
