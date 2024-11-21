@@ -52,7 +52,7 @@
         c.platform_id as platformId,
         (select avg(score) from course_score d where d.course_id=c.course_id ) as realScore,
         (select count(*) from course_details d where d.course_id=c.course_id ) as courseDetailsCount,
-        (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
+        /*(select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,*/
         (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
         <if test="userId!=null">
             (
@@ -130,7 +130,7 @@
         c.platform_id as platformId,
         (select avg(score) from course_score d where d.course_id=c.course_id ) as realScore,
         (select count(*) from course_details d where d.course_id=c.course_id ) as courseDetailsCount,
-        (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
+        /*(select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,*/
         (select sum(good_num) from course_details d where d.course_id=c.course_id ) as goodNum,
         (select count(*) from course_details cd where c.course_id=cd.course_id and cd.good=1 ) as isRecommend
         FROM
@@ -369,13 +369,38 @@
         order by create_time desc
     </select>
 
+    <!--/*select c.* ,
+    (select ROUND(avg(score), 1) from course_score d where d.course_id=c.course_id ) as realScore,
+    (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount*/
+
+    /*减少子查询次数 采用连表*/
+    /*(select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
+    COALESCE(c.score, (select ROUND(avg(score), 1) from course_score d where d.course_id = c.course_id)) as score
+    from course WHERE
+    c.is_delete = 0 and c.status=1*/-->
     <select id="searchCourse" resultType="com.sqx.modules.course.entity.Course">
-        select c.* ,
-        (select ROUND(avg(score), 1) from course_score d where d.course_id=c.course_id ) as realScore,
-        (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount
-        from course c
+        SELECT
+        c.course_id,
+        c.title,
+        c.producer,
+        c.is_external,
+        c.external_url,
+        c.title_img,
+        c.course_label,
+        c.details,
+        c.wx_show,
+        c.dy_show,
+        COALESCE( c.score, cs.avg_score ) AS score,
+        cc.collect_count
+        FROM
+        course c
+        LEFT JOIN ( SELECT course_id, ROUND( avg( score ), 1 ) AS avg_score FROM course_score GROUP BY course_id ) cs ON
+        c.course_id = cs.course_id
+        LEFT JOIN ( SELECT course_id, count( * ) AS collect_count FROM course_collect GROUP BY course_id ) cc ON
+        c.course_id = cc.course_id
         WHERE
-        c.is_delete = 0 and c.status=1
+        c.is_delete = 0
+        AND c.STATUS = 1
         <if test='null != keyword'>
             and c.title LIKE CONCAT('%', #{keyword}, '%')
         </if>
@@ -391,17 +416,8 @@
         <if test='null != isPrice'>
             and c.is_Price = #{isPrice}
         </if>
-        <if test='null != sortField and ("create_time" == sortField or "realScore" == sortField or "collectCount" == sortField)'>
-            order by
-            <if test='"realScore" == sortField'>
-                COALESCE(c.score, realScore)
-            </if>
-            <if test='"create_time" == sortField'>
-                c.create_time
-            </if>
-            <if test='"collectCount" == sortField'>
-                collectCount
-            </if>
+        <if test='null != sortField and ("create_time" == sortField or "score" == sortField or "collect_count" == sortField)'>
+            order by ${sortField}
             <if test='null != sort and (0 == sort or 1 == sort)'>
                 <if test='0 == sort'>
                     asc
