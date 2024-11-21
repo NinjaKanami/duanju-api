@@ -116,7 +116,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 }
             }
         }
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success("操作成功！");
     }
 
@@ -132,7 +132,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                     coursePerformerService.save(coursePerformer);
                 }
             }
-            redisUtils.deleteByPattern("page*");
+            redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
             redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
             return Result.success("操作成功！");
         }
@@ -142,7 +142,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     @Override
     public Result updateDelete(Long id) {
         baseMapper.updateDelete(id);
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         redisUtils.deleteByPattern(String.format("*%d*", id));
         return Result.success("操作成功！");
     }
@@ -442,7 +442,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         }
         String[] split = ids.split(",");
         List<Course> courses = baseMapper.selectBatchIds(Arrays.asList(split));
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         for (Course course : courses) {
             redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
         }
@@ -457,7 +457,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             baseMapper.updateById(course);
             redisUtils.deleteByPattern(String.format("*%s*", id));
         }
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success();
     }
 
@@ -472,7 +472,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 redisUtils.deleteByPattern(String.format("*%s*", id));
             }
         }
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success();
     }
 
@@ -482,7 +482,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             courseDetailsDao.deleteById(Long.parseLong(id));
             redisUtils.deleteByPattern(String.format("*%s*", id));
         }
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success();
     }
 
@@ -642,7 +642,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                     courseDetailsDao.updateById(courseDetails);
                 }
             }
-            redisUtils.deleteByPattern("page*");
+            redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
             redisUtils.deleteByPattern(String.format("*%d*", courseId));
         } catch (Exception e) {
             e.printStackTrace();
@@ -671,7 +671,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         course.setDyStatus(1);
         baseMapper.updateById(course);
         redisUtils.deleteByPattern(String.format("*%d*", courseId));
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success();
     }
 
@@ -692,7 +692,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         course.setDyStatus(4);
         baseMapper.updateById(course);
         redisUtils.deleteByPattern(String.format("*%d*", courseId));
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success();
     }
 
@@ -746,7 +746,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 }
                 courseDetailsDao.updateById(courseDetails);
                 redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
-                redisUtils.deleteByPattern("page*");
+                redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
                 // 获取是否所有的集都上传成功 如果成功 则添加集
                 Integer count = courseDetailsDao.selectCount(new QueryWrapper<CourseDetails>()
                         .eq("course_id", courseDetails.getCourseId()).in("dy_url_status", 1, 3));
@@ -768,7 +768,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 }
                 baseMapper.updateById(course);
                 redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
-                redisUtils.deleteByPattern("page*");
+                redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
             }
         }
         if ("episode_audit".equals(type)) {
@@ -785,7 +785,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
                 }
                 courseDetailsDao.updateById(courseDetails);
                 redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
-                redisUtils.deleteByPattern("page*");
+                redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
             }
         }
         JSONObject result = new JSONObject();
@@ -888,7 +888,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             log.info("绑定页面返回值：" + s);
         }
         redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
     }
 
     @Override
@@ -941,7 +941,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
         courseDetails.setDyImgId(open_pic_id);
         courseDetailsDao.updateById(courseDetails);
         redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success();
     }
 
@@ -1005,7 +1005,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             }
         }
         redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         return Result.success();
     }
 
@@ -1094,7 +1094,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             }
             redisUtils.deleteByPattern(String.format("*%d*", course.getCourseId()));
         }
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
     }
 
 

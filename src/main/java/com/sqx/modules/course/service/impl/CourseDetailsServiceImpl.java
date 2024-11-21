@@ -84,14 +84,14 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
             courseDetails.setGoodNum(0);
         }
         baseMapper.insert(courseDetails);
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
         return Result.success();
     }
 
     @Override
     public Result updateCourseDetails(CourseDetails courseDetails) {
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         redisUtils.deleteByPattern(String.format("*%d*", courseDetails.getCourseId()));
         baseMapper.updateById(courseDetails);
         return Result.success();
@@ -104,7 +104,7 @@ public class CourseDetailsServiceImpl extends ServiceImpl<CourseDetailsDao, Cour
         for (CourseDetails courseDetail : courseDetails) {
             redisUtils.deleteByPattern(String.format("*%d*", courseDetail.getCourseId()));
         }
-        redisUtils.deleteByPattern("page*");
+        redisUtils.deleteByPattern("page*");redisUtils.deleteByPattern("*series*");
         baseMapper.deleteCourseDetails(split);
         return Result.success();
     }
