@@ -371,7 +371,7 @@
 
     <select id="searchCourse" resultType="com.sqx.modules.course.entity.Course">
         select c.* ,
-        (select avg(score) from course_score d where d.course_id=c.course_id ) as realScore,
+        (select ROUND(avg(score), 1) from course_score d where d.course_id=c.course_id ) as realScore,
         (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount
         from course c
         WHERE
@@ -392,7 +392,16 @@
             and c.is_Price = #{isPrice}
         </if>
         <if test='null != sortField and ("create_time" == sortField or "realScore" == sortField or "collectCount" == sortField)'>
-            order by ${sortField}
+            order by
+            <if test='"realScore" == sortField'>
+                COALESCE(c.score, realScore)
+            </if>
+            <if test='"create_time" == sortField'>
+                c.create_time
+            </if>
+            <if test='"collectCount" == sortField'>
+                collectCount
+            </if>
             <if test='null != sort and (0 == sort or 1 == sort)'>
                 <if test='0 == sort'>
                     asc
