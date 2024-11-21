@@ -389,7 +389,7 @@
             and c.platform_Id = #{platformId}
         </if>
         <if test='null != isPrice'>
-            and c.isPrice = #{isPrice}
+            and c.is_Price = #{isPrice}
         </if>
         <if test='null != sortField and ("create_time" == sortField or "realScore" == sortField or "collectCount" == sortField)'>
             order by ${sortField}
