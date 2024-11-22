@@ -200,9 +200,9 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     }
 
     @Override
-    public List<Performer> selectPerformerRankOrderByFollower(Long ptagId, Integer sex, String sort) {
+    public Page<Performer> selectPerformerRankOrderByFollower(Page<Performer> page, Long ptagId, Integer sex, String sort) {
         sort = sort == null ? "DESC" : Strings.toUpperCase(sort);
-        return performerDao.selectPerformerRankOrderByFollower(ptagId, sex, sort);
+        return performerDao.selectPerformerRankOrderByFollower(page, ptagId, sex, sort);
     }
 
     @Override
@@ -279,4 +279,3 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     }
 
 }
-

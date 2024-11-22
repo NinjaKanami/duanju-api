@@ -3,6 +3,7 @@ package com.sqx.modules.performer.dao;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.modules.app.entity.UserEntity;
+import com.sqx.modules.course.entity.Course;
 import com.sqx.modules.performer.entity.Performer;
 import org.apache.ibatis.annotations.*;
 
@@ -47,12 +48,14 @@ public interface PerformerDao extends BaseMapper<Performer> {
     /**
      * 根据follow数查询演员排行榜
      *
+     * @param page   分页参数
      * @param ptagId 演员类型id
      * @param sex    性别
      * @param sort   follow数(ASC/DESC)
      * @return 演员列表
      */
-    List<Performer> selectPerformerRankOrderByFollower(
+    Page<Performer> selectPerformerRankOrderByFollower(
+            Page<Performer> page,
             @Param("ptagId") Long ptagId,
             @Param("sex") Integer sex,
             @Param("sort") String sort

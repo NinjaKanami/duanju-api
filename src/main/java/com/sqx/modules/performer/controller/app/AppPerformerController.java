@@ -2,6 +2,7 @@ package com.sqx.modules.performer.controller.app;
 
 
 import com.baomidou.mybatisplus.extension.api.ApiController;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
 import com.sqx.modules.performer.dao.PerformerUserDao;
@@ -71,16 +72,19 @@ public class AppPerformerController extends ApiController {
     @Login
     @GetMapping("/rank")
     @ApiOperation("查询演员排行榜, " + "ptagId筛选指定标签类型，" + "order为0是降序(默认,follower从多到少)，order是1则是升序(follower从少到多), " + "sex为1是查询男性，sex为2是查询女性，不填则查询全部性别")
-    public Result performersRank(@RequestParam(required = false) Long ptagId,
+    public Result performersRank(Page<Performer> page,
+                                 @RequestParam(required = false) Long ptagId,
                                  @RequestParam(required = false) Integer sex,
                                  @RequestParam(required = false) Integer order) {
         String orderBy = "DESC";
         if (order != null && order == 1) {
             orderBy = "ASC";
         }
-        List<Performer> performers = this.performerService.selectPerformerRankOrderByFollower(ptagId, sex, orderBy);
-        List<AppPerformerVO> performersVOs = AppPerformerVO.fromEntityList(performers);
-        return Result.success().put("data", performersVOs);
+        Page<Performer> performerPage = this.performerService.selectPerformerRankOrderByFollower(page, ptagId, sex, orderBy);
+        // List<AppPerformerVO> performersVOs = AppPerformerVO.fromEntityList(performerPage.getRecords());
+        Page<AppPerformerVO> appPerformerVOPage = new Page<>(performerPage.getCurrent(), performerPage.getSize(), performerPage.getTotal());
+        appPerformerVOPage.setRecords(AppPerformerVO.fromEntityList(performerPage.getRecords()));
+        return Result.success().put("data", appPerformerVOPage);
     }
 
     @Login

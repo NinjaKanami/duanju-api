@@ -2,6 +2,7 @@ package com.sqx.modules.performer.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sqx.modules.course.entity.Course;
 import com.sqx.modules.performer.entity.Performer;
 import com.sqx.modules.performer.vo.AppPerformerVO;
 
@@ -58,7 +59,7 @@ public interface PerformerService extends IService<Performer> {
      * @param sort   升序降序(ASC/DESC)，默认降序
      * @return 演员列表
      */
-    List<Performer> selectPerformerRankOrderByFollower(Long ptagId, Integer sex, String sort);
+    Page<Performer> selectPerformerRankOrderByFollower(Page<Performer> page, Long ptagId, Integer sex, String sort);
 
 
     /**
@@ -90,7 +91,8 @@ public interface PerformerService extends IService<Performer> {
 
     /**
      * 以剧为维度，给这部剧所有参演演员的粉丝推送更新消息
-     * @param courseId 短剧id
+     *
+     * @param courseId       短剧id
      * @param messageBuilder 消息内容
      * @return
      */
