@@ -140,6 +140,7 @@
         WHERE
         1 = 1
         AND c.is_delete = 0
+        AND c.is_external = 0
         <if test='null != wxShow and wxShow==1'>
             and c.wx_show = #{wxShow}
         </if>
@@ -363,6 +364,7 @@
         course c
         WHERE
         c.is_delete = 0 and c.status=1
+        AND c.is_external = 0
         <if test='null != title'>
             and c.title LIKE #{title}
         </if>
@@ -391,13 +393,13 @@
         c.wx_show,
         c.dy_show,
         COALESCE( c.score, cs.avg_score ) AS score,
-        cc.collect_count
+        cc.collect_count,
+        cp.platform_name
         FROM
         course c
-        LEFT JOIN ( SELECT course_id, ROUND( avg( score ), 1 ) AS avg_score FROM course_score GROUP BY course_id ) cs ON
-        c.course_id = cs.course_id
-        LEFT JOIN ( SELECT course_id, count( * ) AS collect_count FROM course_collect GROUP BY course_id ) cc ON
-        c.course_id = cc.course_id
+        LEFT JOIN ( SELECT course_id, ROUND( avg( score ), 1 ) AS avg_score FROM course_score GROUP BY course_id ) cs ON c.course_id = cs.course_id
+        LEFT JOIN ( SELECT course_id, count( * ) AS collect_count FROM course_collect GROUP BY course_id ) cc ON c.course_id = cc.course_id
+        LEFT JOIN course_platform cp ON c.platform_id = cp.platform_id
         WHERE
         c.is_delete = 0
         AND c.STATUS = 1

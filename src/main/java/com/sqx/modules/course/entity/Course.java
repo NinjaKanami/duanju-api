@@ -329,6 +329,13 @@ public class Course implements Serializable {
     @ApiModelProperty("平台id")
     private Integer platformId;
 
+    /**
+     * 平台id
+     */
+    @ApiModelProperty("平台名称")
+    @TableField(exist = false)
+    private String platformName;
+
 
     @ApiModelProperty(hidden = true)
     @TableField(exist = false)

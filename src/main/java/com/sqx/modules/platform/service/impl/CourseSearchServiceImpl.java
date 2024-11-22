@@ -62,8 +62,8 @@ public class CourseSearchServiceImpl extends ServiceImpl<CourseDao, Course> impl
                         course.setPerformerList(performerList);
                     }
                 }
+                redisUtils.set(searchCourseName, coursePage);
             }
-            redisUtils.set(searchCourseName, coursePage);
         } else {
             coursePage = redisUtils.get(searchCourseName, Page.class);
         }
