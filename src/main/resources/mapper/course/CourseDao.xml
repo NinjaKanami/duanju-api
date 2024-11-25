@@ -140,7 +140,7 @@
         WHERE
         1 = 1
         AND c.is_delete = 0
-        AND (c.is_external is null or c.c.is_external = 0)
+        AND (c.is_external is null or c.is_external = 0)
         <if test='null != wxShow and wxShow==1'>
             and c.wx_show = #{wxShow}
         </if>
@@ -364,7 +364,7 @@
         course c
         WHERE
         c.is_delete = 0 and c.status=1
-        AND (c.is_external is null or c.c.is_external = 0)
+        AND (c.is_external is null or c.is_external = 0)
         <if test='null != title'>
             and c.title LIKE #{title}
         </if>
