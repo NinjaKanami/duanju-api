@@ -211,7 +211,7 @@
             and is_recommend=1 order by rand()
         </if>
         <if test="sort!=null and sort==3">
-            order by c.sequence IS NULL, c.sequence asc, goodNum desc
+            order by c.sequence asc, goodNum desc
         </if>
     </select>
 
@@ -336,7 +336,7 @@
             order by weekGoodNum desc
         </if>
         <if test="sort!=null and sort==3">
-            order by c.sequence IS NULL, c.sequence asc, goodNum desc
+            order by c.sequence asc, goodNum desc
         </if>
     </select>
 
