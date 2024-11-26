@@ -28,11 +28,14 @@ public class CourseController extends AbstractController {
 
     @GetMapping("/selectCourse")
     @ApiOperation("查询短剧信息")
-    public Result selectCourse(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
-                               @ApiParam("搜索内容") String title, Integer isRecommend, Integer status, Long bannerId, Integer sort,
-                               Integer isPrice, Integer over, Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType, Integer isExternal) {
-        return courseService.selectCourse(page, limit, classifyId, title, isRecommend, status, bannerId, sort, null,
-                isPrice, 1, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, isExternal);
+    public Result selectCourse(@ApiParam("页") Integer page, @ApiParam("条") Integer limit,
+                               @ApiParam("分类id") Long classifyId, @ApiParam("搜索内容") String title,
+                               Integer isRecommend, Integer status, Long bannerId, Integer sort,
+                               Integer isPrice, Integer over, Integer wxCourse, Integer dyCourse,
+                               Integer wxShow, Integer dyShow, Integer isCut, Integer priceType,
+                               Integer isExternal) {
+        return courseService.selectCourse(page, limit, classifyId, title, isRecommend, status, bannerId, sort,
+                null, isPrice, 1, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, isExternal);
     }
 
     @PostMapping("/insertCourse")

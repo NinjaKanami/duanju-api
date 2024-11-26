@@ -35,7 +35,7 @@ public interface CourseDao extends BaseMapper<Course> {
                                                  @Param("wxCourse") Integer wxCourse, @Param("dyCourse") Integer dyCourse,
                                                  @Param("wxShow") Integer wxShow, @Param("dyShow") Integer dyShow,
                                                  @Param("isCut") Integer isCut, @Param("priceType") Integer priceType,
-                                                 @Param("priceType") Integer isExternal);
+                                                 @Param("isExternal") Integer isExternal);
 
     /**
      * 根据title 模糊查询短剧

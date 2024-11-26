@@ -2,6 +2,7 @@ package com.sqx.modules.course.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -158,9 +159,11 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
 
 
     @Override
-    public Result selectCourse(Integer page, Integer limit, Long classifyId, String title, Integer isRecommend, Integer status,
-                               Long bannerId, Integer sort, String token, Integer isPrice, Integer admin, Integer over,
-                               Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType, Integer isExternal) {
+    public Result selectCourse(Integer page, Integer limit, Long classifyId, String title,
+                               Integer isRecommend, Integer status, Long bannerId, Integer sort,
+                               String token, Integer isPrice, Integer admin, Integer over,
+                               Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow,
+                               Integer isCut, Integer priceType, Integer isExternal) {
         Long userId = null;
         if (admin == null) {
             if (StringUtils.isNotEmpty(token)) {

@@ -20,9 +20,11 @@ public interface CourseService extends IService<Course> {
 
     Map<String, Object> selectCourseByCourseId(Long userId, Long courseId);
 
-    Result selectCourse(Integer page, Integer limit, Long classifyId, String title, Integer isRecommend,
-                        Integer status, Long bannerId, Integer sort, String token, Integer isPrice, Integer admin, Integer over,
-                        Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType, Integer isExternal);
+    Result selectCourse(Integer page, Integer limit, Long classifyId, String title,
+                        Integer isRecommend, Integer status, Long bannerId, Integer sort,
+                        String token, Integer isPrice, Integer admin, Integer over,
+                        Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow,
+                        Integer isCut, Integer priceType, Integer isExternal);
 
     Result selectCourseById(Integer page, Integer limit, Long id, Integer good);
 

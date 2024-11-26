@@ -35,8 +35,8 @@ public class AppCourseController extends AbstractController {
                 token = request.getParameter("Token");
             }
         }
-        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort, token, isPrice,
-                null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
+        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort,
+                token, isPrice, null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
     }
 
 
@@ -64,8 +64,8 @@ public class AppCourseController extends AbstractController {
     public Result selectCourseTitle(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
                                     @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, Integer isPrice, Integer over,
                                     Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType) {
-        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort, token, isPrice,
-                null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
+        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort,
+                token, isPrice, null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
     }
 
     @GetMapping("/selectCourseTitles")
@@ -73,8 +73,8 @@ public class AppCourseController extends AbstractController {
     public Result selectCourseTitles(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
                                      @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, Integer isPrice, Integer over,
                                      Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType) {
-        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort, token, isPrice,
-                null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
+        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort,
+                token, isPrice, null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
     }
 
     @Login
