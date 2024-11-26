@@ -1,6 +1,7 @@
 package com.sqx.config;
 
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -22,18 +23,24 @@ import static com.google.common.collect.Lists.newArrayList;
 @EnableSwagger2
 public class SwaggerConfig implements WebMvcConfigurer {
 
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
+
     @Bean
     public Docket createRestApi() {
+        boolean isProduction = "prod".equalsIgnoreCase(activeProfile);
         return new Docket(DocumentationType.SWAGGER_2)
-            .apiInfo(apiInfo())
-            .select()
-            //加了ApiOperation注解的类，才生成接口文档
-            .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
-            //包下的类，才生成接口文档
-            //.apis(RequestHandlerSelectors.basePackage("com.sqx.controller"))
-            .paths(PathSelectors.any())
-            .build()
-            .securitySchemes(security());
+                .apiInfo(apiInfo())
+                .enable(!isProduction)
+                .select()
+
+                //加了ApiOperation注解的类，才生成接口文档
+                .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
+                //包下的类，才生成接口文档
+                //.apis(RequestHandlerSelectors.basePackage("com.sqx.controller"))
+                .paths(PathSelectors.any())
+                .build()
+                .securitySchemes(security());
     }
 
     private ApiInfo apiInfo() {
