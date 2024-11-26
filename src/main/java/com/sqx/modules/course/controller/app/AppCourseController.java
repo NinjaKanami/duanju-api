@@ -28,71 +28,71 @@ public class AppCourseController extends AbstractController {
     @ApiOperation("查询短剧信息")
     public Result selectCourse(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
                                @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, @ApiParam("付费方式") Integer isPrice,
-                               Integer over,Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType, HttpServletRequest request) {
-        if(StringUtils.isEmpty(token)){
+                               Integer over, Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType, Integer isExternal, HttpServletRequest request) {
+        if (StringUtils.isEmpty(token)) {
             token = request.getHeader("Token");
-            if(StringUtils.isBlank(token)){
+            if (StringUtils.isBlank(token)) {
                 token = request.getParameter("Token");
             }
         }
-        return courseService.selectCourse(page, limit, classifyId, title,null,1,bannerId,sort,token,isPrice,
-                null, over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
+        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort, token, isPrice,
+                null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
     }
 
 
     @GetMapping("/selectCourseDetailsById")
     @ApiOperation("根据id查询短剧详情")
-    public Result selectCourseDetailsById(Long id,String token,String courseDetailsId){
-        return courseDetailsService.selectCourseDetailsById(id,token,courseDetailsId);
+    public Result selectCourseDetailsById(Long id, String token, String courseDetailsId) {
+        return courseDetailsService.selectCourseDetailsById(id, token, courseDetailsId);
     }
 
     @GetMapping("/selectCourseDetailsByTitle")
     @ApiOperation("根据标题查询短剧详情")
-    public Result selectCourseDetailsByTitle(String token,String title){
-        return courseDetailsService.selectCourseDetailsByTitle(token,title);
+    public Result selectCourseDetailsByTitle(String token, String title) {
+        return courseDetailsService.selectCourseDetailsByTitle(token, title);
     }
 
     @GetMapping("/selectCourseDetailsList")
     @ApiOperation("查询推荐视频")
-    public Result selectCourseDetailsList(Integer page,Integer limit,String token,String randomNum){
-        return courseDetailsService.selectCourseDetailsList(page, limit, token,randomNum);
+    public Result selectCourseDetailsList(Integer page, Integer limit, String token, String randomNum) {
+        return courseDetailsService.selectCourseDetailsList(page, limit, token, randomNum);
     }
 
     @Login
     @GetMapping("/selectCourseTitle")
     @ApiOperation("模糊根据短剧标题查询短剧")
     public Result selectCourseTitle(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
-                                    @ApiParam("搜索内容") String title,Long bannerId,Integer sort,String token, Integer isPrice,Integer over,
-                                    Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType) {
-        return courseService.selectCourse(page, limit, classifyId, title,null,1,bannerId,sort,token,isPrice,
-                null, over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
+                                    @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, Integer isPrice, Integer over,
+                                    Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType) {
+        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort, token, isPrice,
+                null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
     }
 
     @GetMapping("/selectCourseTitles")
     @ApiOperation("模糊根据短剧标题查询短剧")
     public Result selectCourseTitles(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
-                                     @ApiParam("搜索内容") String title,Long bannerId,Integer sort,String token, Integer isPrice,Integer over,
-                                     Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType) {
-        return courseService.selectCourse(page, limit, classifyId, title,null,1,bannerId,sort,token,isPrice,
-                null, over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
+                                     @ApiParam("搜索内容") String title, Long bannerId, Integer sort, String token, Integer isPrice, Integer over,
+                                     Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType) {
+        return courseService.selectCourse(page, limit, classifyId, title, null, 1, bannerId, sort, token, isPrice,
+                null, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, 0);
     }
 
     @Login
     @PostMapping("/courseNotify")
     @ApiOperation("看广告解锁视频")
-    public Result courseNotify(@RequestAttribute Long userId, Long courseId, Long courseDetailsId){
+    public Result courseNotify(@RequestAttribute Long userId, Long courseId, Long courseDetailsId) {
         return courseService.courseNotify(userId, courseId, courseDetailsId);
     }
 
     @PostMapping("/notifyUrl")
     @ApiOperation("抖音视频回调")
-    public JSONObject notifyUrl(@RequestBody JSONObject jsonObject){
+    public JSONObject notifyUrl(@RequestBody JSONObject jsonObject) {
         return courseService.notifyUrl(jsonObject);
     }
 
     @PostMapping("/selectWxVideoUrl")
     @ApiOperation("查询微信短剧播放链接")
-    public Result selectWxVideoUrl(@RequestBody JSONObject jsonObject){
+    public Result selectWxVideoUrl(@RequestBody JSONObject jsonObject) {
         String wxCourseDetailsIds = jsonObject.getString("wxCourseDetailsIds");
         return courseService.selectWxVideoUrl(wxCourseDetailsIds);
     }

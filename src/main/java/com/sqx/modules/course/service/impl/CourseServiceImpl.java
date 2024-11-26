@@ -37,6 +37,7 @@ import com.sqx.modules.utils.SenInfoCheckUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -159,7 +160,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
     @Override
     public Result selectCourse(Integer page, Integer limit, Long classifyId, String title, Integer isRecommend, Integer status,
                                Long bannerId, Integer sort, String token, Integer isPrice, Integer admin, Integer over,
-                               Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType) {
+                               Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType, Integer isExternal) {
         Long userId = null;
         if (admin == null) {
             if (StringUtils.isNotEmpty(token)) {
@@ -273,7 +274,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseDao, Course> implements
             }
         }
         IPage<Map<String, Object>> mapIPage = baseMapper.selectCourseAdmin(pages, classifyId, title, isRecommend, status, bannerId,
-                sort, userId, isPrice, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType);
+                sort, userId, isPrice, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, isExternal);
         List<Map<String, Object>> records = mapIPage.getRecords();
         for (Map<String, Object> map : records) {
             Object courseId = map.get("courseId");

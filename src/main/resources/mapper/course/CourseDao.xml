@@ -84,7 +84,6 @@
         and c.course_id=#{courseId}
     </select>
 
-
     <select id="selectCourse" resultType="Map">
         SELECT
         c.classify_id as classifyId,
@@ -215,7 +214,8 @@
         </if>
     </select>
 
-    <select id="selectCourseAdmin" resultType="Map">
+    <!-- pref: 2024/11/26 发现订单子查询拖慢了10s的速度 可采用左连接或者删除 & 删除无用连接-->
+    <!--<select id="selectCourseAdmin" resultType="Map">
         SELECT
         c.classify_id as classifyId,
         c.course_id as courseId,
@@ -325,6 +325,157 @@
         </if>
         <if test="isCut!=null">
             and c.is_cut=#{isCut}
+        </if>
+        <if test="is_external!=null">
+            and c.is_external=#{isExternal}
+        </if>
+        <if test="sort==null">
+            order by c.create_time desc
+        </if>
+        <if test="sort!=null and sort==1">
+            order by goodNum desc
+        </if>
+        <if test="sort!=null and sort==2">
+            order by weekGoodNum desc
+        </if>
+        <if test="sort!=null and sort==3">
+            order by c.sequence asc, goodNum desc
+        </if>
+    </select>-->
+    <!-- 后台查询列表接口 -->
+    <!-- TODO: 使用左连接优化了查询速度 10s+ > 0.4s & banner&order&dyUrlStatus&goodNum等连接需要结合前端考察业务决定是否删除-->
+    <select id="selectCourseAdmin" resultType="Map">
+        SELECT
+        c.classify_id AS classifyId,
+        c.course_id AS courseId,
+        c.course_label AS courseLabel,
+        c.course_label_ids AS courseLabelIds,
+        c.create_time AS createTime,
+        c.details,
+        c.img,
+        c.banner_img AS bannerImg,
+        c.status,
+        c.is_delete AS isDelete,
+        c.msg_type AS msgType,
+        c.msg_url AS msgUrl,
+        c.pay_num AS payNum,
+        c.price,
+        c.price_type AS priceType,
+        c.over,
+        c.title,
+        c.is_price AS isPrice,
+        c.title_img AS titleImg,
+        c.update_time AS updateTime,
+        cc.classification_name AS classificationName,
+        c.course_type AS courseType,
+        c.banner_id AS bannerId,
+        b.name AS bannerName,
+        c.view_counts AS viewCounts,
+        c.dy_img_id AS dyImgId,
+        c.dy_course_id AS dyCourseId,
+        c.dy_status AS dyStatus,
+        c.dy_status_content AS dyStatusContent,
+        c.dy_version AS dyVersion,
+        c.license_num AS licenseNum,
+        c.registration_num AS registrationNum,
+        c.ordinary_record_num AS ordinaryRecordNum,
+        c.key_record_num AS keyRecordNum,
+        c.wx_course_id AS wxCourseId,
+        c.wx_show AS wxShow,
+        c.dy_show AS dyShow,
+        c.sequence AS sequence,
+        c.is_cut AS isCut,
+        c.invite_target AS inviteTarget,
+        c.reward_money AS rewardMoney,
+        c.cut_time_limit AS cutTimeLimit,
+        c.former_name AS formerName,
+        c.producer AS producer,
+        c.score AS score,
+        c.is_external AS isExternal,
+        c.external_url AS externalUrl,
+        cs.avg_score AS realScore,
+        COALESCE(cd.dyUrlStatus, null) AS dyUrlStatus,
+        COALESCE(o.payMoney, null) AS payMoney,
+        COALESCE(cd2.goodNum, null) AS goodNum,
+        c.is_recommend AS isRecommend
+        FROM
+        course AS c
+        LEFT JOIN course_classification AS cc ON c.classify_id = cc.classification_id
+        LEFT JOIN banner AS b ON b.id = c.banner_id
+        LEFT JOIN (
+        SELECT course_id, AVG(score) AS avg_score
+        FROM course_score
+        GROUP BY course_id
+        ) cs ON c.course_id = cs.course_id
+        LEFT JOIN (
+        SELECT course_id, COUNT(*) AS dyUrlStatus
+        FROM course_details
+        WHERE dy_url_status IN (1, 3) OR dy_url_status IS NULL
+        GROUP BY course_id
+        ) cd ON c.course_id = cd.course_id
+        LEFT JOIN (
+        SELECT course_id, SUM(pay_money) AS payMoney
+        FROM orders
+        WHERE status = 1
+        GROUP BY course_id
+        ) o ON c.course_id = o.course_id
+        LEFT JOIN (
+        SELECT course_id, SUM(good_num) AS goodNum
+        FROM course_details
+        GROUP BY course_id
+        ) cd2 ON c.course_id = cd2.course_id
+        WHERE
+        c.is_delete = 0
+        <if test='null != wxShow and wxShow==1'>
+            and c.wx_show = #{wxShow}
+        </if>
+        <if test='null != wxShow and wxShow==2'>
+            and (c.wx_show = #{wxShow} or c.wx_show is null)
+        </if>
+        <if test='null != dyShow and dyShow==1'>
+            and c.dy_show = #{dyShow}
+        </if>
+        <if test='null != dyShow and dyShow==2'>
+            and (c.dy_show = #{dyShow} or c.dy_show is null)
+        </if>
+        <if test="null != title and '' !=title ">
+            and c.title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test='null!= classifyId and classifyId!=0'>
+            and c.classify_id = #{classifyId}
+        </if>
+        <if test='null!= bannerId and bannerId!=0'>
+            and c.banner_id = #{bannerId}
+        </if>
+        <if test="classifyId==0">
+            and c.is_recommend=1
+        </if>
+        <if test="over!=null and over==1">
+            and c.over=1
+        </if>
+        <if test="over!=null and over==2">
+            and c.over is null
+        </if>
+        <if test="isRecommend!=null and isRecommend!=-1">
+            and c.course_id in (select distinct course_id from course_details where good=1)
+        </if>
+        <if test="status!=null and status!=0">
+            and c.status=#{status}
+        </if>
+        <if test="isPrice!=null">
+            and c.is_price=#{isPrice}
+        </if>
+        <if test="wxCourse!=null">
+            and c.wx_course_id is not null
+        </if>
+        <if test="dyCourse!=null">
+            and c.dy_status=4
+        </if>
+        <if test="isCut!=null">
+            and c.is_cut=#{isCut}
+        </if>
+        <if test="is_external!=null">
+            and c.is_external=#{isExternal}
         </if>
         <if test="sort==null">
             order by c.create_time desc

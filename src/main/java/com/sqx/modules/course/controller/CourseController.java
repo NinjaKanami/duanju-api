@@ -28,11 +28,11 @@ public class CourseController extends AbstractController {
 
     @GetMapping("/selectCourse")
     @ApiOperation("查询短剧信息")
-    public Result selectCourse(@ApiParam("页") Integer page,@ApiParam("条") Integer limit,@ApiParam("分类id") Long classifyId,
-                               @ApiParam("搜索内容") String title,Integer isRecommend,Integer status,Long bannerId,Integer sort,
-                               Integer isPrice,Integer over,Integer wxCourse,Integer dyCourse,Integer wxShow,Integer dyShow,Integer isCut,Integer priceType) {
-        return courseService.selectCourse(page, limit, classifyId, title,isRecommend,status,bannerId,sort,null,
-                isPrice,1,over,wxCourse,dyCourse,wxShow,dyShow,isCut,priceType);
+    public Result selectCourse(@ApiParam("页") Integer page, @ApiParam("条") Integer limit, @ApiParam("分类id") Long classifyId,
+                               @ApiParam("搜索内容") String title, Integer isRecommend, Integer status, Long bannerId, Integer sort,
+                               Integer isPrice, Integer over, Integer wxCourse, Integer dyCourse, Integer wxShow, Integer dyShow, Integer isCut, Integer priceType, Integer isExternal) {
+        return courseService.selectCourse(page, limit, classifyId, title, isRecommend, status, bannerId, sort, null,
+                isPrice, 1, over, wxCourse, dyCourse, wxShow, dyShow, isCut, priceType, isExternal);
     }
 
     @PostMapping("/insertCourse")
@@ -55,8 +55,8 @@ public class CourseController extends AbstractController {
 
     @GetMapping("/selectCourseById")
     @ApiOperation("根据id查询短剧详细信息")
-    public Result selectCourseById(Integer page,Integer limit,Long id,Integer good) {
-        return courseService.selectCourseById(page,limit,id,good);
+    public Result selectCourseById(Integer page, Integer limit, Long id, Integer good) {
+        return courseService.selectCourseById(page, limit, id, good);
     }
 
 
@@ -68,12 +68,12 @@ public class CourseController extends AbstractController {
 
     @GetMapping("/updateCourse")
     @ApiOperation("修改状态")
-    public Result updateCourse(Long courseId){
+    public Result updateCourse(Long courseId) {
         Course byId = courseService.getById(courseId);
-        if(byId!=null){
-            if(byId.getStatus().equals(1)){
+        if (byId != null) {
+            if (byId.getStatus().equals(1)) {
                 byId.setStatus(2);
-            }else{
+            } else {
                 byId.setStatus(1);
             }
             courseService.updateById(byId);
@@ -83,79 +83,80 @@ public class CourseController extends AbstractController {
 
     @GetMapping("/synCourse")
     @ApiOperation("采集视频")
-    public Result synCourse(){
+    public Result synCourse() {
         return courseService.synCourse();
     }
 
     @PostMapping("/updateCourseDetails")
     @ApiOperation("批量修改集")
-    public Result updateCourseDetails(String ids, BigDecimal price,String content,String titleImg){
-        return courseService.updateCourseDetails(ids,price,content,titleImg);
+    public Result updateCourseDetails(String ids, BigDecimal price, String content, String titleImg) {
+        return courseService.updateCourseDetails(ids, price, content, titleImg);
     }
 
 
     @PostMapping("/updateCourseStatus")
     @ApiOperation("批量上下架剧")
-    public Result updateCourseStatus(String ids, Integer status){
-        return courseService.updateCourseStatus(ids,status);
+    public Result updateCourseStatus(String ids, Integer status) {
+        return courseService.updateCourseStatus(ids, status);
     }
 
     @PostMapping("/deleteCourseByIds")
     @ApiOperation("批量删除剧")
-    public Result deleteCourseByIds(String ids){
+    public Result deleteCourseByIds(String ids) {
         return courseService.deleteCourseByIds(ids);
     }
 
     @PostMapping("/deleteCourseDetailsByIds")
     @ApiOperation("批量删除集")
-    public Result deleteCourseDetailsByIds(String ids){
+    public Result deleteCourseDetailsByIds(String ids) {
         return courseService.deleteCourseDetailsByIds(ids);
     }
 
     @PostMapping("/dyVideoUpload")
     @ApiOperation("抖音短剧上传")
-    public Result dyVideoUpload(Long courseId){
+    public Result dyVideoUpload(Long courseId) {
         return courseService.dyVideoUpload(courseId);
     }
 
     @PostMapping("/dyVideoAudit")
     @ApiOperation("抖音短剧送审")
-    public Result dyVideoAudit(Long courseId){
+    public Result dyVideoAudit(Long courseId) {
         return courseService.dyVideoAudit(courseId);
     }
 
     @PostMapping("/dyVideoUp")
     @ApiOperation("抖音短剧上线")
-    public Result dyVideoUp(Long courseId){
+    public Result dyVideoUp(Long courseId) {
         return courseService.dyVideoUp(courseId);
     }
 
     @PostMapping("/setDyNotifyUrl")
     @ApiOperation("设置抖音视频回调地址")
-    public Result setDyNotifyUrl(String url){
+    public Result setDyNotifyUrl(String url) {
         return courseService.setDyNotifyUrl(url);
     }
 
     @PostMapping("/uploadCourseDetails")
     @ApiOperation("单个集上传")
-    public Result uploadCourseDetails(Long courseDetailsId){
+    public Result uploadCourseDetails(Long courseDetailsId) {
         return courseService.uploadCourseDetails(courseDetailsId);
     }
 
     @PostMapping("/updateDyCourse")
     @ApiOperation("修改抖音短剧")
-    public Result updateDyCourse(@RequestBody Course course){
+    public Result updateDyCourse(@RequestBody Course course) {
         return courseService.updateDyCourse(course);
     }
 
     @GetMapping("/sysWxCourse")
     @ApiOperation("同步微信已提交审核的短剧")
-    public Result sysWxCourse(){
+    public Result sysWxCourse() {
         return courseService.sysWxCourse();
     }
 
     /**
      * 剧导入列表--导入
+     *
      * @param file
      * @return
      * @throws Exception
