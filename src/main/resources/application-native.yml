@@ -33,6 +33,11 @@ spring:
                 wall:
                     config:
                         multi-statement-allow: true
+    redis:
+        database: 1
+        host: sh-crs-h9j6ucuf.sql.tencentcdb.com
+        port: 28007
+        password:
 
 #mybatis-log
 mybatis-plus:
