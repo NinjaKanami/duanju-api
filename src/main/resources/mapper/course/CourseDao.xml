@@ -474,7 +474,7 @@
         <if test="isCut!=null">
             and c.is_cut=#{isCut}
         </if>
-        <if test="is_external!=null">
+        <if test="isExternal!=null">
             and c.is_external=#{isExternal}
         </if>
         <if test="sort==null">
