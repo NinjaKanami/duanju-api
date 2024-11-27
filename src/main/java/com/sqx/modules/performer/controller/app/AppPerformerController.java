@@ -92,7 +92,7 @@ public class AppPerformerController extends ApiController {
     @ApiOperation("查询演员详情, 该接口会同时查出来用户是否已追该演员。该接口会带出来演员关联的短剧，但有些剧不能在微信小程序上显示，因此如果在微信小程序平台上，需要传wxShow参数")
     public Result queryPerformerDetail(
             @PathVariable Long performerId, // 演员ID
-            @RequestAttribute Long userId, // 用户ID
+            @RequestAttribute(required = false) Long userId, // 用户ID
             @RequestParam(required = false) Long wxShow // 是否只查询微信端显示的短剧，不传默认查询全部，传1则只展示微信小程序端显示的短剧
     ) {
         // 出演短剧
