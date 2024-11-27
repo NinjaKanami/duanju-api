@@ -59,7 +59,7 @@ public class AppSeriesController extends ApiController {
     @ApiOperation(value = "通过主键查询单条数据", notes = "通过主键查询单条数据", httpMethod = "GET")
     //@Login
     @GetMapping("{id}")
-    public Result selectOne(@RequestAttribute Long userId, @PathVariable Serializable id) {
+    public Result selectOne(@RequestAttribute(required = false) Long userId, @PathVariable Serializable id) {
         return seriesService.selectSeriesById(userId, id);
     }
 
