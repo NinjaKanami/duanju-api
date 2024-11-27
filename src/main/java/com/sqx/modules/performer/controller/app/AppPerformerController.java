@@ -69,7 +69,7 @@ public class AppPerformerController extends ApiController {
         return Result.success().put("data", performersVOs);
     }
 
-    @Login
+    //@Login
     @GetMapping("/rank")
     @ApiOperation("查询演员排行榜, " + "ptagId筛选指定标签类型，" + "order为0是降序(默认,follower从多到少)，order是1则是升序(follower从少到多), " + "sex为1是查询男性，sex为2是查询女性，不填则查询全部性别")
     public Result performersRank(Page<Performer> page,
