@@ -210,7 +210,7 @@
             and is_recommend=1 order by rand()
         </if>
         <if test="sort!=null and sort==3">
-            order by c.sequence asc, goodNum desc
+            order by c.sequence IS NULL, c.sequence asc, goodNum desc
         </if>
     </select>
 
@@ -487,7 +487,7 @@
             order by weekGoodNum desc
         </if>
         <if test="sort!=null and sort==3">
-            order by c.sequence asc, goodNum desc
+            order by c.sequence IS NULL, c.sequence asc, goodNum desc
         </if>
     </select>
 
@@ -522,15 +522,7 @@
         order by create_time desc
     </select>
 
-    <!--/*select c.* ,
-    (select ROUND(avg(score), 1) from course_score d where d.course_id=c.course_id ) as realScore,
-    (select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount*/
-
-    /*减少子查询次数 采用连表*/
-    /*(select count(*) from course_collect d where d.course_id=c.course_id ) as collectCount,
-    COALESCE(c.score, (select ROUND(avg(score), 1) from course_score d where d.course_id = c.course_id)) as score
-    from course WHERE
-    c.is_delete = 0 and c.status=1*/-->
+    <!-- 搜索课程接口 -->
     <select id="searchCourse" resultType="com.sqx.modules.course.entity.Course">
         SELECT
         c.course_id,
