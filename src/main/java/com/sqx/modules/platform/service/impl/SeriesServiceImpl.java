@@ -152,7 +152,7 @@ public class SeriesServiceImpl extends ServiceImpl<SeriesDao, Series> implements
         }
 
         // 查询用户是否登录
-        if (userId != null && series != null && !series.getCourseList().isEmpty()) {
+        if (userId != null && series != null && series.getCourseList() != null && !series.getCourseList().isEmpty()) {
             series.getCourseList().forEach(course -> {
                 // 查询用户是否收藏了该短剧
                 course.setIsCollect(courseCollectService.count(new QueryWrapper<CourseCollect>()
@@ -211,7 +211,7 @@ public class SeriesServiceImpl extends ServiceImpl<SeriesDao, Series> implements
     public Result deleteSeries(List<Long> idList) {
         if (this.removeByIds(idList)) {
             seriesCourseService.remove(new QueryWrapper<SeriesCourse>().in("series_id", idList));
-            //this.flushSeriesAll();
+            // this.flushSeriesAll();
             redisUtils.deleteByPattern("page_series_*");
             idList.forEach(seriesId -> redisUtils.deleteByPattern(String.format("seriesId_*%d", seriesId)));
             return Result.success();
