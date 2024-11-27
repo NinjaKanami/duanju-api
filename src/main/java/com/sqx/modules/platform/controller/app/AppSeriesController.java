@@ -41,7 +41,7 @@ public class AppSeriesController extends ApiController {
      * @return 所有数据
      */
     @ApiOperation(value = "分页查询所有数据", notes = "分页查询所有数据", httpMethod = "GET")
-    @Login
+    //@Login
     @GetMapping
     public Result selectAll(Page<Series> page, Series series) {
         return seriesService.selectSeriesPage(page, series);
@@ -57,7 +57,7 @@ public class AppSeriesController extends ApiController {
             @ApiImplicitParam(paramType = "path", dataType = "Serializable", name = "id", value = "主键", required = true)
     })
     @ApiOperation(value = "通过主键查询单条数据", notes = "通过主键查询单条数据", httpMethod = "GET")
-    @Login
+    //@Login
     @GetMapping("{id}")
     public Result selectOne(@RequestAttribute Long userId, @PathVariable Serializable id) {
         return seriesService.selectSeriesById(userId, id);

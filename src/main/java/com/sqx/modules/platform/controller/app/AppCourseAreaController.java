@@ -38,7 +38,7 @@ public class AppCourseAreaController extends ApiController {
      *
      * @return 所有数据
      */
-    @Login
+    //@Login
     @ApiOperation("查询所有数据")
     @GetMapping
     public R selectAll() {

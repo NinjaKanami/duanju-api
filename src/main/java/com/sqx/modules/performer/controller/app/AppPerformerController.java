@@ -87,7 +87,7 @@ public class AppPerformerController extends ApiController {
         return Result.success().put("data", appPerformerVOPage);
     }
 
-    @Login
+    //@Login
     @GetMapping("/{performerId}/detail")
     @ApiOperation("查询演员详情, 该接口会同时查出来用户是否已追该演员。该接口会带出来演员关联的短剧，但有些剧不能在微信小程序上显示，因此如果在微信小程序平台上，需要传wxShow参数")
     public Result queryPerformerDetail(
@@ -100,7 +100,7 @@ public class AppPerformerController extends ApiController {
         return Result.success().put("data", appPerformerVO);
     }
 
-    @Login
+    //@Login
     @GetMapping("/tag/list")
     @ApiOperation("类型列表")
     public Result queryPerformerTags() {
