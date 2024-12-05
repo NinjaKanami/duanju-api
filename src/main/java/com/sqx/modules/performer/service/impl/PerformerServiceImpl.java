@@ -77,7 +77,8 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     }
 
 
-    @Transactional
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createPerformer(Performer performer) {
         // 1. 插入 performer 表
         performerDao.insert(performer);
@@ -97,7 +98,8 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         }
     }
 
-    @Transactional
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updatePerformer(Performer performer) {
         // 先查询下当前演员关联的视频集合，如果上了新剧，给用户批量发送通知
         List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performer.getId(), null, null);
@@ -119,9 +121,12 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
             }
         }
         Map<String, String> messageParams = new HashMap<>();
-        List<Course> newCourseInfo = courseService.selectCourseListByCourseIds(newCourseIds);
-        for (Course course : newCourseInfo) {
-            messageParams.put(course.getCourseId().toString(), course.getTitle());
+        if (!newCourseIds.isEmpty()) {
+            // 推送通知
+            List<Course> newCourseInfo = courseService.selectCourseListByCourseIds(newCourseIds);
+            for (Course course : newCourseInfo) {
+                messageParams.put(course.getCourseId().toString(), course.getTitle());
+            }
         }
 
 
@@ -155,15 +160,18 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
                 }
                 coursePerformerDao.insertBatch(cps);
             }
-            messageParams.forEach((courseId, courseName) -> {
-                this.pushPerformerUpdateMessageToFollower(performer.getId(), performerName -> String.format("你关注的演员%s参演了新剧《%s》", performerName, courseName));
-            });
+            if (!newCourseIds.isEmpty()) {
+                messageParams.forEach((courseId, courseName) -> {
+                    this.pushPerformerUpdateMessageToFollower(performer.getId(), performerName -> String.format("你关注的演员%s参演了新剧《%s》", performerName, courseName));
+                });
+            }
         }
 
         return rowsAffected;
     }
 
-    @Transactional
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deletePerformer(Long performerId) {
         int rowsAffected = performerDao.deleteById(performerId);
         performerPTagDao.delete(new QueryWrapper<PerformerPTag>().eq("performer_id", performerId));
