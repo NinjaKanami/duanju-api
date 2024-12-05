@@ -20,6 +20,7 @@ import com.sqx.modules.performer.service.PerformerService;
 import com.sqx.modules.performer.vo.AppPerformerVO;
 import com.sqx.modules.platform.dao.CoursePerformerDao;
 import com.sqx.modules.platform.entity.CoursePerformer;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,11 +85,11 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         performerDao.insert(performer);
 
         // 2. 插入 performer_ptag 表
-        if (performer.getTagsStr() != null) {
+        if (performer.getTagsStr() != null && !performer.getTagsStr().isEmpty()) {
             ptagDao.insertPerformerTags(performer.getId(), Arrays.asList(performer.getTagsStr().split(",")));
         }
         // 3.插入 course_performer 表
-        if (performer.getCourseStr() != null) {
+        if (performer.getCourseStr() != null && !performer.getCourseStr().isEmpty()) {
             String[] courseIds = performer.getCourseStr().split(",");
             List<CoursePerformer> cps = new ArrayList<>();
             for (String courseId : courseIds) {
@@ -114,12 +115,15 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         // 新加的短剧
         List<Integer> newCourseIds = new ArrayList<>();
         for (String courseIdStr : newList) {
-            Integer courseId = Integer.parseInt(courseIdStr);
-            // 如果新的关联列表里没有，说明这部剧是新加的，要记录下来，给用户发送通知
-            if (!oldCourseIds.contains(courseId)) {
-                newCourseIds.add(courseId);
+            if (!StringUtil.isNullOrEmpty(courseIdStr)) {
+                Integer courseId = Integer.parseInt(courseIdStr);
+                // 如果新的关联列表里没有，说明这部剧是新加的，要记录下来，给用户发送通知
+                if (!oldCourseIds.contains(courseId)) {
+                    newCourseIds.add(courseId);
+                }
             }
         }
+
         Map<String, String> messageParams = new HashMap<>();
         if (!newCourseIds.isEmpty()) {
             // 推送通知

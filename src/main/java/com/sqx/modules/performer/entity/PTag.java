@@ -21,7 +21,7 @@ public class PTag implements Serializable {
     private String name;
 
     @TableField("is_visible")
-    private Integer isVisible; // 演员类型是否在用户榜单页面可见
+    private Integer isVisible; // 演员类型是否在用户榜单页面可见 0不可见，1可见
 
     @TableField("page_index")
     private Integer pageIndex; // 演员类型在用户端榜单页面的显示顺序
