@@ -103,9 +103,9 @@ public class AppPerformerController extends ApiController {
     //@Login
     @GetMapping("/tag/list")
     @ApiOperation("类型列表")
-    public Result queryPerformerTags() {
+    public Result queryPerformerTags(@RequestParam(required = true) Integer isVisible) {
         // 类型列表不会很大，是常数级别
-        List<PTag> allPTags = this.pTagService.getAllVisiblePTagsOrderByPageIndex();
+        List<PTag> allPTags = this.pTagService.getAllVisiblePTagsOrderByPageIndex(isVisible);
         List<AppPTagVO> res = AppPTagVO.fromEntityList(allPTags);
         return Result.success().put("data", res);
     }

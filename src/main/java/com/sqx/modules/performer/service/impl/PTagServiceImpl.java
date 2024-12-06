@@ -29,10 +29,10 @@ public class PTagServiceImpl extends ServiceImpl<PTagDao, PTag> implements PTagS
     }
 
     @Override
-    public List<PTag> getAllVisiblePTagsOrderByPageIndex() {
+    public List<PTag> getAllVisiblePTagsOrderByPageIndex(Integer isVisible) {
         return baseMapper.selectList(
                 new QueryWrapper<PTag>().
-                        eq("is_visible", 1).
+                        eq("is_visible", isVisible).
                         orderByAsc("page_index")
         );
     }

@@ -24,7 +24,7 @@ public interface PTagService extends IService<PTag> {
      *
      * @return 演员类型集合
      */
-    List<PTag> getAllVisiblePTagsOrderByPageIndex();
+    List<PTag> getAllVisiblePTagsOrderByPageIndex(Integer isVisible);
 
     /**
      * 删除演员类型, 如果该类型下有演员，则无法删除
