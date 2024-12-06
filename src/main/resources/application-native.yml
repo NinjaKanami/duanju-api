@@ -37,7 +37,7 @@ spring:
         database: 1
         host: sh-crs-h9j6ucuf.sql.tencentcdb.com
         port: 28007
-        password:
+        password: 3bLVVurF52xh3z^H
 
 #mybatis-log
 mybatis-plus:
