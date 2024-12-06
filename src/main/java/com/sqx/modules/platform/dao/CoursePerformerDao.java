@@ -39,12 +39,10 @@ public interface CoursePerformerDao extends BaseMapper<CoursePerformer> {
      *
      * @param performerId 演员id
      * @param wxShow      如果wxShow为1，则查询在微信中显示的短剧，不传则默认查询全部
-     * @param userId      如果userId不为空，则查询该用户的收藏状态
      * @return List<Course> 参演的短剧列表
      */
     List<Course> selectCourseListByPerformerId(
             @Param("performerId") Long performerId,
-            @Param("wxShow") Long wxShow,
-            @Param("userId") Long userId
+            @Param("wxShow") Long wxShow
     );
 }

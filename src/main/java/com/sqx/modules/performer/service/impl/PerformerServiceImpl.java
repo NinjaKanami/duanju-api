@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sqx.common.utils.DateUtils;
 import com.sqx.modules.course.entity.Course;
+import com.sqx.modules.course.entity.CourseCollect;
+import com.sqx.modules.course.service.CourseCollectService;
 import com.sqx.modules.course.service.CourseService;
 import com.sqx.modules.message.constant.MessageConstant;
 import com.sqx.modules.message.entity.MessageInfo;
@@ -54,6 +56,8 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     private MessageService messageService;
     @Autowired
     private CourseService courseService;
+    @Autowired
+    private CourseCollectService courseCollectService;
 
     /**
      * 查询演员列表
@@ -103,7 +107,7 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     @Transactional(rollbackFor = Exception.class)
     public int updatePerformer(Performer performer) {
         // 先查询下当前演员关联的视频集合，如果上了新剧，给用户批量发送通知
-        List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performer.getId(), null, null);
+        List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performer.getId(), null);
         List<Integer> oldCourseIds = new ArrayList<>();
         for (Course course : courses) {
             oldCourseIds.add(course.getCourseId().intValue());
@@ -237,14 +241,16 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
             res.setIsFollowed(true);
         }
 
-        /*
-        int isCollect = courseCollectDao.selectCount(new QueryWrapper<CourseCollect>()
-                                .eq("classify", 1).eq("course_id", courseId).eq("user_id", userId));
-                        map.put("isCollect", isCollect);
-        * */
         // 查询演员参演的短剧并组装
-        List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performerId, wxShow, userId);
+        List<Course> courses = coursePerformerDao.selectCourseListByPerformerId(performerId, wxShow);
         if (courses != null) {
+            // 是否收藏了该剧
+            if (userId != null) {
+                for (Course course : courses) {
+                    course.setIsCollect(courseCollectService.count(new QueryWrapper<CourseCollect>()
+                            .eq("user_id", userId).eq("classify", 1).eq("course_id", course.getCourseId())));
+                }
+            }
             res.setCourseList(courses);
         }
         return res;

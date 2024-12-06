@@ -36,18 +36,13 @@
     </insert>
 
     <select id="selectCourseListByPerformerId" resultMap="courseListMap">
-        SELECT c.*,
-        SUM(CASE WHEN cc.classify = 1 THEN 1 ELSE 0 END) as is_collect
+        SELECT c.*
         FROM duanju.course c
         LEFT JOIN course_performer cp ON c.course_id = cp.course_id
-        LEFT JOIN course_collect cc ON c.course_id = cc.course_id
-        <if test="userId != null">AND cc.user_id = #{userId}</if>
-        WHERE 1 = 1
+        WHERE cp.performer_id = #{performerId}
         <if test="wxShow != null">
             AND c.wx_show = #{wxShow}
         </if>
-        AND cp.performer_id = #{performerId}
-        GROUP BY cc.course_id
     </select>
 
 </mapper>
