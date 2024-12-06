@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
+import com.sqx.modules.app.annotation.OptionalLogin;
 import com.sqx.modules.platform.entity.Series;
 import com.sqx.modules.platform.service.SeriesService;
 import io.swagger.annotations.Api;
@@ -57,7 +58,7 @@ public class AppSeriesController extends ApiController {
             @ApiImplicitParam(paramType = "path", dataType = "Serializable", name = "id", value = "主键", required = true)
     })
     @ApiOperation(value = "通过主键查询单条数据", notes = "通过主键查询单条数据", httpMethod = "GET")
-    //@Login
+    @OptionalLogin
     @GetMapping("{id}")
     public Result selectOne(@RequestAttribute(required = false) Long userId, @PathVariable Serializable id) {
         return seriesService.selectSeriesById(userId, id);

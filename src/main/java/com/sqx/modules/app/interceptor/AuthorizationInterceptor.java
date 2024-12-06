@@ -5,6 +5,7 @@ import com.sqx.common.context.RequestContext;
 import com.sqx.common.exception.SqxException;
 import com.sqx.common.utils.DateUtils;
 import com.sqx.common.utils.IPUtils;
+import com.sqx.modules.app.annotation.OptionalLogin;
 import com.sqx.modules.app.entity.UserEntity;
 import com.sqx.modules.app.service.UserService;
 import com.sqx.modules.app.utils.JwtUtils;
@@ -27,7 +28,6 @@ import java.util.Optional;
 
 /**
  * 权限(Token)验证
- *
  */
 @Slf4j
 @Component
@@ -42,27 +42,46 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         Login annotation;
-        //上下文初始化
+        OptionalLogin optionalLogin = null;
+        // 上下文初始化
         RequestContext.init(UserEntity.class)
                 .setRemoteAddress(IPUtils.getIpAddr(request)).setUrl(request.getRequestURI());
-        if(handler instanceof HandlerMethod) {
+        if (handler instanceof HandlerMethod) {
             annotation = ((HandlerMethod) handler).getMethodAnnotation(Login.class);
-        }else{
+            optionalLogin = ((HandlerMethod) handler).getMethodAnnotation(OptionalLogin.class);
+        } else {
             return true;
         }
 
         try {
+            // 有@OptionalLogin注解，尝试从请求头中获取token并解析用户信息
+            if (optionalLogin != null) {
+                // 获取用户凭证
+                String token = request.getHeader(jwtUtils.getHeader());
+                if (StringUtils.isBlank(token)) {
+                    token = request.getParameter(jwtUtils.getHeader());
+                }
+                if (!StringUtils.isBlank(token)) {
+                    Claims claims = jwtUtils.getClaimByToken(token);
+                    if (claims != null && !jwtUtils.isTokenExpired(claims.getExpiration())) {
+                        // 设置userId到request里，后续根据userId，获取用户信息
+                        long userId = Long.parseLong(claims.getSubject());
+                        request.setAttribute(USER_KEY, userId);
+                    }
+                }
+            }
+
             if (annotation == null) {
                 return true;
             }
 
-            //获取用户凭证
+            // 获取用户凭证
             String token = request.getHeader(jwtUtils.getHeader());
             if (StringUtils.isBlank(token)) {
                 token = request.getParameter(jwtUtils.getHeader());
             }
 
-            //凭证为空
+            // 凭证为空
             if (StringUtils.isBlank(token)) {
                 throw new SqxException(jwtUtils.getHeader() + "不能为空", HttpStatus.UNAUTHORIZED.value());
             }
@@ -72,10 +91,10 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
                 throw new SqxException(jwtUtils.getHeader() + "失效，请重新登录", HttpStatus.UNAUTHORIZED.value());
             }
 
-            //设置userId到request里，后续根据userId，获取用户信息
+            // 设置userId到request里，后续根据userId，获取用户信息
             long userId = Long.parseLong(claims.getSubject());
             request.setAttribute(USER_KEY, userId);
-            //记录用户最后一次调用接口的时间
+            // 记录用户最后一次调用接口的时间
             UserEntity userEntity = new UserEntity();
             userEntity.setUserId(userId);
             userEntity.setOnLineTime(DateUtils.format(new Date()));

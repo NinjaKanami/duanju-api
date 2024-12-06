@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.api.ApiController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sqx.common.utils.Result;
 import com.sqx.modules.app.annotation.Login;
+import com.sqx.modules.app.annotation.OptionalLogin;
 import com.sqx.modules.performer.dao.PerformerUserDao;
 import com.sqx.modules.performer.entity.PTag;
 import com.sqx.modules.performer.entity.Performer;
@@ -88,6 +89,7 @@ public class AppPerformerController extends ApiController {
     }
 
     //@Login
+    @OptionalLogin
     @GetMapping("/{performerId}/detail")
     @ApiOperation("查询演员详情, 该接口会同时查出来用户是否已追该演员。该接口会带出来演员关联的短剧，但有些剧不能在微信小程序上显示，因此如果在微信小程序平台上，需要传wxShow参数")
     public Result queryPerformerDetail(
