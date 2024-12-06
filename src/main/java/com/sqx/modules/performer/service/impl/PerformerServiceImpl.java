@@ -108,18 +108,20 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
         for (Course course : courses) {
             oldCourseIds.add(course.getCourseId().intValue());
         }
-        // 管理员设置的新关联列表
-        String[] newList = performer.getCourseStr().split(",");
-
 
         // 新加的短剧
+        String[] newList = null;
         List<Integer> newCourseIds = new ArrayList<>();
-        for (String courseIdStr : newList) {
-            if (!StringUtil.isNullOrEmpty(courseIdStr)) {
-                Integer courseId = Integer.parseInt(courseIdStr);
-                // 如果新的关联列表里没有，说明这部剧是新加的，要记录下来，给用户发送通知
-                if (!oldCourseIds.contains(courseId)) {
-                    newCourseIds.add(courseId);
+        if (performer.getCourseStr() != null && !performer.getCourseStr().isEmpty()) {
+            // 管理员设置的新关联列表
+            newList = performer.getCourseStr().split(",");
+            for (String courseIdStr : newList) {
+                if (!StringUtil.isNullOrEmpty(courseIdStr)) {
+                    Integer courseId = Integer.parseInt(courseIdStr);
+                    // 如果新的关联列表里没有，说明这部剧是新加的，要记录下来，给用户发送通知
+                    if (!oldCourseIds.contains(courseId)) {
+                        newCourseIds.add(courseId);
+                    }
                 }
             }
         }
