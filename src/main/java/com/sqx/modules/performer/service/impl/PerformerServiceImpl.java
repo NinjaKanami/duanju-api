@@ -260,7 +260,9 @@ public class PerformerServiceImpl extends ServiceImpl<PerformerDao, Performer> i
     public int pushPerformerUpdateMessageToFollower(Long performerId, MessageBuilder messageBuilder) {
         // 订阅列表
         List<PerformerUser> users = performerUserDao.selectList(new QueryWrapper<PerformerUser>().eq("performer_id", performerId));
-
+        if (users.isEmpty()) {
+            return 0;
+        }
         // 演员信息
         Performer performer = performerDao.selectById(performerId);
         List<MessageInfo> messages = new ArrayList<>(users.size());
