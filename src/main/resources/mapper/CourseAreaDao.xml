@@ -10,7 +10,7 @@
 
     <!-- 批量插入 -->
     <insert id="insertBatch" keyProperty="areaId" useGeneratedKeys="true">
-        insert into duanju.course_area(area_namesort)
+        insert into course_area(area_namesort)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.areaName}#{entity.sort})
@@ -18,7 +18,7 @@
     </insert>
     <!-- 批量插入或按主键更新 -->
     <insert id="insertOrUpdateBatch" keyProperty="areaId" useGeneratedKeys="true">
-        insert into duanju.course_area(area_namesort)
+        insert into course_area(area_namesort)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.areaName}#{entity.sort})

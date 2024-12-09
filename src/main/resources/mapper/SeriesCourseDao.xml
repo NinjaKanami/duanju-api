@@ -10,7 +10,7 @@
 
     <!-- 批量插入 -->
     <insert id="insertBatch" keyProperty="seriesCourseId" useGeneratedKeys="true">
-        insert into duanju.series_course(series_idcourse_id)
+        insert into series_course(series_idcourse_id)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.seriesId}#{entity.courseId})
@@ -18,7 +18,7 @@
     </insert>
     <!-- 批量插入或按主键更新 -->
     <insert id="insertOrUpdateBatch" keyProperty="seriesCourseId" useGeneratedKeys="true">
-        insert into duanju.series_course(series_idcourse_id)
+        insert into series_course(series_idcourse_id)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.seriesId}#{entity.courseId})

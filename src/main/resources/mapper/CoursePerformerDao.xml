@@ -18,7 +18,7 @@
 
     <!-- 批量插入 -->
     <insert id="insertBatch" keyProperty="coursePerformerId" useGeneratedKeys="true">
-        insert into duanju.course_performer(course_id,performer_id)
+        insert into course_performer(course_id,performer_id)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.courseId},#{entity.performerId})
@@ -26,7 +26,7 @@
     </insert>
     <!-- 批量插入或按主键更新 -->
     <insert id="insertOrUpdateBatch" keyProperty="coursePerformerId" useGeneratedKeys="true">
-        insert into duanju.course_performer(course_id,performer_id)
+        insert into course_performer(course_id,performer_id)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.courseId},#{entity.performerId})
@@ -37,7 +37,7 @@
 
     <select id="selectCourseListByPerformerId" resultMap="courseListMap">
         SELECT c.*
-        FROM duanju.course c
+        FROM course c
         LEFT JOIN course_performer cp ON c.course_id = cp.course_id
         WHERE cp.performer_id = #{performerId}
         <if test="wxShow != null">

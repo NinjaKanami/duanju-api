@@ -10,7 +10,7 @@
 
     <!-- 批量插入 -->
     <insert id="insertBatch" keyProperty="platformId" useGeneratedKeys="true">
-        insert into duanju.course_platform(platform_namesort)
+        insert into course_platform(platform_namesort)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.platformName}#{entity.sort})
@@ -18,7 +18,7 @@
     </insert>
     <!-- 批量插入或按主键更新 -->
     <insert id="insertOrUpdateBatch" keyProperty="platformId" useGeneratedKeys="true">
-        insert into duanju.course_platform(platform_namesort)
+        insert into course_platform(platform_namesort)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.platformName}#{entity.sort})

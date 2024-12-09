@@ -13,7 +13,7 @@
 
     <!-- 批量插入 -->
     <insert id="insertBatch" keyProperty="courseCollectId" useGeneratedKeys="true">
-        insert into duanju.course_score(course_iduser_idscorecreate_timeupdate_time)
+        insert into course_score(course_iduser_idscorecreate_timeupdate_time)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.courseId}#{entity.userId}#{entity.score}#{entity.createTime}#{entity.updateTime})
@@ -21,7 +21,7 @@
     </insert>
     <!-- 批量插入或按主键更新 -->
     <insert id="insertOrUpdateBatch" keyProperty="courseCollectId" useGeneratedKeys="true">
-        insert into duanju.course_score(course_iduser_idscorecreate_timeupdate_time)
+        insert into course_score(course_iduser_idscorecreate_timeupdate_time)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.courseId}#{entity.userId}#{entity.score}#{entity.createTime}#{entity.updateTime})

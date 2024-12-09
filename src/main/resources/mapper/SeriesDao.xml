@@ -14,7 +14,7 @@
 
     <!-- 批量插入 -->
     <insert id="insertBatch" keyProperty="seriesId" useGeneratedKeys="true">
-        insert into duanju.series(series_imgseries_nameseries_descripecreate_timeupdate_timesort)
+        insert into series(series_imgseries_nameseries_descripecreate_timeupdate_timesort)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.seriesImg}#{entity.seriesName}#{entity.seriesDescripe}#{entity.createTime}#{entity.updateTime}#{entity.sort})
@@ -22,7 +22,7 @@
     </insert>
     <!-- 批量插入或按主键更新 -->
     <insert id="insertOrUpdateBatch" keyProperty="seriesId" useGeneratedKeys="true">
-        insert into duanju.series(series_imgseries_nameseries_descripecreate_timeupdate_timesort)
+        insert into series(series_imgseries_nameseries_descripecreate_timeupdate_timesort)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.seriesImg}#{entity.seriesName}#{entity.seriesDescripe}#{entity.createTime}#{entity.updateTime}#{entity.sort})
